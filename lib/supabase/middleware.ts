@@ -25,8 +25,28 @@ export async function updateSession(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser();
 
-  // Auth bypass — dev mode
-  return supabaseResponse;
+  const path = request.nextUrl.pathname;
+  const isPublic =
+    path === "/login" ||
+    path === "/signup" ||
+    path === "/pricing" ||
+    path === "/landing" ||
+    path === "/" ||
+    path.startsWith("/api/auth") ||
+    path.startsWith("/portal/") ||
+    path.startsWith("/contracts/") ||
+    path.startsWith("/api/contracts") ||
+    path.startsWith("/book/") ||
+    path.startsWith("/api/book") ||
+    path.startsWith("/api/portal") ||
+    path.startsWith("/api/stripe/webhook") ||
+    path.startsWith("/api/cron");
+
+  if (!user && !isPublic) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/login";
+    return NextResponse.redirect(url);
+  }
 
   return supabaseResponse;
 }
