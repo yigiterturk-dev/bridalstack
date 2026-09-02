@@ -23,15 +23,15 @@ export default function ModuleGuard({ moduleId, enabledModules, children }: Prop
       <p className="text-gray-500 mb-6 max-w-md">{mod.description}</p>
       <div className="bg-amber-50 border border-amber-200 rounded-xl px-6 py-4 mb-6">
         <p className="text-amber-800 text-sm font-medium">
-          Bu modül mevcut planınıza dahil değil.
+          This module is not part of your current plan.
         </p>
       </div>
       <Link
-        href="/settings/plan"
+        href="/settings"
         className="inline-flex items-center gap-2 px-6 py-3 bg-black text-white rounded-xl font-medium hover:bg-gray-800 transition-colors"
       >
         <span className="material-symbols-outlined text-lg">upgrade</span>
-        Planı Yükselt
+        Upgrade Plan
       </Link>
     </div>
   );
