@@ -3,6 +3,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getCurrentTenant } from "@/lib/tenant";
 import { createOrder } from "@/lib/actions";
+import SelectField from "@/components/select-field";
 
 export default async function NewOrderPage() {
   const tenant = await getCurrentTenant();
@@ -22,18 +23,25 @@ export default async function NewOrderPage() {
       <form action={createOrder} className="bg-white rounded-2xl border border-gray-200 p-6 flex flex-col gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Customer *</label>
-          <select name="customer_id" required className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none">
-            <option value="">Select customer...</option>
-            {(customers ?? []).map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-          </select>
+          <SelectField
+            name="customer_id"
+            required
+            placeholder="Select customer…"
+            options={(customers ?? []).map((c) => ({ value: c.id, label: c.name }))}
+          />
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
-            <select name="order_type" className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none">
-              <option value="sale">Sale</option>
-              <option value="rental">Rental</option>
-            </select>
+            <SelectField
+              name="order_type"
+              defaultValue="sale"
+              searchable={false}
+              options={[
+                { value: "sale", label: "Sale" },
+                { value: "rental", label: "Rental" },
+              ]}
+            />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Order Date</label>

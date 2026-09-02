@@ -74,8 +74,19 @@ export default function SelectField({
 
   return (
     <div ref={boxRef} className={`relative ${className}`}>
-      {/* Sunucu eylemi bu input'u okur; required doğrulaması da buradan gelir. */}
-      <input type="hidden" name={name} value={value} required={required} />
+      {/* Sunucu eylemi bu input'u okur. type="hidden" tarayıcı doğrulamasının
+          dışında kaldığı için zorunlu alanlarda görünmez ama gerçek bir input
+          kullanılır — "bu alanı doldurun" balonu yine çıksın diye. Sunucu
+          tarafındaki kontrol her hâlükârda son sözü söyler. */}
+      <input
+        name={name}
+        value={value}
+        required={required}
+        onChange={(e) => setValue(e.target.value)}
+        tabIndex={-1}
+        aria-hidden="true"
+        className="absolute left-4 bottom-1 w-px h-px opacity-0 p-0 border-0"
+      />
 
       <button
         type="button"

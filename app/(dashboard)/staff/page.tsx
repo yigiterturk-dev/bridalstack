@@ -9,6 +9,7 @@ import {
   ROLE_DESCRIPTIONS,
 } from "@/lib/rbac";
 import { addMember, updateRole, removeMember } from "./actions";
+import SelectField from "@/components/select-field";
 
 type PageProps = { searchParams?: Promise<{ success?: string; error?: string }> };
 
@@ -68,17 +69,16 @@ export default async function StaffPage({ searchParams }: PageProps) {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Rol</label>
-                <select
+                <SelectField
                   name="role"
-                  className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none"
                   defaultValue="stylist"
-                >
-                  {ASSIGNABLE_ROLES.map((r) => (
-                    <option key={r} value={r}>
-                      {ROLE_LABELS[r]} — {ROLE_DESCRIPTIONS[r]}
-                    </option>
-                  ))}
-                </select>
+                  searchable={false}
+                  options={ASSIGNABLE_ROLES.map((r) => ({
+                    value: r,
+                    label: ROLE_LABELS[r],
+                    hint: ROLE_DESCRIPTIONS[r],
+                  }))}
+                />
               </div>
               <button
                 type="submit"
@@ -124,15 +124,14 @@ export default async function StaffPage({ searchParams }: PageProps) {
                       {editable ? (
                         <form action={updateRole} className="inline-flex items-center gap-2">
                           <input type="hidden" name="id" value={m.id} />
-                          <select
-                            name="role"
-                            defaultValue={role}
-                            className="text-xs px-2 py-1 rounded-lg border border-gray-200 outline-none"
-                          >
-                            {ASSIGNABLE_ROLES.map((r) => (
-                              <option key={r} value={r}>{ROLE_LABELS[r]}</option>
-                            ))}
-                          </select>
+                          <div className="w-36">
+                            <SelectField
+                              name="role"
+                              defaultValue={role}
+                              searchable={false}
+                              options={ASSIGNABLE_ROLES.map((r) => ({ value: r, label: ROLE_LABELS[r] }))}
+                            />
+                          </div>
                           <button
                             type="submit"
                             className="text-xs text-blue-600 hover:text-blue-800"

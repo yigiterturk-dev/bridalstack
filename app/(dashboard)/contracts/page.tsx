@@ -4,6 +4,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getCurrentTenant } from "@/lib/tenant";
 import { createContract } from "./actions";
+import SelectField from "@/components/select-field";
 
 export default async function ContractsPage() {
   const tenant = await getCurrentTenant();
@@ -43,17 +44,24 @@ export default async function ContractsPage() {
           <form action={createContract} className="flex flex-col gap-3">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Customer *</label>
-              <select name="customer_id" required className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none">
-                <option value="">Select...</option>
-                {(customers ?? []).map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-              </select>
+              <SelectField
+                name="customer_id"
+                required
+                placeholder="Select…"
+                options={(customers ?? []).map((c) => ({ value: c.id, label: c.name }))}
+              />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Link to Order</label>
-              <select name="order_id" className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none">
-                <option value="">None</option>
-                {(orders ?? []).map((o) => <option key={o.id} value={o.id}>{o.ref_no} — ${Number(o.discounted_total).toLocaleString()}</option>)}
-              </select>
+              <SelectField
+                name="order_id"
+                placeholder="None"
+                options={(orders ?? []).map((o) => ({
+                  value: o.id,
+                  label: o.ref_no,
+                  hint: `$${Number(o.discounted_total).toLocaleString()}`,
+                }))}
+              />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Title *</label>

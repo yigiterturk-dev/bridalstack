@@ -6,6 +6,7 @@ import { getCurrentMember } from "@/lib/tenant";
 import { hasPermission } from "@/lib/rbac";
 import { formatPrice } from "@/config/modules";
 import { deriveStatus } from "@/lib/installments";
+import SelectField from "@/components/select-field";
 import {
   updateOrderStatus,
   createInstallmentPlan,
@@ -306,11 +307,16 @@ export default async function OrderDetailPage({ params, searchParams }: Props) {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Every</label>
-              <select name="interval" defaultValue="1" className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none focus:border-gray-900">
-                <option value="1">Month</option>
-                <option value="2">2 months</option>
-                <option value="3">Quarter</option>
-              </select>
+              <SelectField
+                name="interval"
+                defaultValue="1"
+                searchable={false}
+                options={[
+                  { value: "1", label: "Month" },
+                  { value: "2", label: "2 months" },
+                  { value: "3", label: "Quarter" },
+                ]}
+              />
             </div>
             <div className="sm:col-span-4">
               <button type="submit" className="px-5 py-2.5 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-800">

@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentTenant } from "@/lib/tenant";
 import PortalLinkButton from "@/components/portal-link-button";
 import { updateCustomer } from "./actions";
+import SelectField from "@/components/select-field";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -62,11 +63,15 @@ export default async function CustomerDetailPage({ params }: Props) {
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-500 mb-1">Status</label>
-              <select name="status" defaultValue={customer.status ?? "new"} className="w-full px-3 py-2 rounded-xl border border-gray-300 text-sm outline-none">
-                {["new", "hot_lead", "appointment_set", "fitting_done", "sold", "delivered", "lost"].map((s) => (
-                  <option key={s} value={s}>{s.replace(/_/g, " ")}</option>
-                ))}
-              </select>
+              <SelectField
+                name="status"
+                defaultValue={customer.status ?? "new"}
+                searchable={false}
+                options={["new", "hot_lead", "appointment_set", "fitting_done", "sold", "delivered", "lost"].map((s) => ({
+                  value: s,
+                  label: s.replace(/_/g, " "),
+                }))}
+              />
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-500 mb-1">Notes</label>

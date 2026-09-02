@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getCurrentTenant } from "@/lib/tenant";
 import { createService, deleteService, toggleService } from "./actions";
+import SelectField from "@/components/select-field";
 
 const CATEGORIES = ["Hair", "Nails", "Skin", "Massage", "Makeup", "Tattoo", "Barber", "Lashes", "Waxing", "Other"];
 const DURATIONS = [15, 30, 45, 60, 90, 120, 150, 180];
@@ -42,15 +43,24 @@ export default async function ServicesPage() {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                <select name="category" className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none">
-                  {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
+                <SelectField
+                  name="category"
+                  defaultValue={CATEGORIES[0]}
+                  searchable={false}
+                  options={CATEGORIES.map((c) => ({ value: c, label: c }))}
+                />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Duration</label>
-                <select name="duration" className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none">
-                  {DURATIONS.map(d => <option key={d} value={d}>{d >= 60 ? `${d / 60}h${d % 60 ? ` ${d % 60}m` : ""}` : `${d}min`}</option>)}
-                </select>
+                <SelectField
+                  name="duration"
+                  defaultValue={String(DURATIONS[1])}
+                  searchable={false}
+                  options={DURATIONS.map((d) => ({
+                    value: String(d),
+                    label: d >= 60 ? `${d / 60}h${d % 60 ? ` ${d % 60}m` : ""}` : `${d}min`,
+                  }))}
+                />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">

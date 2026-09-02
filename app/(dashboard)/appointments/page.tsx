@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentTenant } from "@/lib/tenant";
 import { createAppointment, updateAppointmentStatus } from "@/lib/actions";
 import ModuleGuard from "@/components/module-guard";
+import SelectField from "@/components/select-field";
 
 function statusStyle(status: string) {
   switch (status) {
@@ -81,10 +82,12 @@ async function AppointmentsContent({ tenantId }: { tenantId: string }) {
             <form action={createAppointment} className="flex flex-col gap-5">
               <div>
                 <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">Customer *</label>
-                <select name="customer_id" required className="w-full px-4 py-3.5 rounded-2xl border border-stone-200 bg-white/50 text-stone-700 text-sm outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-50 transition-all">
-                  <option value="">Select a bride...</option>
-                  {customers.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-                </select>
+                <SelectField
+                  name="customer_id"
+                  required
+                  placeholder="Select a bride…"
+                  options={customers.map((c) => ({ value: c.id, label: c.name }))}
+                />
               </div>
               <div>
                 <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">Title</label>
