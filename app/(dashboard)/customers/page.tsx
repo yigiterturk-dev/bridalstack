@@ -1,40 +1,73 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { prisma } from "@/lib/prisma";
+import { getCurrentTenant } from "@/lib/tenant";
 import ModuleGuard from "@/components/module-guard";
 import SearchBar from "@/components/search-bar";
 import PortalLinkButton from "@/components/portal-link-button";
 
 type PageProps = { searchParams?: Promise<{ q?: string }> };
 
+const STATUS_LABELS: Record<string, string> = {
+  new: "New",
+  hot_lead: "Hot Lead",
+  appointment_set: "Appointment Set",
+  fitting_done: "Fitting Done",
+  sold: "Sold",
+  delivered: "Delivered",
+  lost: "Lost",
+};
+
+function statusStyle(status: string) {
+  switch (status) {
+    case "hot_lead":
+      return "bg-rose-50 text-rose-600 border border-rose-100";
+    case "appointment_set":
+    case "fitting_done":
+      return "bg-amber-50 text-amber-600 border border-amber-100";
+    case "sold":
+    case "delivered":
+      return "bg-emerald-50 text-emerald-600 border border-emerald-100";
+    default:
+      return "bg-stone-50 text-stone-600 border border-stone-200";
+  }
+}
+
 export default async function CustomersPage({ searchParams }: PageProps) {
   const params = await searchParams;
-  const tenant = { id: "test", name: "Elegance Bridal", enabled_modules: ["crm", "appointments", "sales", "inventory"] as any[] };
+  const tenant = await getCurrentTenant();
+  if (!tenant) redirect("/onboarding");
 
   return (
     <ModuleGuard moduleId="crm" enabledModules={tenant.enabled_modules}>
-      <CustomersContent tenantId={tenant.id} query={params?.q ?? ""} />
+      <CustomersContent tenantId={tenant.id} query={params?.q?.trim() ?? ""} />
     </ModuleGuard>
   );
 }
 
 async function CustomersContent({ tenantId, query }: { tenantId: string; query: string }) {
-  // DEV BYPASS: Hardcoded dummy customers
-  const list = [
-    { id: "1", name: "Olivia Reynolds", phone: "+1 (555) 123-4567", email: "olivia.r@example.com", status: "Lead", created_at: "2026-08-28T10:00:00Z" },
-    { id: "2", name: "Sophia Bennett", phone: "+1 (555) 987-6543", email: "sophia.b@example.com", status: "Fittings", created_at: "2026-08-29T14:30:00Z" },
-    { id: "3", name: "Isabella Martinez", phone: "+1 (555) 456-7890", email: "isabella.m@example.com", status: "Purchased", created_at: "2026-09-01T09:15:00Z" },
-    { id: "4", name: "Mia Thompson", phone: "+1 (555) 789-0123", email: "mia.t@example.com", status: "Archived", created_at: "2026-07-15T11:45:00Z" },
-    { id: "5", name: "Emma Wright", phone: "+1 (555) 234-5678", email: "emma.w@example.com", status: "Lead", created_at: "2026-09-02T08:20:00Z" },
-  ];
-  const count = list.length;
-
-  const getStatusStyle = (status: string) => {
-    switch(status) {
-      case "Lead": return "bg-rose-50 text-rose-600 border border-rose-100";
-      case "Fittings": return "bg-amber-50 text-amber-600 border border-amber-100";
-      case "Purchased": return "bg-emerald-50 text-emerald-600 border border-emerald-100";
-      default: return "bg-stone-50 text-stone-600 border border-stone-200";
-    }
+  const where = {
+    tenant_id: tenantId,
+    ...(query
+      ? {
+          OR: [
+            { name: { contains: query, mode: "insensitive" as const } },
+            { phone: { contains: query, mode: "insensitive" as const } },
+            { email: { contains: query, mode: "insensitive" as const } },
+          ],
+        }
+      : {}),
   };
+
+  const [list, count] = await Promise.all([
+    prisma.customer.findMany({
+      where,
+      orderBy: { created_at: "desc" },
+      take: 200,
+      select: { id: true, name: true, phone: true, email: true, status: true, created_at: true },
+    }),
+    prisma.customer.count({ where: { tenant_id: tenantId } }),
+  ]);
 
   return (
     <div className="animate-fade-in-up">
@@ -43,7 +76,9 @@ async function CustomersContent({ tenantId, query }: { tenantId: string; query: 
           <h1 className="text-3xl lg:text-4xl font-extrabold text-stone-900 tracking-tight flex items-center gap-3">
             Brides <span className="text-rose-400 font-normal">✧</span>
           </h1>
-          <p className="text-stone-500 mt-2 font-medium">Managing {count} stunning brides</p>
+          <p className="text-stone-500 mt-2 font-medium">
+            {count === 0 ? "No brides yet" : `Managing ${count} stunning ${count === 1 ? "bride" : "brides"}`}
+          </p>
         </div>
         <div className="flex gap-3">
           <Link href="/customers/import" className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white text-stone-700 font-semibold text-sm border border-stone-200 hover:border-rose-200 hover:shadow-sm hover:text-rose-600 transition-all duration-300">
@@ -80,24 +115,24 @@ async function CustomersContent({ tenantId, query }: { tenantId: string; query: 
                     <td className="px-8 py-6">
                       <Link href={`/customers/${c.id}`} className="flex items-center gap-4">
                         <div className="w-10 h-10 rounded-full bg-rose-50 flex items-center justify-center text-rose-500 font-bold text-sm">
-                          {c.name.charAt(0)}
+                          {c.name.charAt(0).toUpperCase()}
                         </div>
                         <span className="font-bold text-stone-900 group-hover:text-rose-600 transition-colors">{c.name}</span>
                       </Link>
                     </td>
                     <td className="px-8 py-6">
                       <div className="flex flex-col gap-1">
-                        <span className="text-sm font-medium text-stone-700">{c.phone}</span>
-                        <span className="text-xs text-stone-400">{c.email}</span>
+                        <span className="text-sm font-medium text-stone-700">{c.phone ?? "—"}</span>
+                        <span className="text-xs text-stone-400">{c.email ?? "—"}</span>
                       </div>
                     </td>
                     <td className="px-8 py-6">
-                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold tracking-wide uppercase ${getStatusStyle(c.status)}`}>
-                        {c.status}
+                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold tracking-wide uppercase ${statusStyle(c.status)}`}>
+                        {STATUS_LABELS[c.status] ?? c.status.replace(/_/g, " ")}
                       </span>
                     </td>
                     <td className="px-8 py-6 text-sm font-medium text-stone-500">
-                      {new Date(c.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                      {c.created_at.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                     </td>
                     <td className="px-8 py-6 text-right">
                       <PortalLinkButton customerId={c.id} />

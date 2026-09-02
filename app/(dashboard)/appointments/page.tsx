@@ -1,7 +1,27 @@
+import { redirect } from "next/navigation";
+import { prisma } from "@/lib/prisma";
+import { getCurrentTenant } from "@/lib/tenant";
+import { createAppointment, updateAppointmentStatus } from "@/lib/actions";
 import ModuleGuard from "@/components/module-guard";
 
+function statusStyle(status: string) {
+  switch (status) {
+    case "pending":
+      return "bg-amber-50 text-amber-600 border-amber-100";
+    case "confirmed":
+      return "bg-blue-50 text-blue-600 border-blue-100";
+    case "completed":
+      return "bg-emerald-50 text-emerald-600 border-emerald-100";
+    case "cancelled":
+      return "bg-rose-50 text-rose-600 border-rose-100";
+    default:
+      return "bg-stone-50 text-stone-600 border-stone-200";
+  }
+}
+
 export default async function AppointmentsPage() {
-  const tenant = { id: "test", name: "Elegance Bridal", enabled_modules: ["crm", "appointments", "sales", "inventory"] as any[] };
+  const tenant = await getCurrentTenant();
+  if (!tenant) redirect("/onboarding");
 
   return (
     <ModuleGuard moduleId="appointments" enabledModules={tenant.enabled_modules}>
@@ -11,29 +31,25 @@ export default async function AppointmentsPage() {
 }
 
 async function AppointmentsContent({ tenantId }: { tenantId: string }) {
-  // DEV BYPASS: Hardcoded dummy appointments
-  const list = [
-    { id: "1", customers: { name: "Olivia Reynolds", phone: "+1 (555) 123-4567" }, title: "First Fitting", appointment_date: "2026-09-02T10:00:00Z", status: "pending" },
-    { id: "2", customers: { name: "Sophia Bennett", phone: "+1 (555) 987-6543" }, title: "Final Alterations", appointment_date: "2026-09-02T14:30:00Z", status: "confirmed" },
-    { id: "3", customers: { name: "Emma Wright", phone: "+1 (555) 234-5678" }, title: "Initial Consultation", appointment_date: "2026-09-03T11:00:00Z", status: "pending" },
-    { id: "4", customers: { name: "Mia Thompson", phone: "+1 (555) 789-0123" }, title: "Gown Pickup", appointment_date: "2026-09-01T16:00:00Z", status: "completed" },
-  ];
-  const customers = [
-    { id: "1", name: "Olivia Reynolds" },
-    { id: "2", name: "Sophia Bennett" },
-    { id: "3", name: "Emma Wright" },
-  ];
-  const now = new Date("2026-09-02T12:00:00Z"); // Mock current time
+  const [list, customers] = await Promise.all([
+    prisma.appointment.findMany({
+      where: { tenant_id: tenantId },
+      orderBy: { appointment_date: "desc" },
+      take: 200,
+      select: {
+        id: true, title: true, appointment_date: true, status: true,
+        customer: { select: { name: true, phone: true } },
+      },
+    }),
+    prisma.customer.findMany({
+      where: { tenant_id: tenantId },
+      orderBy: { name: "asc" },
+      select: { id: true, name: true },
+    }),
+  ]);
 
-  const getStatusStyle = (status: string) => {
-    switch(status) {
-      case "pending": return "bg-amber-50 text-amber-600 border-amber-100";
-      case "confirmed": return "bg-blue-50 text-blue-600 border-blue-100";
-      case "completed": return "bg-emerald-50 text-emerald-600 border-emerald-100";
-      case "cancelled": return "bg-rose-50 text-rose-600 border-rose-100";
-      default: return "bg-stone-50 text-stone-600 border-stone-200";
-    }
-  };
+  const now = new Date();
+  const today = now.toISOString().split("T")[0];
 
   return (
     <div className="animate-fade-in-up">
@@ -42,7 +58,11 @@ async function AppointmentsContent({ tenantId }: { tenantId: string }) {
           <h1 className="text-3xl lg:text-4xl font-extrabold text-stone-900 tracking-tight flex items-center gap-3">
             Appointments <span className="text-rose-400 font-normal">✧</span>
           </h1>
-          <p className="text-stone-500 mt-2 font-medium">You have {list.length} appointments scheduled</p>
+          <p className="text-stone-500 mt-2 font-medium">
+            {list.length === 0
+              ? "No appointments scheduled yet"
+              : `You have ${list.length} ${list.length === 1 ? "appointment" : "appointments"} scheduled`}
+          </p>
         </div>
       </div>
 
@@ -53,36 +73,42 @@ async function AppointmentsContent({ tenantId }: { tenantId: string }) {
             <span className="flex items-center justify-center w-10 h-10 rounded-xl bg-stone-900 text-white material-symbols-outlined text-[20px]">add</span>
             <h2 className="text-xl font-bold text-stone-900">New Booking</h2>
           </div>
-          <form className="flex flex-col gap-5">
-            <div>
-              <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">Customer *</label>
-              <select required className="w-full px-4 py-3.5 rounded-2xl border border-stone-200 bg-white/50 text-stone-700 text-sm outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-50 transition-all">
-                <option value="">Select a bride...</option>
-                {customers.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">Title</label>
-              <input className="w-full px-4 py-3.5 rounded-2xl border border-stone-200 bg-white/50 text-stone-700 text-sm outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-50 transition-all" placeholder="e.g. First Fitting" />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
+          {customers.length === 0 ? (
+            <p className="text-sm text-stone-500">
+              Add a bride first, then you can schedule appointments for her.
+            </p>
+          ) : (
+            <form action={createAppointment} className="flex flex-col gap-5">
               <div>
-                <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">Date *</label>
-                <input type="date" required className="w-full px-4 py-3.5 rounded-2xl border border-stone-200 bg-white/50 text-stone-700 text-sm outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-50 transition-all" />
+                <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">Customer *</label>
+                <select name="customer_id" required className="w-full px-4 py-3.5 rounded-2xl border border-stone-200 bg-white/50 text-stone-700 text-sm outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-50 transition-all">
+                  <option value="">Select a bride...</option>
+                  {customers.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                </select>
               </div>
               <div>
-                <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">Time</label>
-                <input type="time" defaultValue="10:00" className="w-full px-4 py-3.5 rounded-2xl border border-stone-200 bg-white/50 text-stone-700 text-sm outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-50 transition-all" />
+                <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">Title</label>
+                <input name="title" className="w-full px-4 py-3.5 rounded-2xl border border-stone-200 bg-white/50 text-stone-700 text-sm outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-50 transition-all" placeholder="e.g. First Fitting" />
               </div>
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">Notes</label>
-              <textarea rows={2} className="w-full px-4 py-3.5 rounded-2xl border border-stone-200 bg-white/50 text-stone-700 text-sm outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-50 transition-all resize-y" placeholder="Optional notes for stylist..." />
-            </div>
-            <button type="button" className="mt-2 w-full py-3.5 bg-stone-900 text-white rounded-2xl text-sm font-bold hover:bg-rose-600 hover:shadow-[0_8px_20px_-6px_rgba(225,29,72,0.4)] transition-all duration-300">
-              Schedule Appointment
-            </button>
-          </form>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">Date *</label>
+                  <input name="date" type="date" required defaultValue={today} className="w-full px-4 py-3.5 rounded-2xl border border-stone-200 bg-white/50 text-stone-700 text-sm outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-50 transition-all" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">Time</label>
+                  <input name="time" type="time" defaultValue="10:00" className="w-full px-4 py-3.5 rounded-2xl border border-stone-200 bg-white/50 text-stone-700 text-sm outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-50 transition-all" />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">Notes</label>
+                <textarea name="description" rows={2} className="w-full px-4 py-3.5 rounded-2xl border border-stone-200 bg-white/50 text-stone-700 text-sm outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-50 transition-all resize-y" placeholder="Optional notes for stylist..." />
+              </div>
+              <button type="submit" className="mt-2 w-full py-3.5 bg-stone-900 text-white rounded-2xl text-sm font-bold hover:bg-rose-600 hover:shadow-[0_8px_20px_-6px_rgba(225,29,72,0.4)] transition-all duration-300">
+                Schedule Appointment
+              </button>
+            </form>
+          )}
         </div>
 
         {/* Appointment List */}
@@ -94,21 +120,21 @@ async function AppointmentsContent({ tenantId }: { tenantId: string }) {
                   <tr className="bg-stone-50/50 border-b border-stone-100/80">
                     <th className="px-8 py-5 text-xs font-bold text-stone-500 uppercase tracking-wider">Bride</th>
                     <th className="px-8 py-5 text-xs font-bold text-stone-500 uppercase tracking-wider">Appointment</th>
-                    <th className="px-8 py-5 text-xs font-bold text-stone-500 uppercase tracking-wider">Date & Time</th>
+                    <th className="px-8 py-5 text-xs font-bold text-stone-500 uppercase tracking-wider">Date &amp; Time</th>
                     <th className="px-8 py-5 text-xs font-bold text-stone-500 uppercase tracking-wider">Status</th>
                     <th className="px-8 py-5 text-xs font-bold text-stone-500 uppercase tracking-wider text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-stone-100/50">
                   {list.map((a) => {
-                    const dt = new Date(a.appointment_date);
+                    const dt = a.appointment_date;
                     const isPast = dt < now && a.status === "pending";
                     return (
                       <tr key={a.id} className={`hover:bg-white/80 transition-colors group ${isPast ? "bg-rose-50/30" : ""}`}>
                         <td className="px-8 py-6">
                           <div className="flex flex-col">
-                            <span className="font-bold text-stone-900 group-hover:text-rose-600 transition-colors">{a.customers?.name ?? "—"}</span>
-                            <span className="text-xs text-stone-400 mt-0.5">{a.customers?.phone ?? ""}</span>
+                            <span className="font-bold text-stone-900 group-hover:text-rose-600 transition-colors">{a.customer?.name ?? "—"}</span>
+                            <span className="text-xs text-stone-400 mt-0.5">{a.customer?.phone ?? ""}</span>
                           </div>
                         </td>
                         <td className="px-8 py-6 text-sm font-medium text-stone-700">{a.title ?? "—"}</td>
@@ -119,19 +145,27 @@ async function AppointmentsContent({ tenantId }: { tenantId: string }) {
                           </div>
                         </td>
                         <td className="px-8 py-6">
-                          <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold tracking-wide uppercase border ${getStatusStyle(a.status)}`}>
+                          <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold tracking-wide uppercase border ${statusStyle(a.status)}`}>
                             {a.status}
                           </span>
                         </td>
                         <td className="px-8 py-6 text-right">
                           {a.status === "pending" && (
-                            <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <button type="button" className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-500 hover:text-white transition-colors" title="Confirm">
-                                <span className="material-symbols-outlined text-[16px]">check</span>
-                              </button>
-                              <button type="button" className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 hover:bg-emerald-500 hover:text-white transition-colors" title="Mark Completed">
-                                <span className="material-symbols-outlined text-[16px]">done_all</span>
-                              </button>
+                            <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+                              <form action={updateAppointmentStatus}>
+                                <input type="hidden" name="id" value={a.id} />
+                                <input type="hidden" name="status" value="confirmed" />
+                                <button type="submit" className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-500 hover:text-white transition-colors" title="Confirm">
+                                  <span className="material-symbols-outlined text-[16px]">check</span>
+                                </button>
+                              </form>
+                              <form action={updateAppointmentStatus}>
+                                <input type="hidden" name="id" value={a.id} />
+                                <input type="hidden" name="status" value="completed" />
+                                <button type="submit" className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 hover:bg-emerald-500 hover:text-white transition-colors" title="Mark Completed">
+                                  <span className="material-symbols-outlined text-[16px]">done_all</span>
+                                </button>
+                              </form>
                             </div>
                           )}
                         </td>

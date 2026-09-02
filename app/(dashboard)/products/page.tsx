@@ -1,4 +1,7 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { prisma } from "@/lib/prisma";
+import { getCurrentTenant } from "@/lib/tenant";
 import ModuleGuard from "@/components/module-guard";
 import SearchBar from "@/components/search-bar";
 
@@ -6,27 +9,49 @@ type PageProps = { searchParams?: Promise<{ q?: string }> };
 
 export default async function ProductsPage({ searchParams }: PageProps) {
   const params = await searchParams;
-  const tenant = { id: "test", name: "Elegance Bridal", enabled_modules: ["crm", "appointments", "sales", "inventory"] as any[] };
+  const tenant = await getCurrentTenant();
+  if (!tenant) redirect("/onboarding");
 
   return (
     <ModuleGuard moduleId="inventory" enabledModules={tenant.enabled_modules}>
-      <ProductsContent tenantId={tenant.id} query={params?.q ?? ""} />
+      <ProductsContent tenantId={tenant.id} query={params?.q?.trim() ?? ""} />
     </ModuleGuard>
   );
 }
 
 async function ProductsContent({ tenantId, query }: { tenantId: string; query: string }) {
-  // DEV BYPASS: Hardcoded dummy products
-  const list = [
-    { id: "1", name: "Valentina Gown", barcode: "7890123456", sku: "SKU-VAL-01", category: "Gowns", price: 2500, cost: 800, stock_quantity: 4 },
-    { id: "2", name: "Pearl Embroidered Veil", barcode: "7890123457", sku: "SKU-VEIL-02", category: "Accessories", price: 450, cost: 120, stock_quantity: 12 },
-    { id: "3", name: "Aria Mermaid Dress", barcode: "7890123458", sku: "SKU-ARIA-03", category: "Gowns", price: 3200, cost: 1100, stock_quantity: 2 },
-    { id: "4", name: "Crystal Tiara", barcode: "7890123459", sku: "SKU-TIA-04", category: "Accessories", price: 280, cost: 65, stock_quantity: 0 },
-    { id: "5", name: "Silk Crepe Minimalist", barcode: "7890123460", sku: "SKU-SILK-05", category: "Gowns", price: 1800, cost: 700, stock_quantity: 1 },
-  ];
-  
-  const count = list.length;
-  const totalValue = list.reduce((s, p) => s + (p.price * p.stock_quantity), 0);
+  const where = {
+    tenant_id: tenantId,
+    ...(query
+      ? {
+          OR: [
+            { name: { contains: query, mode: "insensitive" as const } },
+            { sku: { contains: query, mode: "insensitive" as const } },
+            { category: { contains: query, mode: "insensitive" as const } },
+            { barcode: { contains: query, mode: "insensitive" as const } },
+          ],
+        }
+      : {}),
+  };
+
+  const [list, totals] = await Promise.all([
+    prisma.product.findMany({
+      where,
+      orderBy: { created_at: "desc" },
+      take: 200,
+      select: {
+        id: true, name: true, barcode: true, sku: true, category: true,
+        price: true, cost: true, stock_quantity: true,
+      },
+    }),
+    prisma.product.findMany({
+      where: { tenant_id: tenantId },
+      select: { price: true, stock_quantity: true },
+    }),
+  ]);
+
+  const count = totals.length;
+  const totalValue = totals.reduce((s, p) => s + p.price * p.stock_quantity, 0);
 
   return (
     <div className="animate-fade-in-up">
@@ -35,7 +60,11 @@ async function ProductsContent({ tenantId, query }: { tenantId: string; query: s
           <h1 className="text-3xl lg:text-4xl font-extrabold text-stone-900 tracking-tight flex items-center gap-3">
             Inventory <span className="text-rose-400 font-normal">✧</span>
           </h1>
-          <p className="text-stone-500 mt-2 font-medium">{count} exclusive pieces · ${totalValue.toLocaleString()} total retail value</p>
+          <p className="text-stone-500 mt-2 font-medium">
+            {count === 0
+              ? "No pieces in the collection yet"
+              : `${count} exclusive ${count === 1 ? "piece" : "pieces"} · $${totalValue.toLocaleString()} total retail value`}
+          </p>
         </div>
         <div className="flex gap-3">
           <Link href="/products/new" className="flex items-center gap-2 px-6 py-3 rounded-full bg-stone-900 text-white font-semibold text-sm hover:bg-rose-600 hover:shadow-[0_8px_20px_-6px_rgba(225,29,72,0.4)] transition-all duration-300">
@@ -75,14 +104,14 @@ async function ProductsContent({ tenantId, query }: { tenantId: string; query: s
                           </div>
                           <div>
                             <div className="font-bold text-stone-900 group-hover:text-rose-600 transition-colors">{p.name}</div>
-                            <div className="text-[11px] text-stone-400 font-mono mt-1">{p.barcode}</div>
+                            <div className="text-[11px] text-stone-400 font-mono mt-1">{p.barcode ?? ""}</div>
                           </div>
                         </div>
                       </td>
                       <td className="px-8 py-6 text-sm font-medium text-stone-600">{p.sku ?? "—"}</td>
                       <td className="px-8 py-6">
                         {p.category ? (
-                          <span className={`inline-flex items-center px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-widest ${p.category === 'Gowns' ? 'bg-rose-50/80 text-rose-600' : 'bg-stone-100 text-stone-600'}`}>
+                          <span className={`inline-flex items-center px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-widest ${p.category.toLowerCase() === "gowns" ? "bg-rose-50/80 text-rose-600" : "bg-stone-100 text-stone-600"}`}>
                             {p.category}
                           </span>
                         ) : "—"}
@@ -112,12 +141,14 @@ async function ProductsContent({ tenantId, query }: { tenantId: string; query: s
       ) : (
         <div className="bg-white/60 backdrop-blur-xl rounded-[2rem] border border-stone-200/60 shadow-sm p-16 text-center">
           <span className="flex items-center justify-center w-16 h-16 rounded-3xl bg-rose-50 text-rose-500 mx-auto mb-5 material-symbols-outlined text-[32px]">checkroom</span>
-          <h3 className="text-xl font-bold text-stone-900 mb-2">No products yet</h3>
-          <p className="text-stone-500 mb-8">Add your beautiful gowns and accessories to start tracking.</p>
-          <Link href="/products/new" className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-stone-900 text-white font-semibold text-sm hover:bg-rose-600 hover:shadow-[0_8px_20px_-6px_rgba(225,29,72,0.4)] transition-all duration-300">
-            <span className="material-symbols-outlined text-[20px]">add</span>
-            Add to Collection
-          </Link>
+          <h3 className="text-xl font-bold text-stone-900 mb-2">{query ? "No results found" : "No products yet"}</h3>
+          <p className="text-stone-500 mb-8">{query ? "Try a different search term." : "Add your beautiful gowns and accessories to start tracking."}</p>
+          {!query && (
+            <Link href="/products/new" className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-stone-900 text-white font-semibold text-sm hover:bg-rose-600 hover:shadow-[0_8px_20px_-6px_rgba(225,29,72,0.4)] transition-all duration-300">
+              <span className="material-symbols-outlined text-[20px]">add</span>
+              Add to Collection
+            </Link>
+          )}
         </div>
       )}
     </div>

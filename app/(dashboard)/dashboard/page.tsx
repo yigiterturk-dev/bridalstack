@@ -1,55 +1,130 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { prisma } from "@/lib/prisma";
+import { getCurrentTenant } from "@/lib/tenant";
 import { MODULES } from "@/config/modules";
 import { RevenueChart, AppointmentChart, StatusPieChart } from "@/components/charts";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
+const STATUS_LABELS: Record<string, string> = {
+  draft: "Draft",
+  confirmed: "Confirmed",
+  in_progress: "In Progress",
+  completed: "Completed",
+  delivered: "Delivered",
+  cancelled: "Cancelled",
+};
+
+/** Pazartesi 00:00 — haftalık randevu grafiğinin başlangıcı. */
+function startOfWeek(d: Date) {
+  const start = new Date(d);
+  const dow = (start.getDay() + 6) % 7; // Pazartesi = 0
+  start.setDate(start.getDate() - dow);
+  start.setHours(0, 0, 0, 0);
+  return start;
+}
+
 export default async function DashboardPage() {
-  // DEV BYPASS: Hardcoded dummy data to bypass Supabase for UI testing
-  const tenant = { name: "Elegance Bridal (Preview)", enabled_modules: ["crm", "appointments", "sales", "inventory"] as any[] };
-  
+  const tenant = await getCurrentTenant();
+  if (!tenant) redirect("/onboarding");
+
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
 
-  const hasSales = true;
-  const hasAppointments = true;
+  const modules = tenant.enabled_modules;
+  const hasSales = modules.includes("sales");
+  const hasAppointments = modules.includes("appointments");
+  const hasInventory = modules.includes("inventory");
+  const hasCrm = modules.includes("crm");
+
+  const now = new Date();
+  const weekStart = startOfWeek(now);
+  const weekEnd = new Date(weekStart);
+  weekEnd.setDate(weekEnd.getDate() + 7);
+
+  // Gelir grafiği son 6 ayı kapsar.
+  const revenueStart = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+
+  const [customerCount, upcomingAppointments, orderCount, productCount, weekAppointments, recentOrders, statusGroups] =
+    await Promise.all([
+      hasCrm ? prisma.customer.count({ where: { tenant_id: tenant.id } }) : 0,
+      hasAppointments
+        ? prisma.appointment.count({
+            where: {
+              tenant_id: tenant.id,
+              appointment_date: { gte: now },
+              status: { notIn: ["cancelled", "completed"] },
+            },
+          })
+        : 0,
+      hasSales ? prisma.order.count({ where: { tenant_id: tenant.id } }) : 0,
+      hasInventory
+        ? prisma.product.aggregate({ where: { tenant_id: tenant.id }, _sum: { stock_quantity: true } })
+            .then((r) => r._sum.stock_quantity ?? 0)
+        : 0,
+      hasAppointments
+        ? prisma.appointment.findMany({
+            where: {
+              tenant_id: tenant.id,
+              appointment_date: { gte: weekStart, lt: weekEnd },
+              status: { not: "cancelled" },
+            },
+            select: { appointment_date: true },
+          })
+        : [],
+      hasSales
+        ? prisma.order.findMany({
+            where: {
+              tenant_id: tenant.id,
+              status: { not: "cancelled" },
+              created_at: { gte: revenueStart },
+            },
+            select: { created_at: true, discounted_total: true },
+          })
+        : [],
+      hasSales
+        ? prisma.order.groupBy({
+            by: ["status"],
+            where: { tenant_id: tenant.id },
+            _count: { _all: true },
+          })
+        : [],
+    ]);
 
   const stats = [
-    { label: "Registered Brides", value: 142, icon: "groups", href: "/customers", module: "crm" as const },
-    { label: "Upcoming Appointments", value: 12, icon: "event", href: "/appointments", module: "appointments" as const },
-    { label: "Orders & Contracts", value: 89, icon: "receipt_long", href: "/orders", module: "sales" as const },
-    { label: "Gowns in Inventory", value: 350, icon: "checkroom", href: "/products", module: "inventory" as const },
-  ].filter((s) => tenant.enabled_modules.includes(s.module));
+    { label: "Registered Brides", value: customerCount, icon: "groups", href: "/customers", module: "crm" as const },
+    { label: "Upcoming Appointments", value: upcomingAppointments, icon: "event", href: "/appointments", module: "appointments" as const },
+    { label: "Orders & Contracts", value: orderCount, icon: "receipt_long", href: "/orders", module: "sales" as const },
+    { label: "Gowns in Inventory", value: productCount, icon: "checkroom", href: "/products", module: "inventory" as const },
+  ].filter((s) => modules.includes(s.module));
 
-  // Dummy Revenue data
-  const revenueData = [
-    { month: "Apr", revenue: 45000 },
-    { month: "May", revenue: 52000 },
-    { month: "Jun", revenue: 48000 },
-    { month: "Jul", revenue: 61000 },
-    { month: "Aug", revenue: 59000 },
-    { month: "Sep", revenue: 75000 },
-  ];
+  // Son 6 ay için ay bazlı gelir toplamı — kayıt olmayan aylar sıfır kalır.
+  const revenueBuckets: { key: string; month: string; revenue: number }[] = [];
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    revenueBuckets.push({ key: `${d.getFullYear()}-${d.getMonth()}`, month: MONTHS[d.getMonth()], revenue: 0 });
+  }
+  for (const o of recentOrders) {
+    const key = `${o.created_at.getFullYear()}-${o.created_at.getMonth()}`;
+    const bucket = revenueBuckets.find((b) => b.key === key);
+    if (bucket) bucket.revenue += o.discounted_total;
+  }
+  const revenueData = revenueBuckets.map(({ month, revenue }) => ({ month, revenue }));
 
-  // Dummy Appointment data
-  const appointmentData = [
-    { day: "Mon", count: 4 },
-    { day: "Tue", count: 7 },
-    { day: "Wed", count: 3 },
-    { day: "Thu", count: 5 },
-    { day: "Fri", count: 9 },
-    { day: "Sat", count: 14 },
-    { day: "Sun", count: 12 },
-  ];
+  const dayCounts = new Array(7).fill(0) as number[];
+  for (const a of weekAppointments) {
+    dayCounts[(a.appointment_date.getDay() + 6) % 7] += 1;
+  }
+  const appointmentData = DAYS.map((day, i) => ({ day, count: dayCounts[i] }));
 
-  // Dummy Order status
-  const orderStatusData = [
-    { name: "In Production", value: 45 },
-    { name: "Fittings", value: 20 },
-    { name: "Delivered", value: 120 },
-    { name: "Cancelled", value: 5 },
-  ];
+  const orderStatusData = statusGroups
+    .map((g) => ({ name: STATUS_LABELS[g.status] ?? g.status.replace(/_/g, " "), value: g._count._all }))
+    .filter((s) => s.value > 0);
+
+  const hasRevenue = revenueData.some((r) => r.revenue > 0);
+  const hasWeekAppointments = appointmentData.some((a) => a.count > 0);
 
   return (
     <div>
@@ -58,7 +133,7 @@ export default async function DashboardPage() {
           {greeting}, {tenant.name} <span className="text-rose-400">✧</span>
         </h1>
         <p className="text-stone-500 mt-2 font-medium">
-          {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}
+          {now.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}
         </p>
       </div>
 
@@ -76,15 +151,15 @@ export default async function DashboardPage() {
       </div>
 
       {/* Charts */}
-      {(hasSales || hasAppointments) && (
+      {(hasRevenue || hasWeekAppointments || orderStatusData.length > 0) && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
-          {hasSales && revenueData.length > 0 && (
+          {hasSales && hasRevenue && (
             <div className="bg-white/70 backdrop-blur-md rounded-[2rem] p-8 border border-stone-200/60 shadow-sm hover:shadow-md transition-shadow">
               <h2 className="text-lg font-bold text-stone-900 mb-6 flex items-center gap-2"><span className="material-symbols-outlined text-rose-500">trending_up</span> Revenue Stream</h2>
               <RevenueChart data={revenueData} />
             </div>
           )}
-          {hasAppointments && appointmentData.length > 0 && (
+          {hasAppointments && hasWeekAppointments && (
             <div className="bg-white/70 backdrop-blur-md rounded-[2rem] p-8 border border-stone-200/60 shadow-sm hover:shadow-md transition-shadow">
               <h2 className="text-lg font-bold text-stone-900 mb-6 flex items-center gap-2"><span className="material-symbols-outlined text-rose-500">calendar_month</span> Appointments This Week</h2>
               <AppointmentChart data={appointmentData} />
@@ -102,7 +177,7 @@ export default async function DashboardPage() {
       <div className="bg-white/60 backdrop-blur-md rounded-[2rem] p-8 border border-stone-200/60 shadow-sm">
         <h2 className="text-lg font-bold text-stone-900 mb-6">Active Modules</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {tenant.enabled_modules.map((moduleId) => {
+          {modules.map((moduleId) => {
             const mod = MODULES[moduleId as keyof typeof MODULES];
             if (!mod) return null;
             return (
