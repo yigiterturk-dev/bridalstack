@@ -5,6 +5,7 @@ import { getCurrentTenant } from "@/lib/tenant";
 import { formatPrice } from "@/config/modules";
 import ModuleGuard from "@/components/module-guard";
 import PortalLinkButton from "@/components/portal-link-button";
+import FollowUpEmailButton from "@/components/follow-up-email-button";
 import { buildFollowUps, buildGownPerformance } from "@/lib/follow-ups";
 
 export const dynamic = "force-dynamic";
@@ -59,6 +60,19 @@ async function FollowUpsContent({ tenantId }: { tenantId: string }) {
         })
       : [],
   ]);
+
+  // Daha önce takip e-postası gönderilmiş gelinler — buton tekrar göstermesin.
+  const sentEmails = customerIds.length
+    ? await prisma.followUpEmail.findMany({
+        where: { tenant_id: tenantId, customer_id: { in: customerIds } },
+        orderBy: { sent_at: "desc" },
+        select: { customer_id: true, sent_at: true },
+      })
+    : [];
+  const lastSentByCustomer = new Map<string, Date>();
+  for (const e of sentEmails) {
+    if (!lastSentByCustomer.has(e.customer_id)) lastSentByCustomer.set(e.customer_id, e.sent_at);
+  }
 
   const customerById = new Map(customers.map((c) => [c.id, c]));
   const productById = new Map(products.map((p) => [p.id, p]));
@@ -169,7 +183,13 @@ async function FollowUpsContent({ tenantId }: { tenantId: string }) {
                       </div>
                     </div>
 
-                    <div className="flex-shrink-0">
+                    <div className="flex-shrink-0 flex flex-col items-end gap-2">
+                      <FollowUpEmailButton
+                        customerId={c.id}
+                        productId={f.topProductId}
+                        hasEmail={Boolean(c.email)}
+                        lastSentAt={lastSentByCustomer.get(c.id)?.toISOString() ?? null}
+                      />
                       <PortalLinkButton customerId={c.id} />
                     </div>
                   </div>

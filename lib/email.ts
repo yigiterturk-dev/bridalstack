@@ -202,3 +202,42 @@ export function dailyBriefingEmail(
     `,
   };
 }
+
+/**
+ * Takip e-postası — provada bir elbiseye bayılmış ama sipariş vermemiş geline.
+ * Satış baskısı yok: hatırlatır, soru sorar, tek tıkla portalına götürür.
+ */
+export function followUpEmail(
+  customerName: string,
+  shopName: string,
+  gownName: string | null,
+  portalUrl: string | null
+) {
+  const gownLine = gownName
+    ? `You tried on <strong>${gownName}</strong> with us, and it clearly made an impression.`
+    : `You found a gown with us that clearly made an impression.`;
+
+  const cta = portalUrl
+    ? `<p style="margin: 28px 0;">
+         <a href="${portalUrl}" style="background:#111827;color:#fff;text-decoration:none;padding:14px 24px;border-radius:12px;font-weight:600;display:inline-block;">
+           View your gown
+         </a>
+       </p>`
+    : "";
+
+  return {
+    subject: `Still thinking it over? — ${shopName}`,
+    html: `
+      <div style="font-family: system-ui, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px;">
+        <h2 style="color: #111; margin-bottom: 8px;">Hi ${customerName} 👋</h2>
+        <p style="color: #555; line-height: 1.6;">${gownLine}</p>
+        <p style="color: #555; line-height: 1.6;">
+          We wanted to check in before anything changes on our rail. If you have questions about
+          sizing, alterations or timing, just reply to this email — we are happy to help.
+        </p>
+        ${cta}
+        <p style="color: #999; font-size: 12px; margin-top: 32px;">Sent via BridalStack</p>
+      </div>
+    `,
+  };
+}

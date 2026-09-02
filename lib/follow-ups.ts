@@ -160,3 +160,17 @@ export function buildGownPerformance(
     }))
     .sort((a, b) => b.missedCount - a.missedCount || b.tryOnCount - a.tryOnCount);
 }
+
+/** Aynı geline bu süre dolmadan ikinci takip e-postası gitmez. */
+export const FOLLOW_UP_COOLDOWN_DAYS = 7;
+
+/** Bekleme süresinin başlangıcı — bu andan sonra gönderilmiş mail varsa yeni mail yok. */
+export function followUpCooldownCutoff(now: Date = new Date()): Date {
+  return new Date(now.getTime() - FOLLOW_UP_COOLDOWN_DAYS * 86_400_000);
+}
+
+/** Son gönderim üstünden yeterli süre geçti mi? Hiç gönderilmediyse her zaman true. */
+export function canSendFollowUp(lastSentAt: Date | null | undefined, now: Date = new Date()): boolean {
+  if (!lastSentAt) return true;
+  return lastSentAt < followUpCooldownCutoff(now);
+}

@@ -83,6 +83,7 @@ model Tenant {
   reminders     InstallmentReminder[]
   funnel_events FunnelEvent[]
   invitations   Invitation[]
+  follow_ups    FollowUpEmail[]
 
   @@index([cohort_month])
   @@map("tenants")
@@ -139,6 +140,7 @@ model Customer {
   try_ons       TryOn[]
   portal_tokens PortalToken[]
   installments  Installment[]
+  follow_ups    FollowUpEmail[]
 
   @@index([tenant_id])
   @@map("customers")
@@ -518,6 +520,24 @@ model InstallmentReminder {
 // ─────────────────────────────────────────────────────────────
 // Onboarding ve analitik
 // ─────────────────────────────────────────────────────────────
+
+/// Takip listesinden elle gönderilen hatırlatma e-postaları.
+/// Aynı geline üst üste mail atılmasın diye son gönderim burada tutulur.
+model FollowUpEmail {
+  id          String   @id @default(uuid()) @db.Uuid
+  tenant_id   String   @db.Uuid
+  customer_id String   @db.Uuid
+  product_id  String?  @db.Uuid
+  sent_by     String?  @db.Uuid
+  sent_at     DateTime @default(now()) @db.Timestamptz(6)
+
+  tenant   Tenant   @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  customer Customer @relation(fields: [customer_id], references: [id], onDelete: Cascade)
+
+  @@index([tenant_id, customer_id])
+  @@index([tenant_id, sent_at])
+  @@map("follow_up_emails")
+}
 
 model OnboardingDraft {
   user_id    String   @id @db.Uuid

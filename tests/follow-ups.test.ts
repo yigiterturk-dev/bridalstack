@@ -4,6 +4,8 @@ import {
   isStrongInterest,
   buildFollowUps,
   buildGownPerformance,
+  canSendFollowUp,
+  followUpCooldownCutoff,
   type TryOnSignal,
   type OrderSignal,
 } from "../lib/follow-ups.ts";
@@ -130,4 +132,28 @@ test("elbise performansı en çok kaçırılana göre sıralanır", () => {
   ];
   const result = buildGownPerformance(tryOns, []);
   assert.deepEqual(result.map((r) => r.product_id), ["cok", "az"]);
+});
+
+// ── Takip e-postası bekleme süresi ────────────────────────────────────────────
+
+test("hiç e-posta gönderilmemişse takip maili atılabilir", () => {
+  assert.equal(canSendFollowUp(null), true);
+  assert.equal(canSendFollowUp(undefined), true);
+});
+
+test("bekleme süresi dolmadan ikinci takip maili atılamaz", () => {
+  const now = new Date("2026-09-10T12:00:00Z");
+  const dunGonderildi = new Date("2026-09-09T12:00:00Z");
+  assert.equal(canSendFollowUp(dunGonderildi, now), false);
+});
+
+test("bekleme süresi dolunca yeniden atılabilir", () => {
+  const now = new Date("2026-09-10T12:00:00Z");
+  const sekizGunOnce = new Date("2026-09-02T11:00:00Z");
+  assert.equal(canSendFollowUp(sekizGunOnce, now), true);
+});
+
+test("tam sınırda (7 gün) henüz atılamaz", () => {
+  const now = new Date("2026-09-10T12:00:00Z");
+  assert.equal(canSendFollowUp(followUpCooldownCutoff(now), now), false);
 });
