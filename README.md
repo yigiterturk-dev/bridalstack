@@ -70,12 +70,12 @@ Requirements: Node.js 24+, npm, and a Postgres database (Neon recommended).
 git clone https://github.com/yigiterturk-dev/stackcrm.git
 cd stackcrm
 npm ci
-cp .env.local.example .env.local   # then fill DATABASE_URL and NEXTAUTH_SECRET
+cp .env.example .env.local   # then fill DATABASE_URL and NEXTAUTH_SECRET
 npx prisma migrate deploy
 npm run dev
 ```
 
-Open `http://localhost:3000`. Every environment variable is documented in `.env.local.example`; optional integrations stay disabled until their server-only variables are supplied.
+Open `http://localhost:3000`. Every environment variable is documented in `.env.example`; optional integrations stay disabled until their server-only variables are supplied.
 
 ## Data and security notes
 
