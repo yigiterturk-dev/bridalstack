@@ -6,6 +6,13 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentMember } from "@/lib/tenant";
 import { hasPermission } from "@/lib/rbac";
 import { CASH_METHODS, INCOME_CATEGORIES, EXPENSE_CATEGORIES, todayISO } from "@/lib/finance";
+import {
+  DRAWER_METHOD,
+  canClose,
+  carryOver,
+  expectedClose,
+  varianceMovement,
+} from "@/lib/cash-session";
 
 // Kasa para işidir: billing.manage (owner) gerekir — fail-closed.
 async function requireFinanceManager(back: string) {
@@ -87,4 +94,124 @@ export async function deleteMovement(formData: FormData) {
   revalidatePath("/cash");
   revalidatePath("/ledger");
   redirect(`${back}?success=deleted`);
+}
+
+// ─── Gün açılış / kapanış sayımı ───
+// Çekmecede sadece NAKİT vardır: kartla, havaleyle veya çekle geçen para hiç
+// çekmeceye girmez ve gün sonu sayımına karışmaz.
+
+/** Oturumun o günkü nakit hareketleri — beklenen tutarın dayanağı. */
+async function drawerMovementsFor(tenantId: string, businessDate: string) {
+  return prisma.cashMovement.findMany({
+    where: { tenant_id: tenantId, occurred_on: businessDate, method: DRAWER_METHOD },
+    select: { direction: true, amount: true, method: true },
+  });
+}
+
+/**
+ * Günü açar. Açılış parası verilmezse dünkü sayım devredilir; o da yoksa sıfır.
+ * Aynı gün için ikinci oturum açılamaz — `@@unique([tenant_id, business_date])`.
+ */
+export async function openCashSession(formData: FormData) {
+  const member = await requireFinanceManager("/cash");
+
+  const typed = String(formData.get("business_date") || "").trim();
+  const business_date = DATE_RE.test(typed) ? typed : todayISO();
+
+  const previous = await prisma.cashSession.findFirst({
+    where: { tenant_id: member.tenantId, business_date: { lt: business_date } },
+    orderBy: { business_date: "desc" },
+    select: { status: true, opening_float: true, counted_close: true, expected_close: true },
+  });
+
+  const rawFloat = String(formData.get("opening_float") || "").trim();
+  const opening_float = rawFloat === ""
+    ? carryOver(previous)
+    : Math.max(0, parseFloat(rawFloat) || 0);
+
+  try {
+    await prisma.cashSession.create({
+      data: {
+        tenant_id: member.tenantId,
+        business_date,
+        opening_float,
+        notes: String(formData.get("notes") || "").trim() || null,
+        opened_by: member.userId,
+      },
+    });
+  } catch {
+    redirect("/cash?error=session_exists");
+  }
+
+  revalidatePath("/cash");
+  redirect("/cash?success=opened");
+}
+
+/**
+ * Günü kapatır.
+ *
+ * Beklenen tutar kapanış anında hesaplanıp **dondurulur**: o güne sonradan
+ * geriye dönük bir hareket girilse bile geçmiş sayımın farkı değişmez.
+ *
+ * Fark isteğe bağlı olarak kasaya yazılır — eksik para gider, fazla para
+ * gelirdir. Tekil anahtar (`cash_session_id`) aynı farkın iki kez yazılmasını
+ * engeller. Tutar formdan gelmez, o anki veriden yeniden hesaplanır.
+ */
+export async function closeCashSession(formData: FormData) {
+  const member = await requireFinanceManager("/cash");
+
+  const id = String(formData.get("id") || "").trim();
+  if (!id) return;
+
+  const session = await prisma.cashSession.findFirst({
+    where: { id, tenant_id: member.tenantId },
+    select: { id: true, status: true, business_date: true, opening_float: true },
+  });
+  if (!session) redirect("/cash?error=notfound");
+  if (!canClose(session.status)) redirect("/cash?error=session_closed");
+
+  const rawCount = String(formData.get("counted_close") || "").trim();
+  if (rawCount === "") redirect("/cash?error=count");
+  const counted_close = Math.max(0, parseFloat(rawCount) || 0);
+
+  const movements = await drawerMovementsFor(member.tenantId, session.business_date);
+  const expected = expectedClose(session.opening_float, movements);
+  const diff = Math.round((counted_close - expected) * 100) / 100;
+  const post = String(formData.get("post_variance")) === "on" ? varianceMovement(diff) : null;
+
+  await prisma.$transaction(async (tx) => {
+    // Koşul "hâlâ açık": iki sekme aynı anda kapatırsa ikincisi yazmaz.
+    const moved = await tx.cashSession.updateMany({
+      where: { id: session.id, tenant_id: member.tenantId, status: "open" },
+      data: {
+        status: "closed",
+        counted_close,
+        expected_close: expected,
+        closed_at: new Date(),
+        closed_by: member.userId,
+        notes: String(formData.get("notes") || "").trim() || undefined,
+      },
+    });
+    if (moved.count === 0) return;
+
+    if (post) {
+      await tx.cashMovement.create({
+        data: {
+          tenant_id: member.tenantId,
+          direction: post.direction,
+          amount: post.amount,
+          method: DRAWER_METHOD,
+          category: "other",
+          occurred_on: session.business_date,
+          description: `Till count ${session.business_date} — ${diff > 0 ? "over" : "short"}`,
+          cash_session_id: session.id,
+          created_by: member.userId,
+        },
+      });
+    }
+  });
+
+  revalidatePath("/cash");
+  revalidatePath("/ledger");
+  redirect(`/cash?success=closed`);
 }

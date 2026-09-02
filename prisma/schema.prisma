@@ -90,6 +90,7 @@ model Tenant {
   commission_rules   CommissionRule[]
   commission_payouts CommissionPayout[]
   cash_movements     CashMovement[]
+  cash_sessions      CashSession[]
   checks             Check[]
   rentals            Rental[]
   purchase_orders    PurchaseOrder[]
@@ -669,6 +670,8 @@ model CashMovement {
   cleaning_job_id   String?  @unique @db.Uuid
   /// Satın alma siparişinden doğduysa hangi sipariş — mal bedeli iki kez yazılamaz
   purchase_order_id String?  @unique @db.Uuid
+  /// Kasa sayım farkından doğduysa hangi oturum — fark iki kez yazılamaz
+  cash_session_id   String?  @unique @db.Uuid
   created_by        String?  @db.Uuid
   created_at        DateTime @default(now()) @db.Timestamptz(6)
 
@@ -1029,4 +1032,33 @@ model OrderLine {
 
   @@index([order_id])
   @@map("order_lines")
+}
+
+/// Bir günün kasa oturumu: sabah çekmecedeki para, akşam sayılan para ve fark.
+/// Aynı kiracıda aynı gün için tek oturum açılır.
+model CashSession {
+  id             String    @id @default(uuid()) @db.Uuid
+  tenant_id      String    @db.Uuid
+  /// "2026-09-02" — oturumun ait olduğu iş günü
+  business_date  String
+  /// open, closed
+  status         String    @default("open")
+  /// Sabah çekmecede sayılan para
+  opening_float  Float     @default(0)
+  /// Akşam fiilen sayılan para — kapanana kadar null
+  counted_close  Float?
+  /// Kapanış anında hesaplanan beklenen tutar. DONDURULUR: sonradan o güne
+  /// geriye dönük hareket girilse bile geçmiş sayımın farkı değişmez.
+  expected_close Float?
+  notes          String?
+  opened_by      String?   @db.Uuid
+  closed_by      String?   @db.Uuid
+  opened_at      DateTime  @default(now()) @db.Timestamptz(6)
+  closed_at      DateTime? @db.Timestamptz(6)
+
+  tenant Tenant @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+
+  @@unique([tenant_id, business_date])
+  @@index([tenant_id, status])
+  @@map("cash_sessions")
 }
