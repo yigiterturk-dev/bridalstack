@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { PACKS, ALL_PACK_IDS, calculateMonthlyPrice, type PackId } from "@/config/modules";
+import { PACKS, ALL_PACK_IDS, calculateMonthlyPrice, isPackSellable, packUpcomingModules, MODULES, formatPrice, type PackId } from "@/config/modules";
 
 export function UpgradeButton({ currentPacks }: { currentPacks: PackId[] }) {
   const [selectedPacks, setSelectedPacks] = useState<PackId[]>(currentPacks);
@@ -13,7 +13,7 @@ export function UpgradeButton({ currentPacks }: { currentPacks: PackId[] }) {
   const hasChanges = JSON.stringify(selectedPacks.sort()) !== JSON.stringify(currentPacks.sort());
 
   function togglePack(packId: PackId) {
-    if (packId === "base") return;
+    if (packId === "base" || !isPackSellable(packId)) return;
     setSelectedPacks((prev) =>
       prev.includes(packId) ? prev.filter((p) => p !== packId) : [...prev, packId]
     );
@@ -60,20 +60,29 @@ export function UpgradeButton({ currentPacks }: { currentPacks: PackId[] }) {
         {ALL_PACK_IDS.map((packId) => {
           const pack = PACKS[packId];
           const active = selectedPacks.includes(packId);
+          const sellable = isPackSellable(packId);
+          const locked = packId === "base" || !sellable;
           return (
             <button
               key={packId}
               onClick={() => togglePack(packId)}
-              disabled={packId === "base"}
+              disabled={locked}
+              title={!sellable && packId !== "base" ? "Not available for purchase yet" : undefined}
               className={`text-left p-4 rounded-xl border-2 transition-all ${
                 active ? "border-gray-900 bg-gray-50" : "border-gray-100 hover:border-gray-300"
-              } ${packId === "base" ? "opacity-60" : ""}`}
+              } ${locked ? "opacity-60 cursor-not-allowed" : ""}`}
             >
               <div className="flex items-center justify-between mb-1">
                 <span className="font-medium text-sm text-gray-900">{pack.name}</span>
                 {active && packId !== "base" && <span className="text-green-500 text-xs">✓</span>}
               </div>
-              <div className="text-xs text-gray-500">{pack.monthlyPrice === 0 ? "Free" : `$${pack.monthlyPrice}/mo`}</div>
+              <div className="text-xs text-gray-500">
+                {packId !== "base" && !sellable
+                  ? "Coming soon"
+                  : pack.monthlyPrice === 0
+                  ? "Free"
+                  : `${formatPrice(pack.monthlyPrice)}/mo`}
+              </div>
             </button>
           );
         })}
@@ -81,9 +90,9 @@ export function UpgradeButton({ currentPacks }: { currentPacks: PackId[] }) {
       <div className="flex items-center justify-between pt-4 border-t border-gray-100">
         <div>
           <span className="text-sm text-gray-500">New total: </span>
-          <span className="text-lg font-bold text-gray-900">${newPrice}/mo</span>
+          <span className="text-lg font-bold text-gray-900">{formatPrice(newPrice)}/mo</span>
           {currentPrice !== newPrice && (
-            <span className="text-sm text-gray-400 ml-2 line-through">${currentPrice}/mo</span>
+            <span className="text-sm text-gray-400 ml-2 line-through">{formatPrice(currentPrice)}/mo</span>
           )}
         </div>
         <button

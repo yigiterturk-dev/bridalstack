@@ -4,7 +4,10 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getCurrentMember } from "@/lib/tenant";
-import { hasPermission, ASSIGNABLE_ROLES, type Role } from "@/lib/rbac";
+import { hasPermission, ASSIGNABLE_ROLES, ROLE_LABELS, normalizeRole, type Role } from "@/lib/rbac";
+import { createToken, expiresIn } from "@/lib/tokens";
+import { sendEmail, teamInviteEmail } from "@/lib/email";
+import { siteUrl } from "@/lib/site-url";
 
 // Yetki kapısı (fail-closed): staff.manage izni olmayan reddedilir.
 async function requireStaffManager() {
@@ -22,8 +25,7 @@ export async function addMember(formData: FormData) {
   if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) redirect("/staff?error=email");
   if (!ASSIGNABLE_ROLES.includes(role)) redirect("/staff?error=role");
 
-  // Kullanıcı zaten kayıtlıysa doğrudan üye yap; değilse davet akışı gerekiyor
-  // (e-posta gönderimi henüz bağlı değil — UI bilgilendirme gösteriyor).
+  // Kullanıcı zaten kayıtlıysa doğrudan üye yap.
   const user = await prisma.user.findUnique({ where: { email }, select: { id: true } });
   if (user) {
     await prisma.tenantMember.upsert({
@@ -34,6 +36,31 @@ export async function addMember(formData: FormData) {
     revalidatePath("/staff");
     redirect("/staff?success=added");
   }
+
+  // Kayıtlı değilse gerçek bir davet üret ve gönder. Aynı e-postaya ikinci
+  // davet eskisinin yerine geçer, böylece tek geçerli bağlantı kalır.
+  const tenant = await prisma.tenant.findUnique({
+    where: { id: member.tenantId },
+    select: { name: true },
+  });
+  const { token, hash } = createToken();
+
+  await prisma.invitation.upsert({
+    where: { tenant_id_email: { tenant_id: member.tenantId, email } },
+    update: { role, token_hash: hash, invited_by: member.userId, expires_at: expiresIn(24 * 7), accepted_at: null },
+    create: {
+      tenant_id: member.tenantId, email, role, token_hash: hash,
+      invited_by: member.userId, expires_at: expiresIn(24 * 7),
+    },
+  });
+
+  const base = await siteUrl();
+  const mail = teamInviteEmail(
+    tenant?.name ?? "the team",
+    `${base}/invite/${token}`,
+    ROLE_LABELS[normalizeRole(role)]
+  );
+  await sendEmail({ to: email, subject: mail.subject, html: mail.html });
 
   revalidatePath("/staff");
   redirect("/staff?success=invited");

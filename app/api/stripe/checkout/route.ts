@@ -4,7 +4,7 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { stripe, STRIPE_PRICE_IDS } from "@/lib/stripe";
 import { getCurrentTenant } from "@/lib/tenant";
-import { PackId, PACKS, calculateMonthlyPrice } from "@/config/modules";
+import { PackId, PACKS, calculateMonthlyPrice, isPackSellable } from "@/config/modules";
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -17,7 +17,17 @@ export async function POST(req: NextRequest) {
   const { packs } = (await req.json()) as { packs: PackId[] };
   if (!packs || !Array.isArray(packs)) return NextResponse.json({ error: "Invalid packs" }, { status: 400 });
 
-  const newPacks = packs.filter((p) => p !== "base" && PACKS[p]);
+  // Fail-closed: henüz hiçbir sayfası olmayan paket satılamaz. İstemci gizlese
+  // de sunucu tekrar doğrular, aksi halde müşteri boş bir pakete para öder.
+  const rejected = packs.filter((p) => p !== "base" && PACKS[p] && !isPackSellable(p));
+  if (rejected.length > 0) {
+    return NextResponse.json(
+      { error: `These plans are not available for purchase yet: ${rejected.join(", ")}` },
+      { status: 400 }
+    );
+  }
+
+  const newPacks = packs.filter((p) => p !== "base" && PACKS[p] && isPackSellable(p));
   const lineItems = newPacks
     .map((packId) => {
       const priceId = STRIPE_PRICE_IDS[packId];

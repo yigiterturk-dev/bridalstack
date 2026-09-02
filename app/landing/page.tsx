@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { PACKS, ALL_PACK_IDS, MODULES } from "@/config/modules";
+import { PACKS, ALL_PACK_IDS, MODULES, isPackSellable, isModuleLive, formatPrice } from "@/config/modules";
 
 export default function LandingPage() {
   return (
@@ -87,17 +87,27 @@ export default function LandingPage() {
               { icon: "event", title: "Appointments", desc: "Schedule initial consultations and fittings. Visual calendar flow tailored for bridal shops." },
               { icon: "receipt_long", title: "Sales & Contracts", desc: "Bespoke or ready-to-wear orders, digital contract signing, and production tracking." },
               { icon: "checkroom", title: "Gown Inventory", desc: "Manage gowns, veils, and accessories. Barcode scanning and real-time stock availability." },
-              { icon: "account_balance", title: "Finance & Ledger", desc: "Track deposits, installment plans, cash register, and daily revenue collection effortlessly." },
-              { icon: "chat", title: "WhatsApp Automation", desc: "Send automated appointment reminders, payment alerts, and updates directly to brides." },
+              { icon: "calendar_month", title: "Online Booking", desc: "A public booking page your brides use themselves, with staff schedules and confirmations." },
+              { icon: "favorite", title: "Try-On Tracking", desc: "Record how every bride reacted to every gown, so you know what she loved but did not buy." },
               { icon: "auto_awesome", title: "AI Stylist", desc: "Ask your AI assistant: 'What are the best-selling A-line gowns under $3,000 this month?'" },
-              { icon: "payments", title: "Staff Commissions", desc: "Track stylist performance and automatically calculate sales commissions and bonuses." },
+              { icon: "draw", title: "Digital Contracts", desc: "Send a signing link, capture the signature, and keep the signed agreement on the order." },
               { icon: "analytics", title: "Advanced Analytics", desc: "Deep insights into monthly revenue, top-performing categories, and conversion rates." },
+              { icon: "account_balance", title: "Finance & Ledger", desc: "Installment plans, cash register, and daily revenue collection.", soon: true },
+              { icon: "chat", title: "WhatsApp Automation", desc: "Automated appointment reminders and payment alerts sent straight to brides.", soon: true },
+              { icon: "payments", title: "Staff Commissions", desc: "Stylist performance tracking with automatic commission and bonus calculation.", soon: true },
             ].map((f) => (
-              <div key={f.title} className="bg-white/70 backdrop-blur-sm p-10 rounded-[2.5rem] border border-stone-100 hover:border-rose-200 hover:shadow-[0_20px_40px_-15px_rgba(225,29,72,0.1)] hover:-translate-y-1 transition-all duration-500 group">
-                <div className="w-16 h-16 rounded-2xl bg-stone-50 flex items-center justify-center mb-8 group-hover:bg-rose-500 group-hover:shadow-lg group-hover:shadow-rose-500/30 transition-all duration-500">
-                  <span className="material-symbols-outlined text-3xl text-stone-800 group-hover:text-white transition-colors duration-300">{f.icon}</span>
+              <div key={f.title} className={`bg-white/70 backdrop-blur-sm p-10 rounded-[2.5rem] border border-stone-100 transition-all duration-500 group ${f.soon ? "" : "hover:border-rose-200 hover:shadow-[0_20px_40px_-15px_rgba(225,29,72,0.1)] hover:-translate-y-1"}`}>
+                <div className={`w-16 h-16 rounded-2xl bg-stone-50 flex items-center justify-center mb-8 transition-all duration-500 ${f.soon ? "" : "group-hover:bg-rose-500 group-hover:shadow-lg group-hover:shadow-rose-500/30"}`}>
+                  <span className={`material-symbols-outlined text-3xl text-stone-800 transition-colors duration-300 ${f.soon ? "opacity-50" : "group-hover:text-white"}`}>{f.icon}</span>
                 </div>
-                <h3 className="text-xl font-bold text-stone-900 mb-3">{f.title}</h3>
+                <div className="flex items-center gap-3 mb-3">
+                  <h3 className="text-xl font-bold text-stone-900">{f.title}</h3>
+                  {f.soon && (
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-amber-700 bg-amber-50 border border-amber-100 px-2.5 py-1 rounded-full">
+                      Coming soon
+                    </span>
+                  )}
+                </div>
                 <p className="text-[15px] text-stone-500 leading-relaxed">{f.desc}</p>
               </div>
             ))}
@@ -118,6 +128,7 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {ALL_PACK_IDS.map((packId) => {
               const pack = PACKS[packId];
+              const sellable = packId === "base" || isPackSellable(packId);
               return (
                 <div key={packId} className={`bg-stone-800/50 backdrop-blur-xl rounded-[2.5rem] p-10 transition-all duration-500 hover:-translate-y-2 ${packId === "sales" ? "border border-rose-500/50 shadow-[0_0_50px_-12px_rgba(225,29,72,0.3)] relative" : "border border-stone-700/50"}`}>
                   {packId === "sales" && (
@@ -125,32 +136,49 @@ export default function LandingPage() {
                       Most Popular
                     </div>
                   )}
+                  {!sellable && (
+                    <div className="inline-block mb-4 text-[11px] font-black tracking-widest uppercase text-amber-300 bg-amber-500/10 border border-amber-500/30 px-3 py-1 rounded-full">
+                      In development
+                    </div>
+                  )}
                   <h3 className="text-2xl font-extrabold">{pack.name}</h3>
                   <p className="text-[15px] text-stone-400 mt-3 mb-8 h-10 leading-relaxed">{pack.description}</p>
                   <div className="mb-10 flex items-baseline gap-1">
-                    <span className="text-6xl font-extrabold tracking-tighter">${pack.monthlyPrice}</span>
+                    <span className="text-6xl font-extrabold tracking-tighter">{formatPrice(pack.monthlyPrice)}</span>
                     <span className="text-stone-400 font-medium">/mo</span>
                   </div>
                   <ul className="space-y-5 mb-12">
-                    {pack.modules.map((moduleId) => (
-                      <li key={moduleId} className="flex items-start gap-4 text-[15px] text-stone-300 font-medium">
-                        <span className="flex-shrink-0 w-6 h-6 rounded-full bg-stone-700 flex items-center justify-center mt-0.5 border border-stone-600">
-                          <span className="text-rose-400 text-xs font-bold">✓</span>
-                        </span>
-                        {MODULES[moduleId]?.name}
-                      </li>
-                    ))}
+                    {pack.modules.map((moduleId) => {
+                      const live = isModuleLive(moduleId);
+                      return (
+                        <li key={moduleId} className={`flex items-start gap-4 text-[15px] font-medium ${live ? "text-stone-300" : "text-stone-500"}`}>
+                          <span className="flex-shrink-0 w-6 h-6 rounded-full bg-stone-700 flex items-center justify-center mt-0.5 border border-stone-600">
+                            <span className={`text-xs font-bold ${live ? "text-rose-400" : "text-stone-500"}`}>{live ? "✓" : "•"}</span>
+                          </span>
+                          <span>
+                            {MODULES[moduleId]?.name}
+                            {!live && <span className="ml-2 text-[11px] uppercase tracking-wider text-amber-400/80">soon</span>}
+                          </span>
+                        </li>
+                      );
+                    })}
                   </ul>
-                  <Link
-                    href="/dashboard"
-                    className={`block text-center py-4 rounded-full text-[15px] font-bold transition-all duration-300 ${
-                      packId === "sales"
-                        ? "bg-white text-stone-900 hover:bg-stone-200 hover:shadow-xl"
-                        : "bg-stone-700/50 text-white hover:bg-stone-700 border border-stone-600/50"
-                    }`}
-                  >
-                    {pack.monthlyPrice === 0 ? "Start For Free" : "Choose Plan"}
-                  </Link>
+                  {sellable ? (
+                    <Link
+                      href="/dashboard"
+                      className={`block text-center py-4 rounded-full text-[15px] font-bold transition-all duration-300 ${
+                        packId === "sales"
+                          ? "bg-white text-stone-900 hover:bg-stone-200 hover:shadow-xl"
+                          : "bg-stone-700/50 text-white hover:bg-stone-700 border border-stone-600/50"
+                      }`}
+                    >
+                      {pack.monthlyPrice === 0 ? "Start For Free" : "Choose Plan"}
+                    </Link>
+                  ) : (
+                    <div className="block text-center py-4 rounded-full text-[15px] font-bold bg-stone-800/60 text-stone-500 border border-stone-700/50 cursor-not-allowed">
+                      Not available yet
+                    </div>
+                  )}
                 </div>
               );
             })}

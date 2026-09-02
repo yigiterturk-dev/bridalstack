@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getCurrentTenant } from "@/lib/tenant";
-import { MODULES } from "@/config/modules";
+import { MODULES, isModuleLive } from "@/config/modules";
 import { RevenueChart, AppointmentChart, StatusPieChart } from "@/components/charts";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -179,9 +179,12 @@ export default async function DashboardPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {modules.map((moduleId) => {
             const mod = MODULES[moduleId as keyof typeof MODULES];
-            if (!mod) return null;
+            // Henüz sayfası olmayan modülü kartlarda gösterme; 404'e götürür.
+            if (!mod || !isModuleLive(moduleId)) return null;
+            const target = mod.navItems.find((n) => !n.soon);
+            if (!target) return null;
             return (
-              <Link key={moduleId} href={mod.navItems[0]?.href ?? "#"} className="flex items-center gap-4 p-4 rounded-2xl bg-white border border-stone-100 hover:border-rose-200 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 group">
+              <Link key={moduleId} href={target.href} className="flex items-center gap-4 p-4 rounded-2xl bg-white border border-stone-100 hover:border-rose-200 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 group">
                 <span className="flex items-center justify-center w-12 h-12 rounded-xl bg-stone-50 text-stone-600 material-symbols-outlined text-[24px] group-hover:bg-rose-50 group-hover:text-rose-500 transition-colors">{mod.icon}</span>
                 <div className="min-w-0">
                   <div className="text-[15px] font-bold text-stone-900 truncate">{mod.name}</div>

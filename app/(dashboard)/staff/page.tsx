@@ -37,16 +37,17 @@ export default async function StaffPage({ searchParams }: PageProps) {
 
       {params?.success && (
         <div className="mb-4 p-3 rounded-xl bg-green-50 border border-green-200 text-green-700 text-sm">
-          {params.success === "invited" && "Davet kaydedildi."}
-          {params.success === "role_updated" && "Rol güncellendi."}
-          {params.success === "removed" && "Üye kaldırıldı."}
+          {params.success === "added" && "Team member added."}
+          {params.success === "invited" && "Invitation sent. The link expires in seven days."}
+          {params.success === "role_updated" && "Role updated."}
+          {params.success === "removed" && "Team member removed."}
         </div>
       )}
       {params?.error && (
         <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm">
-          {params.error === "forbidden" && "Bu işlem için yetkiniz yok."}
-          {params.error === "email" && "Geçerli bir e-posta girin."}
-          {params.error === "role" && "Geçersiz rol."}
+          {params.error === "forbidden" && "You do not have permission for this action."}
+          {params.error === "email" && "Enter a valid email address."}
+          {params.error === "role" && "Invalid role."}
         </div>
       )}
 

@@ -2,7 +2,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getCurrentTenant, getCurrentMember } from "@/lib/tenant";
-import { PACKS, MODULES, ALL_PACK_IDS, calculateMonthlyPrice } from "@/config/modules";
+import { PACKS, MODULES, ALL_PACK_IDS, calculateMonthlyPrice, isPackSellable, isModuleLive, formatPrice } from "@/config/modules";
 import { hasPermission, ROLE_LABELS, normalizeRole } from "@/lib/rbac";
 import { UpgradeButton, ManageBillingButton } from "@/components/billing-buttons";
 import SignOutButton from "@/components/sign-out-button";
@@ -228,7 +228,7 @@ export default async function SettingsPage({ searchParams }: Props) {
         <div className="bg-white rounded-2xl border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-900">Subscription</h2>
-            <div className="text-sm font-medium text-gray-500">${currentPrice}/mo</div>
+            <div className="text-sm font-medium text-gray-500">{formatPrice(currentPrice)}/mo</div>
           </div>
           <div className="flex gap-3">
             <UpgradeButton currentPacks={tenant.packs} />
@@ -240,12 +240,13 @@ export default async function SettingsPage({ searchParams }: Props) {
         <div className="bg-white rounded-2xl border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-900">Your Modules</h2>
-            <div className="text-sm font-medium text-gray-500">${currentPrice}/mo</div>
+            <div className="text-sm font-medium text-gray-500">{formatPrice(currentPrice)}/mo</div>
           </div>
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
             {ALL_PACK_IDS.map((packId) => {
               const pack = PACKS[packId];
               const isActive = tenant.packs.includes(packId);
+              const sellable = packId === "base" || isPackSellable(packId);
               return (
                 <div
                   key={packId}
@@ -257,17 +258,28 @@ export default async function SettingsPage({ searchParams }: Props) {
                     <h3 className="font-semibold text-gray-900">{pack.name}</h3>
                     {isActive ? (
                       <span className="text-xs font-medium text-green-700 bg-green-100 px-2 py-0.5 rounded-full">Active</span>
+                    ) : !sellable ? (
+                      <span className="text-xs font-medium text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">In development</span>
                     ) : (
-                      <span className="text-xs font-medium text-gray-400">${pack.monthlyPrice}/mo</span>
+                      <span className="text-xs font-medium text-gray-400">{formatPrice(pack.monthlyPrice)}/mo</span>
                     )}
                   </div>
                   <p className="text-xs text-gray-500 mb-3">{pack.description}</p>
                   <div className="flex flex-wrap gap-1">
-                    {pack.modules.map((moduleId) => (
-                      <span key={moduleId} className="text-[10px] px-2 py-0.5 rounded bg-gray-100 text-gray-600">
-                        {MODULES[moduleId]?.name}
-                      </span>
-                    ))}
+                    {pack.modules.map((moduleId) => {
+                      const live = isModuleLive(moduleId);
+                      return (
+                        <span
+                          key={moduleId}
+                          className={`text-[10px] px-2 py-0.5 rounded ${
+                            live ? "bg-gray-100 text-gray-600" : "bg-amber-50 text-amber-700 border border-amber-100"
+                          }`}
+                        >
+                          {MODULES[moduleId]?.name}
+                          {live ? "" : " · soon"}
+                        </span>
+                      );
+                    })}
                   </div>
                 </div>
               );

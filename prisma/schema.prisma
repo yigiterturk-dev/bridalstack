@@ -30,6 +30,8 @@ model User {
 
   owned_tenants     Tenant[]
   memberships       TenantMember[]
+  reset_tokens      PasswordResetToken[]
+  sent_invitations  Invitation[]
   onboarding_draft  OnboardingDraft?
   funnel_events     FunnelEvent[]
   created_customers Customer[]
@@ -78,6 +80,7 @@ model Tenant {
   installments  Installment[]
   reminders     InstallmentReminder[]
   funnel_events FunnelEvent[]
+  invitations   Invitation[]
 
   @@index([cohort_month])
   @@map("tenants")
@@ -538,4 +541,40 @@ model FunnelEvent {
   @@index([tenant_id])
   @@index([event])
   @@map("funnel_events")
+}
+
+/// Parola sıfırlama jetonu. Ham jeton asla saklanmaz; yalnızca SHA-256 özeti
+/// tutulur, böylece veritabanını okuyan biri hesapları ele geçiremez.
+model PasswordResetToken {
+  id         String    @id @default(uuid()) @db.Uuid
+  user_id    String    @db.Uuid
+  token_hash String    @unique
+  expires_at DateTime  @db.Timestamptz(6)
+  used_at    DateTime? @db.Timestamptz(6)
+  created_at DateTime  @default(now()) @db.Timestamptz(6)
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@map("password_reset_tokens")
+}
+
+/// Ekip daveti. Jeton özeti saklanır; kabul edilince TenantMember oluşur.
+model Invitation {
+  id          String    @id @default(uuid()) @db.Uuid
+  tenant_id   String    @db.Uuid
+  email       String
+  role        String    @default("stylist")
+  token_hash  String    @unique
+  invited_by  String?   @db.Uuid
+  expires_at  DateTime  @db.Timestamptz(6)
+  accepted_at DateTime? @db.Timestamptz(6)
+  created_at  DateTime  @default(now()) @db.Timestamptz(6)
+
+  tenant  Tenant @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  inviter User?  @relation(fields: [invited_by], references: [id], onDelete: SetNull)
+
+  @@unique([tenant_id, email])
+  @@index([tenant_id])
+  @@map("invitations")
 }

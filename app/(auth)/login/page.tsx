@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
@@ -102,7 +103,14 @@ export default function LoginPage() {
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">Password</label>
+              <div className="flex items-baseline justify-between mb-2">
+                <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider">Password</label>
+                {!isSignUp && (
+                  <Link href="/forgot-password" className="text-xs font-semibold text-stone-400 hover:text-rose-600 transition-colors">
+                    Forgot password?
+                  </Link>
+                )}
+              </div>
               <input
                 type="password"
                 value={password}
