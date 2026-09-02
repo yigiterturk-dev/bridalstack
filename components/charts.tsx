@@ -31,7 +31,7 @@ export function RevenueChart({ data }: { data: RevenueData }) {
 export function AppointmentChart({ data }: { data: AppointmentData }) {
   return (
     <div>
-      <h3 className="text-sm font-semibold text-gray-900 mb-4">Bu haftanın randevuları</h3>
+      <h3 className="text-sm font-semibold text-gray-900 mb-4">Appointments this week</h3>
       <ResponsiveContainer width="100%" height={240}>
         <LineChart data={data}>
           <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" vertical={false} />

@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
-import { getCurrentTenant, getCurrentMember } from "@/lib/tenant";
+import { prisma } from "@/lib/prisma";
+import { getCurrentTenant, getCurrentMember, getCurrentUserId } from "@/lib/tenant";
 import {
   hasPermission,
   normalizeRole,
@@ -14,23 +14,17 @@ type PageProps = { searchParams?: Promise<{ success?: string; error?: string }> 
 
 export default async function StaffPage({ searchParams }: PageProps) {
   const params = await searchParams;
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
-
   const tenant = await getCurrentTenant();
   if (!tenant) redirect("/onboarding");
 
+  const userId = await getCurrentUserId();
   const member = await getCurrentMember();
   const canManage = hasPermission(member?.role, "staff.manage");
 
-  const { data: members } = await supabase
-    .from("tenant_members")
-    .select("*")
-    .eq("tenant_id", tenant.id)
-    .order("created_at");
-
-  const list = members ?? [];
+  const list = await prisma.tenantMember.findMany({
+    where: { tenant_id: tenant.id },
+    orderBy: { created_at: "asc" },
+  });
 
   return (
     <div>
@@ -43,26 +37,27 @@ export default async function StaffPage({ searchParams }: PageProps) {
 
       {params?.success && (
         <div className="mb-4 p-3 rounded-xl bg-green-50 border border-green-200 text-green-700 text-sm">
-          {params.success === "invited" && "Davet kaydedildi."}
-          {params.success === "role_updated" && "Rol güncellendi."}
-          {params.success === "removed" && "Üye kaldırıldı."}
+          {params.success === "added" && "Team member added."}
+          {params.success === "invited" && "Invitation sent. The link expires in seven days."}
+          {params.success === "role_updated" && "Role updated."}
+          {params.success === "removed" && "Team member removed."}
         </div>
       )}
       {params?.error && (
         <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm">
-          {params.error === "forbidden" && "Bu işlem için yetkiniz yok."}
-          {params.error === "email" && "Geçerli bir e-posta girin."}
-          {params.error === "role" && "Geçersiz rol."}
+          {params.error === "forbidden" && "You do not have permission for this action."}
+          {params.error === "email" && "Enter a valid email address."}
+          {params.error === "role" && "Invalid role."}
         </div>
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {canManage && (
           <div className="bg-white rounded-2xl border border-gray-200 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Üye Davet Et</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Invite a team member</h2>
             <form action={addMember} className="flex flex-col gap-3">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">E-posta</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
                 <input
                   name="email"
                   type="email"
@@ -107,18 +102,18 @@ export default async function StaffPage({ searchParams }: PageProps) {
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-100">
-                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Kullanıcı</th>
-                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Rol</th>
-                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Katıldı</th>
+                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">User</th>
+                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Role</th>
+                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Joined</th>
                 {canManage && (
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">İşlemler</th>
+                  <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Actions</th>
                 )}
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
               {list.map((m) => {
                 const role = normalizeRole(m.role);
-                const isSelf = m.user_id === user.id;
+                const isSelf = m.user_id === userId;
                 const editable = canManage && role !== "owner" && !isSelf;
                 return (
                   <tr key={m.id} className="hover:bg-gray-50">
@@ -160,7 +155,7 @@ export default async function StaffPage({ searchParams }: PageProps) {
                       )}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-400">
-                      {new Date(m.created_at).toLocaleDateString("tr-TR", {
+                      {new Date(m.created_at).toLocaleDateString("en-US", {
                         day: "numeric",
                         month: "short",
                       })}

@@ -87,7 +87,7 @@ export function installmentReminderEmail(
         <p style="color: #555; line-height: 1.6;">
           Sorularınız için bizimle iletişime geçebilirsiniz.
         </p>
-        <p style="color: #999; font-size: 12px; margin-top: 32px;">StackCRM ile gönderildi</p>
+        <p style="color: #999; font-size: 12px; margin-top: 32px;">Sent by Bridal Stack</p>
       </div>
     `,
   };
@@ -104,6 +104,51 @@ export function welcomeEmail(customerName: string, shopName: string) {
         </p>
         <p style="color: #555; line-height: 1.6;">
           We'll keep you updated on your appointments, orders, and everything in between.
+        </p>
+        <p style="color: #999; font-size: 12px; margin-top: 32px;">Sent via BridalStack</p>
+      </div>
+    `,
+  };
+}
+
+export function passwordResetEmail(shopName: string, resetUrl: string) {
+  return {
+    subject: "Reset your password",
+    html: `
+      <div style="font-family: system-ui, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px;">
+        <h2 style="color: #111; margin-bottom: 8px;">Reset your password</h2>
+        <p style="color: #555; line-height: 1.6;">
+          We received a request to reset the password for your <strong>${shopName}</strong> account.
+          This link works once and expires in one hour.
+        </p>
+        <p style="margin: 28px 0;">
+          <a href="${resetUrl}" style="background:#111827;color:#fff;text-decoration:none;padding:14px 24px;border-radius:12px;font-weight:600;display:inline-block;">
+            Choose a new password
+          </a>
+        </p>
+        <p style="color: #555; line-height: 1.6; font-size: 14px;">
+          If you did not ask for this, you can ignore this email and your password stays unchanged.
+        </p>
+        <p style="color: #999; font-size: 12px; margin-top: 32px;">Sent via BridalStack</p>
+      </div>
+    `,
+  };
+}
+
+export function teamInviteEmail(shopName: string, inviteUrl: string, roleLabel: string) {
+  return {
+    subject: `You have been invited to ${shopName}`,
+    html: `
+      <div style="font-family: system-ui, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px;">
+        <h2 style="color: #111; margin-bottom: 8px;">Join ${shopName}</h2>
+        <p style="color: #555; line-height: 1.6;">
+          You have been invited to join <strong>${shopName}</strong> as <strong>${roleLabel}</strong>.
+          This invitation expires in seven days.
+        </p>
+        <p style="margin: 28px 0;">
+          <a href="${inviteUrl}" style="background:#111827;color:#fff;text-decoration:none;padding:14px 24px;border-radius:12px;font-weight:600;display:inline-block;">
+            Accept invitation
+          </a>
         </p>
         <p style="color: #999; font-size: 12px; margin-top: 32px;">Sent via BridalStack</p>
       </div>

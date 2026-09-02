@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import BookingForm from "./booking-form";
 
@@ -6,38 +6,34 @@ type Props = { params: Promise<{ slug: string }> };
 
 export default async function PublicBookingPage({ params }: Props) {
   const { slug } = await params;
-  const supabase = await createClient();
-
-  const { data: tenant } = await supabase
-    .from("tenants")
-    .select("id, name, logo_url, accent_color, settings")
-    .eq("slug", slug)
-    .maybeSingle();
+  const tenant = await prisma.tenant.findUnique({
+    where: { slug },
+    select: { id: true, name: true, logo_url: true, accent_color: true, settings: true },
+  });
 
   if (!tenant) notFound();
 
-  const { data: services } = await supabase
-    .from("services")
-    .select("id, name, category, duration, price, price_max, description")
-    .eq("tenant_id", tenant.id)
-    .eq("is_active", true)
-    .order("sort_order")
-    .order("name");
+  const [services, members] = await Promise.all([
+    prisma.service.findMany({
+      where: { tenant_id: tenant.id, is_active: true },
+      select: { id: true, name: true, category: true, duration: true, price: true, price_max: true, description: true },
+      orderBy: [{ sort_order: "asc" }, { name: "asc" }],
+    }),
+    prisma.tenantMember.findMany({
+      where: { tenant_id: tenant.id, is_bookable: true },
+      select: { id: true, display_name: true, title: true, photo_url: true, is_bookable: true },
+    }),
+  ]);
 
-  const { data: members } = await supabase
-    .from("tenant_members")
-    .select("id, display_name, title, photo_url, is_bookable")
-    .eq("tenant_id", tenant.id)
-    .eq("is_bookable", true);
-
-  const { data: staffServices } = await supabase
-    .from("staff_services")
-    .select("member_id, service_id");
-
-  const { data: schedules } = await supabase
-    .from("staff_schedules")
-    .select("member_id, day_of_week, start_time, end_time, break_start, break_end, is_off")
-    .in("member_id", (members ?? []).map((m) => m.id));
+  const memberIds = members.map((m) => m.id);
+  // Eski sorgu staff_services'i kiracı filtresiz çekiyordu — sadece bu butiğin personeli.
+  const [staffServices, schedules] = await Promise.all([
+    prisma.staffService.findMany({ where: { member_id: { in: memberIds } }, select: { member_id: true, service_id: true } }),
+    prisma.staffSchedule.findMany({
+      where: { member_id: { in: memberIds } },
+      select: { member_id: true, day_of_week: true, start_time: true, end_time: true, break_start: true, break_end: true, is_off: true },
+    }),
+  ]);
 
   const accent = (tenant.accent_color as string) ?? "#b4496a";
 
@@ -59,7 +55,7 @@ export default async function PublicBookingPage({ params }: Props) {
             </div>
           )}
           <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">{tenant.name}</h1>
-          <p className="text-gray-500 mt-1.5 text-sm">Birkaç adımda online randevunuzu oluşturun</p>
+          <p className="text-gray-500 mt-1.5 text-sm">Book your appointment online in a few steps</p>
         </header>
 
         <BookingForm

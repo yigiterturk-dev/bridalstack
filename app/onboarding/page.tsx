@@ -3,13 +3,13 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { PRESETS } from "@/config/presets";
-import { PACKS, ALL_PACK_IDS, calculateMonthlyPrice, type PackId } from "@/config/modules";
+import { PACKS, ALL_PACK_IDS, calculateMonthlyPrice, isPackSellable, formatPrice, type PackId } from "@/config/modules";
 import { loadDraft, saveDraft, finishOnboarding, type OnboardingDraft } from "./actions";
 
 type ServiceRow = { name: string; duration?: number; price?: number };
 type StaffRow = { email: string; role: string };
 
-const STEPS = ["İşletme", "Hizmetler", "Ekip", "Hazır"];
+const STEPS = ["Shop", "Services", "Modules", "Ready"];
 
 export default function OnboardingPage() {
   const [step, setStep] = useState(1);
@@ -94,7 +94,7 @@ export default function OnboardingPage() {
 
   async function handleFinish() {
     if (!shopName.trim()) {
-      setError("Lütfen işletme adını girin");
+      setError("Please enter your shop name");
       setStep(1);
       return;
     }
@@ -108,7 +108,7 @@ export default function OnboardingPage() {
       signupSource: typeof document !== "undefined" ? document.referrer || "direct" : "direct",
     });
     if (!res.ok) {
-      setError(res.error || "Bir hata oluştu");
+      setError(res.error || "Something went wrong");
       setLoading(false);
       return;
     }
@@ -124,7 +124,7 @@ export default function OnboardingPage() {
           <h1 className="text-3xl font-semibold text-gray-900 tracking-tight">
             Bridal<span className="text-[var(--accent)]">Stack</span>
           </h1>
-          <p className="text-gray-500 mt-2">Mağazanızı kuralım</p>
+          <p className="text-gray-500 mt-2">Let us set up your boutique</p>
           <div className="flex items-center justify-center gap-2 mt-5">
             {STEPS.map((label, idx) => {
               const s = idx + 1;
@@ -153,7 +153,7 @@ export default function OnboardingPage() {
           </div>
           {hydrated && (
             <p className="text-[11px] text-gray-400 mt-3">
-              {saving ? "Taslak kaydediliyor…" : "İlerlemeniz otomatik kaydediliyor"}
+              {saving ? "Saving draft…" : "Your progress saves automatically"}
             </p>
           )}
         </div>
@@ -165,21 +165,21 @@ export default function OnboardingPage() {
         )}
 
         <div className="bg-white rounded-2xl border border-gray-200 p-8">
-          {/* ADIM 1 — İşletme adı + paketler/şablon */}
+          {/* STEP 1 — Shop name and template */}
           {step === 1 && (
             <div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-6">İşletmenizin adı nedir?</h2>
+              <h2 className="text-xl font-semibold text-gray-900 mb-6">What is your boutique called?</h2>
               <input
                 type="text"
                 value={shopName}
                 onChange={(e) => setShopName(e.target.value)}
                 maxLength={120}
                 className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[var(--accent-ring)] focus:border-[var(--accent)] outline-none text-lg"
-                placeholder="örn. Grace Bridal Boutique"
+                placeholder="e.g. Grace Bridal Boutique"
                 autoFocus
               />
 
-              <h3 className="text-sm font-semibold text-gray-900 mt-6 mb-3">Sektör şablonu</h3>
+              <h3 className="text-sm font-semibold text-gray-900 mt-6 mb-3">Industry template</h3>
               <div className="grid grid-cols-2 gap-3">
                 {PRESETS.map((preset) => (
                   <button
@@ -200,12 +200,12 @@ export default function OnboardingPage() {
               </div>
 
               <div className="mt-5 text-sm text-gray-500">
-                Aylık toplam: <strong className="text-gray-900">${monthly}/ay</strong>
+                Monthly total: <strong className="text-gray-900">{formatPrice(monthly)}/mo</strong>
               </div>
 
               <button
                 onClick={() =>
-                  shopName.trim() ? setStep(2) : setError("Lütfen bir ad girin")
+                  shopName.trim() ? setStep(2) : setError("Please enter a name")
                 }
                 className="mt-6 w-full py-3 bg-gray-900 text-white rounded-xl font-medium hover:bg-gray-800 transition-colors"
               >
@@ -214,12 +214,12 @@ export default function OnboardingPage() {
             </div>
           )}
 
-          {/* ADIM 2 — Hizmetler */}
+          {/* STEP 2 — Services */}
           {step === 2 && (
             <div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-2">Hizmetlerinizi ekleyin</h2>
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">Add your services</h2>
               <p className="text-sm text-gray-500 mb-6">
-                İsteğe bağlı — daha sonra da ekleyebilirsiniz.
+                Optional. You can add more of these later.
               </p>
               <div className="flex flex-col gap-3">
                 {services.map((s, i) => (
@@ -227,7 +227,7 @@ export default function OnboardingPage() {
                     <input
                       value={s.name}
                       onChange={(e) => updateService(i, { name: e.target.value })}
-                      placeholder="Hizmet adı (örn. Prova)"
+                      placeholder="Service name (e.g. Fitting)"
                       maxLength={120}
                       className="flex-1 px-3 py-2.5 rounded-xl border border-gray-300 text-sm outline-none focus:ring-2 focus:ring-[var(--accent-ring)] focus:border-[var(--accent)]"
                     />
@@ -244,14 +244,14 @@ export default function OnboardingPage() {
                       min={0}
                       value={s.price ?? ""}
                       onChange={(e) => updateService(i, { price: Number(e.target.value) })}
-                      placeholder="₺"
+                      placeholder="$"
                       className="w-24 px-3 py-2.5 rounded-xl border border-gray-300 text-sm outline-none"
                     />
                     {services.length > 1 && (
                       <button
                         onClick={() => removeServiceRow(i)}
                         className="text-gray-400 hover:text-red-500"
-                        aria-label="Kaldır"
+                        aria-label="Remove"
                       >
                         <span className="material-symbols-outlined text-lg">close</span>
                       </button>
@@ -283,25 +283,26 @@ export default function OnboardingPage() {
             </div>
           )}
 
-          {/* ADIM 3 — Ekip (modül seçimi + bilgilendirme) */}
+          {/* STEP 3 — Module selection */}
           {step === 3 && (
             <div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-2">Modüllerinizi seçin</h2>
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">Choose your modules</h2>
               <p className="text-sm text-gray-500 mb-6">
-                İhtiyacınız olan paketleri açın. Aylık toplam: <strong>${monthly}/ay</strong>
+                Turn on the plans you need. Monthly total: <strong>{formatPrice(monthly)}/mo</strong>
               </p>
               <div className="grid gap-3">
                 {ALL_PACK_IDS.map((packId) => {
                   const pack = PACKS[packId];
                   const active = selectedPacks.includes(packId);
+                  const sellable = isPackSellable(packId);
                   return (
                     <button
                       key={packId}
                       onClick={() => togglePack(packId)}
-                      disabled={packId === "base"}
+                      disabled={packId === "base" || !sellable}
                       className={`flex items-center justify-between p-4 rounded-xl border-2 text-left transition-all ${
                         active ? "border-gray-900 bg-gray-50" : "border-gray-100 hover:border-gray-300"
-                      } ${packId === "base" ? "opacity-75" : ""}`}
+                      } ${packId === "base" || !sellable ? "opacity-60" : ""}`}
                     >
                       <div>
                         <div className="font-medium text-gray-900">{pack.name}</div>
@@ -309,9 +310,9 @@ export default function OnboardingPage() {
                       </div>
                       <div className="text-right">
                         <div className="text-sm font-semibold text-gray-900">
-                          {pack.monthlyPrice === 0 ? "Ücretsiz" : `$${pack.monthlyPrice}/ay`}
+                          {!sellable && packId !== "base" ? "Coming soon" : pack.monthlyPrice === 0 ? "Free" : `${formatPrice(pack.monthlyPrice)}/mo`}
                         </div>
-                        {active && <span className="text-xs text-green-600">✓ Aktif</span>}
+                        {active && <span className="text-xs text-green-600">✓ Active</span>}
                       </div>
                     </button>
                   );
@@ -319,8 +320,7 @@ export default function OnboardingPage() {
               </div>
               <div className="mt-4 p-3 rounded-xl bg-blue-50 border border-blue-200">
                 <p className="text-xs text-blue-700">
-                  Ekip üyelerini kurulum sonrası <strong>Ekip &amp; Roller</strong> sayfasından
-                  davet edebilirsiniz.
+                  You can invite your team from the <strong>Team</strong> page once setup is done.
                 </p>
               </div>
 
@@ -341,31 +341,31 @@ export default function OnboardingPage() {
             </div>
           )}
 
-          {/* ADIM 4 — Özet / tamamla */}
+          {/* STEP 4 — Review and finish */}
           {step === 4 && (
             <div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-2">Her şey hazır 🎉</h2>
-              <p className="text-sm text-gray-500 mb-6">Kurulumu gözden geçirip başlayın.</p>
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">You are all set 🎉</h2>
+              <p className="text-sm text-gray-500 mb-6">Review your setup and get started.</p>
               <dl className="space-y-3 text-sm">
                 <div className="flex justify-between border-b border-gray-100 pb-2">
-                  <dt className="text-gray-500">İşletme</dt>
+                  <dt className="text-gray-500">Shop</dt>
                   <dd className="font-medium text-gray-900">{shopName || "—"}</dd>
                 </div>
                 <div className="flex justify-between border-b border-gray-100 pb-2">
-                  <dt className="text-gray-500">Paketler</dt>
+                  <dt className="text-gray-500">Plans</dt>
                   <dd className="font-medium text-gray-900">
                     {selectedPacks.map((p) => PACKS[p]?.name).join(", ")}
                   </dd>
                 </div>
                 <div className="flex justify-between border-b border-gray-100 pb-2">
-                  <dt className="text-gray-500">Hizmet sayısı</dt>
+                  <dt className="text-gray-500">Services</dt>
                   <dd className="font-medium text-gray-900">
                     {services.filter((s) => s.name.trim()).length}
                   </dd>
                 </div>
                 <div className="flex justify-between">
-                  <dt className="text-gray-500">Aylık ücret</dt>
-                  <dd className="font-medium text-gray-900">${monthly}/ay</dd>
+                  <dt className="text-gray-500">Monthly total</dt>
+                  <dd className="font-medium text-gray-900">{formatPrice(monthly)}/mo</dd>
                 </div>
               </dl>
 
@@ -381,7 +381,7 @@ export default function OnboardingPage() {
                   disabled={loading}
                   className="flex-1 py-3 bg-gray-900 text-white rounded-xl font-medium hover:bg-gray-800 disabled:opacity-50"
                 >
-                  {loading ? "Oluşturuluyor…" : "Mağazamı Başlat"}
+                  {loading ? "Creating…" : "Launch my boutique"}
                 </button>
               </div>
             </div>

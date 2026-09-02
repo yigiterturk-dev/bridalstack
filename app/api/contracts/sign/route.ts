@@ -1,20 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { prisma } from "@/lib/prisma";
 
 export async function POST(req: NextRequest) {
   const { token, signature_data } = await req.json();
   if (!token || !signature_data) return NextResponse.json({ error: "Missing data" }, { status: 400 });
 
-  const supabase = await createClient();
   const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown";
 
-  const { error } = await supabase.from("contracts").update({
-    status: "signed",
-    signed_at: new Date().toISOString(),
-    signature_data,
-    ip_address: ip,
-  }).eq("token", token).eq("status", "sent");
+  // Sadece "sent" durumundaki sözleşme imzalanabilir — çift imzayı ve
+  // taslak/süresi geçmiş sözleşmenin imzalanmasını engeller.
+  const result = await prisma.contract.updateMany({
+    where: { token, status: "sent" },
+    data: {
+      status: "signed",
+      signed_at: new Date(),
+      signature_data,
+      ip_address: ip,
+    },
+  });
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (result.count === 0) {
+    return NextResponse.json({ error: "Contract not available for signing" }, { status: 404 });
+  }
+
   return NextResponse.json({ success: true });
 }

@@ -29,10 +29,10 @@ export default function UpgradeCta({ daysLeft, expired }: Props) {
         <div>
           <p className="text-sm font-semibold text-gray-900">
             {expired
-              ? "Deneme süreniz doldu"
+              ? "Your trial has ended"
               : daysLeft !== null
                 ? `Deneme sürenizde ${daysLeft} gün kaldı`
-                : "Daha fazlasını açın"}
+                : "Unlock more modules"}
           </p>
           <p className="text-xs text-gray-600">
             Satış, finans ve envanter modüllerini etkinleştirmek için planınızı yükseltin.

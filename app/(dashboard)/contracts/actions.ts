@@ -2,13 +2,12 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
-import { getCurrentTenant } from "@/lib/tenant";
+import { prisma } from "@/lib/prisma";
+import { getCurrentTenant, getCurrentUserId } from "@/lib/tenant";
 
 export async function createContract(formData: FormData) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+  const userId = await getCurrentUserId();
+  if (!userId) redirect("/login");
   const tenant = await getCurrentTenant();
   if (!tenant) redirect("/onboarding");
 
@@ -22,9 +21,11 @@ export async function createContract(formData: FormData) {
 
   const token = crypto.randomUUID().replace(/-/g, "").slice(0, 20);
 
-  await supabase.from("contracts").insert({
-    tenant_id: tenant.id, customer_id, order_id, title, content, total_amount,
-    token, status: "sent", created_by: user.id,
+  await prisma.contract.create({
+    data: {
+      tenant_id: tenant.id, customer_id, order_id, title, content, total_amount,
+      token, status: "sent", created_by: userId,
+    },
   });
 
   revalidatePath("/contracts");

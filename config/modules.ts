@@ -12,6 +12,9 @@ export type ModuleId =
   | "booking"
   | "services";
 
+/** Menü girdisi. `soon: true` ise sayfa henüz yok; menüde gösterilmez. */
+export type NavItem = { href: string; label: string; icon: string; soon?: true };
+
 export type ModuleDefinition = {
   id: ModuleId;
   name: string;
@@ -19,7 +22,7 @@ export type ModuleDefinition = {
   icon: string;
   pack: PackId;
   routes: string[];
-  navItems: { href: string; label: string; icon: string }[];
+  navItems: NavItem[];
   dependencies?: ModuleId[];
 };
 
@@ -41,9 +44,10 @@ export const MODULES: Record<ModuleId, ModuleDefinition> = {
     description: "Customer profiles, notes, status tracking",
     icon: "groups",
     pack: "base",
-    routes: ["/customers", "/customers/new", "/customers/[id]"],
+    routes: ["/customers", "/customers/new", "/customers/[id]", "/follow-ups"],
     navItems: [
       { href: "/customers", label: "Customers", icon: "groups" },
+      { href: "/follow-ups", label: "Follow-ups", icon: "notifications_active" },
     ],
   },
   appointments: {
@@ -79,7 +83,7 @@ export const MODULES: Record<ModuleId, ModuleDefinition> = {
     pack: "sales",
     routes: ["/invoices", "/invoices/new", "/invoices/[id]"],
     navItems: [
-      { href: "/invoices", label: "Invoices", icon: "description" },
+      { href: "/invoices", label: "Invoices", icon: "description", soon: true },
     ],
     dependencies: ["sales"],
   },
@@ -91,7 +95,7 @@ export const MODULES: Record<ModuleId, ModuleDefinition> = {
     pack: "sales",
     routes: ["/reports"],
     navItems: [
-      { href: "/reports", label: "Reports", icon: "analytics" },
+      { href: "/reports", label: "Reports", icon: "analytics", soon: true },
     ],
     dependencies: ["sales"],
   },
@@ -103,10 +107,10 @@ export const MODULES: Record<ModuleId, ModuleDefinition> = {
     pack: "finance",
     routes: ["/cash", "/installments", "/ledger", "/checks"],
     navItems: [
-      { href: "/cash", label: "Cash", icon: "account_balance" },
-      { href: "/installments", label: "Installments", icon: "receipt" },
-      { href: "/ledger", label: "Ledger", icon: "account_balance_wallet" },
-      { href: "/checks", label: "Checks", icon: "request_quote" },
+      { href: "/cash", label: "Cash", icon: "account_balance", soon: true },
+      { href: "/installments", label: "Installments", icon: "receipt", soon: true },
+      { href: "/ledger", label: "Ledger", icon: "account_balance_wallet", soon: true },
+      { href: "/checks", label: "Checks", icon: "request_quote", soon: true },
     ],
     dependencies: ["sales"],
   },
@@ -121,9 +125,9 @@ export const MODULES: Record<ModuleId, ModuleDefinition> = {
       { href: "/products", label: "Products", icon: "checkroom" },
       { href: "/try-ons", label: "Try-Ons", icon: "favorite" },
       { href: "/trunk-shows", label: "Trunk Shows", icon: "event_note" },
-      { href: "/suppliers", label: "Suppliers", icon: "local_shipping" },
-      { href: "/inventory-count", label: "Stock Count", icon: "inventory" },
-      { href: "/returns", label: "Returns", icon: "swap_horiz" },
+      { href: "/suppliers", label: "Suppliers", icon: "local_shipping", soon: true },
+      { href: "/inventory-count", label: "Stock Count", icon: "inventory", soon: true },
+      { href: "/returns", label: "Returns", icon: "swap_horiz", soon: true },
     ],
   },
   commissions: {
@@ -134,7 +138,7 @@ export const MODULES: Record<ModuleId, ModuleDefinition> = {
     pack: "pro",
     routes: ["/commissions", "/commissions/rules", "/staff", "/workflows", "/ai-stylist"],
     navItems: [
-      { href: "/commissions", label: "Commissions", icon: "payments" },
+      { href: "/commissions", label: "Commissions", icon: "payments", soon: true },
       { href: "/staff", label: "Team", icon: "badge" },
       { href: "/workflows", label: "Automations", icon: "bolt" },
       { href: "/ai-stylist", label: "AI Stylist", icon: "auto_awesome" },
@@ -149,8 +153,8 @@ export const MODULES: Record<ModuleId, ModuleDefinition> = {
     pack: "communication",
     routes: ["/inbox", "/whatsapp", "/templates"],
     navItems: [
-      { href: "/inbox", label: "Messages", icon: "chat" },
-      { href: "/whatsapp", label: "WhatsApp", icon: "phone_in_talk" },
+      { href: "/inbox", label: "Messages", icon: "chat", soon: true },
+      { href: "/whatsapp", label: "WhatsApp", icon: "phone_in_talk", soon: true },
     ],
   },
   efatura: {
@@ -161,7 +165,7 @@ export const MODULES: Record<ModuleId, ModuleDefinition> = {
     pack: "pro",
     routes: ["/invoices/efatura"],
     navItems: [
-      { href: "/invoices/efatura", label: "e-Fatura", icon: "receipt_long" },
+      { href: "/invoices/efatura", label: "e-Fatura", icon: "receipt_long", soon: true },
     ],
     dependencies: ["invoices"],
   },
@@ -202,25 +206,25 @@ export const PACKS: Record<PackId, PackDefinition> = {
   sales: {
     id: "sales",
     name: "Sales",
-    description: "Orders, invoices, reports",
+    description: "Orders and digital contracts",
     modules: ["sales", "invoices", "reports"],
-    monthlyPrice: 500,
+    monthlyPrice: 39,
     color: "#2563eb",
   },
   finance: {
     id: "finance",
     name: "Finance",
-    description: "Cash, installments, ledger, checks",
+    description: "Cash register, installments, ledger and checks",
     modules: ["finance"],
-    monthlyPrice: 400,
+    monthlyPrice: 29,
     color: "#047857",
   },
   inventory: {
     id: "inventory",
     name: "Inventory",
-    description: "Stock, suppliers, counts, returns",
+    description: "Products, stock, try-ons and trunk shows",
     modules: ["inventory"],
-    monthlyPrice: 300,
+    monthlyPrice: 29,
     color: "#7c3aed",
   },
   communication: {
@@ -228,15 +232,15 @@ export const PACKS: Record<PackId, PackDefinition> = {
     name: "Communication",
     description: "WhatsApp and messaging",
     modules: ["whatsapp"],
-    monthlyPrice: 200,
+    monthlyPrice: 19,
     color: "#059669",
   },
   pro: {
     id: "pro",
     name: "Pro",
-    description: "Commissions, staff, e-invoicing",
+    description: "Team, automations and the AI stylist",
     modules: ["commissions", "efatura"],
-    monthlyPrice: 600,
+    monthlyPrice: 29,
     color: "#d97706",
   },
   salon: {
@@ -273,10 +277,10 @@ export function calculateMonthlyPrice(packIds: PackId[]): number {
 }
 
 export function getNavForModules(enabledModules: ModuleId[]) {
-  const groups: { section?: string; items: { href: string; label: string; icon: string }[] }[] = [
+  const groups: { section?: string; items: NavItem[] }[] = [
     { items: [
       { href: "/dashboard", label: "Dashboard", icon: "dashboard" },
-      { href: "/analytics", label: "Analitik", icon: "insights" },
+      { href: "/analytics", label: "Analytics", icon: "insights" },
     ] },
   ];
 
@@ -291,10 +295,11 @@ export function getNavForModules(enabledModules: ModuleId[]) {
   };
 
   for (const group of Object.values(sectionMap)) {
-    const items: { href: string; label: string; icon: string }[] = [];
+    const items: NavItem[] = [];
     for (const moduleId of group.moduleIds) {
       if (!enabledModules.includes(moduleId)) continue;
-      items.push(...MODULES[moduleId].navItems);
+      // Sayfası olmayan girdiler menüye girmez; 404'e götüren bağlantı olmasın.
+      items.push(...MODULES[moduleId].navItems.filter((n) => !n.soon));
     }
     if (items.length > 0) {
       groups.push({ section: group.section, items });
@@ -316,4 +321,37 @@ export function isRouteAllowed(path: string, enabledModules: ModuleId[]): boolea
     }
   }
   return false;
+}
+
+
+// ─── Hazırlık durumu ───────────────────────────────────────────────────────
+// Bir modül, en az bir menü girdisinin gerçek bir sayfası varsa "canlı"dır.
+// Hiçbir sayfası olmayan paket satılamaz: parasını alıp boş ekran vermeyelim.
+
+export function isModuleLive(moduleId: ModuleId): boolean {
+  return MODULES[moduleId]?.navItems.some((n) => !n.soon) ?? false;
+}
+
+export function packLiveModules(packId: PackId): ModuleId[] {
+  return (PACKS[packId]?.modules ?? []).filter(isModuleLive);
+}
+
+export function packUpcomingModules(packId: PackId): ModuleId[] {
+  return (PACKS[packId]?.modules ?? []).filter((m) => !isModuleLive(m));
+}
+
+/** Satın alınabilir mi? Hiç çalışan modülü olmayan paket satışa kapalıdır. */
+export function isPackSellable(packId: PackId): boolean {
+  if (packId === "base") return false; // zaten herkeste var
+  return packLiveModules(packId).length > 0;
+}
+
+export const SELLABLE_PACK_IDS: PackId[] = ALL_PACK_IDS.filter(isPackSellable);
+
+// ─── Para birimi ───────────────────────────────────────────────────────────
+// Fiyatlar tek yerden biçimlendirilir. Hedef pazar değişirse burası değişir.
+export const CURRENCY_SYMBOL = process.env.NEXT_PUBLIC_CURRENCY_SYMBOL ?? "$";
+
+export function formatPrice(amount: number): string {
+  return `${CURRENCY_SYMBOL}${amount.toLocaleString()}`;
 }

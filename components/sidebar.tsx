@@ -9,8 +9,8 @@ type NavGroup = { section?: string; items: NavItem[] };
 
 function Wordmark({ className = "" }: { className?: string }) {
   return (
-    <span className={`font-semibold tracking-tight ${className}`}>
-      Bridal<span className="text-[var(--accent)]">Stack</span>
+    <span className={`font-extrabold tracking-tight ${className}`}>
+      Bridal<span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-400 to-amber-500">Stack</span>
     </span>
   );
 }
@@ -21,27 +21,27 @@ export default function Sidebar({ groups, tenantName }: { groups: NavGroup[]; te
 
   const nav = (
     <>
-      <div className="px-5 py-5 border-b border-gray-100 flex items-center justify-between">
+      <div className="px-6 py-6 border-b border-stone-100 flex items-center justify-between">
         <div className="min-w-0">
-          <h1 className="text-lg text-gray-900">
+          <h1 className="text-xl text-stone-900">
             <Wordmark />
           </h1>
-          <p className="text-xs text-gray-400 mt-0.5 truncate">{tenantName}</p>
+          <p className="text-xs font-semibold tracking-wider text-stone-400 uppercase mt-1 truncate">{tenantName}</p>
         </div>
-        <button onClick={() => setOpen(false)} className="lg:hidden text-gray-400 hover:text-gray-700" aria-label="Menüyü kapat">
+        <button onClick={() => setOpen(false)} className="lg:hidden text-stone-400 hover:text-rose-500 transition-colors" aria-label="Close menu">
           <span className="material-symbols-outlined">close</span>
         </button>
       </div>
 
-      <nav className="flex-1 overflow-y-auto py-4 px-3">
+      <nav className="flex-1 overflow-y-auto py-6 px-4">
         {groups.map((group, gi) => (
-          <div key={gi} className={gi > 0 ? "mt-5" : ""}>
+          <div key={gi} className={gi > 0 ? "mt-8" : ""}>
             {group.section && (
-              <p className="px-3 mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-gray-400">
+              <p className="px-4 mb-3 text-[11px] font-bold uppercase tracking-[0.15em] text-stone-400">
                 {group.section}
               </p>
             )}
-            <div className="flex flex-col gap-0.5">
+            <div className="flex flex-col gap-1">
               {group.items.map((item) => {
                 const active = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
                 return (
@@ -50,14 +50,14 @@ export default function Sidebar({ groups, tenantName }: { groups: NavGroup[]; te
                     href={item.href}
                     onClick={() => setOpen(false)}
                     aria-current={active ? "page" : undefined}
-                    className={`group relative flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    className={`group relative flex items-center gap-3.5 px-4 py-2.5 rounded-2xl text-[14px] font-medium transition-all duration-300 ${
                       active
-                        ? "bg-[var(--accent-soft)] text-[var(--accent-hover)]"
-                        : "text-gray-500 hover:text-gray-900 hover:bg-gray-50"
+                        ? "bg-rose-50/80 text-rose-700 shadow-sm border border-rose-100/50"
+                        : "text-stone-500 hover:text-stone-900 hover:bg-stone-50 border border-transparent"
                     }`}
                   >
-                    {active && <span className="absolute left-0 top-1.5 bottom-1.5 w-0.5 rounded-full bg-[var(--accent)]" />}
-                    <span className={`material-symbols-outlined text-[20px] ${active ? "text-[var(--accent)]" : "text-gray-400 group-hover:text-gray-600"}`}>
+                    {active && <span className="absolute left-0 top-2 bottom-2 w-1 rounded-full bg-rose-400 shadow-[0_0_8px_rgba(251,113,133,0.8)]" />}
+                    <span className={`material-symbols-outlined text-[20px] transition-transform duration-300 ${active ? "text-rose-500 scale-110" : "text-stone-400 group-hover:text-stone-600 group-hover:scale-110"}`}>
                       {item.icon}
                     </span>
                     {item.label}
@@ -69,14 +69,14 @@ export default function Sidebar({ groups, tenantName }: { groups: NavGroup[]; te
         ))}
       </nav>
 
-      <div className="px-3 py-3 border-t border-gray-100">
+      <div className="px-4 py-4 border-t border-stone-100 bg-stone-50/50">
         <Link
           href="/settings"
           onClick={() => setOpen(false)}
-          className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-gray-500 hover:text-gray-900 hover:bg-gray-50 transition-colors"
+          className="flex items-center gap-3.5 px-4 py-3 rounded-2xl text-[14px] font-medium text-stone-500 hover:text-stone-900 hover:bg-white hover:shadow-sm border border-transparent hover:border-stone-200 transition-all duration-300"
         >
-          <span className="material-symbols-outlined text-[20px] text-gray-400">settings</span>
-          Ayarlar
+          <span className="material-symbols-outlined text-[20px] text-stone-400">settings</span>
+          Settings
         </Link>
       </div>
     </>
@@ -85,21 +85,21 @@ export default function Sidebar({ groups, tenantName }: { groups: NavGroup[]; te
   return (
     <>
       {/* Mobile header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 h-14 bg-white/90 backdrop-blur border-b border-gray-100 flex items-center justify-between px-4 z-50">
-        <button onClick={() => setOpen(true)} className="text-gray-700 -ml-1 p-1" aria-label="Menüyü aç">
+      <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white/80 backdrop-blur-xl border-b border-stone-100 flex items-center justify-between px-5 z-50">
+        <button onClick={() => setOpen(true)} className="text-stone-700 -ml-1 p-2 hover:bg-stone-50 rounded-xl transition-colors" aria-label="Open menu">
           <span className="material-symbols-outlined">menu</span>
         </button>
-        <h1 className="text-base text-gray-900"><Wordmark /></h1>
-        <div className="w-6" />
+        <h1 className="text-lg text-stone-900"><Wordmark /></h1>
+        <div className="w-8" />
       </div>
 
       {/* Mobile overlay */}
-      {open && <div className="lg:hidden fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-40" onClick={() => setOpen(false)} />}
+      {open && <div className="lg:hidden fixed inset-0 bg-stone-900/20 backdrop-blur-sm z-40 transition-opacity" onClick={() => setOpen(false)} />}
 
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 w-64 bg-white border-r border-gray-100 text-gray-900 flex flex-col z-50 transition-transform duration-200 lg:translate-x-0 ${
-          open ? "translate-x-0" : "-translate-x-full"
+        className={`fixed inset-y-0 left-0 w-[280px] bg-[#FDFCFB]/95 backdrop-blur-2xl border-r border-stone-100 text-stone-900 flex flex-col z-50 transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] lg:translate-x-0 ${
+          open ? "translate-x-0 shadow-2xl" : "-translate-x-full"
         }`}
       >
         {nav}

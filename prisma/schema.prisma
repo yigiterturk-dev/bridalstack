@@ -1,0 +1,581 @@
+// StackCRM — Neon Postgres şeması
+//
+// Kaynak: scripts/*.sql (Supabase şemasının birebir karşılığı).
+// Alan adları snake_case tutuldu; uygulama kodu (44 dosya) bu adları kullanıyor.
+// date / time kolonları String olarak modellendi — kod bunları "2026-09-02" ve
+// "09:00" formatında string olarak işliyor, Date nesnesi beklemiyor.
+// Supabase'deki auth.users referansları User modeline bağlandı.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ─────────────────────────────────────────────────────────────
+// Kimlik ve kiracı
+// ─────────────────────────────────────────────────────────────
+
+model User {
+  id            String   @id @default(uuid()) @db.Uuid
+  email         String   @unique
+  password_hash String
+  name          String?
+  created_at    DateTime @default(now()) @db.Timestamptz(6)
+  updated_at    DateTime @updatedAt @db.Timestamptz(6)
+
+  owned_tenants     Tenant[]
+  memberships       TenantMember[]
+  reset_tokens      PasswordResetToken[]
+  sent_invitations  Invitation[]
+  onboarding_draft  OnboardingDraft?
+  funnel_events     FunnelEvent[]
+  created_customers Customer[]
+  created_products  Product[]
+  created_orders    Order[]
+
+  @@map("users")
+}
+
+model Tenant {
+  id                      String    @id @default(uuid()) @db.Uuid
+  name                    String
+  slug                    String    @unique
+  owner_id                String    @db.Uuid
+  packs                   String[]  @default(["base"])
+  plan                    String    @default("free")
+  settings                Json      @default("{}")
+  logo_url                String?
+  primary_color           String?   @default("#0A0A0C")
+  accent_color            String?   @default("#2563EB")
+  trial_started_at        DateTime? @db.Timestamptz(6)
+  trial_ends_at           DateTime? @db.Timestamptz(6)
+  converted_at            DateTime? @db.Timestamptz(6)
+  signup_source           String?
+  cohort_month            String?
+  onboarding_completed_at DateTime? @db.Timestamptz(6)
+  created_at              DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at              DateTime  @updatedAt @db.Timestamptz(6)
+
+  owner         User                  @relation(fields: [owner_id], references: [id])
+  members       TenantMember[]
+  customers     Customer[]
+  products      Product[]
+  orders        Order[]
+  appointments  Appointment[]
+  services      Service[]
+  schedules     StaffSchedule[]
+  time_off      StaffTimeOff[]
+  bookings      Booking[]
+  contracts     Contract[]
+  workflows     Workflow[]
+  trunk_shows   TrunkShow[]
+  try_ons       TryOn[]
+  lifecycle_log ProductLifecycleLog[]
+  portal_tokens PortalToken[]
+  installments  Installment[]
+  reminders     InstallmentReminder[]
+  funnel_events FunnelEvent[]
+  invitations   Invitation[]
+
+  @@index([cohort_month])
+  @@map("tenants")
+}
+
+model TenantMember {
+  id           String   @id @default(uuid()) @db.Uuid
+  tenant_id    String   @db.Uuid
+  user_id      String   @db.Uuid
+  role         String   @default("member") // owner, admin, member, viewer
+  display_name String?
+  title        String?
+  bio          String?
+  photo_url    String?
+  is_bookable  Boolean  @default(true)
+  created_at   DateTime @default(now()) @db.Timestamptz(6)
+
+  tenant    Tenant          @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  user      User            @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  schedules StaffSchedule[]
+  services  StaffService[]
+  bookings  Booking[]
+  time_off  StaffTimeOff[]
+
+  @@unique([tenant_id, user_id])
+  @@index([user_id])
+  @@index([tenant_id])
+  @@map("tenant_members")
+}
+
+// ─────────────────────────────────────────────────────────────
+// CRM çekirdeği
+// ─────────────────────────────────────────────────────────────
+
+model Customer {
+  id         String   @id @default(uuid()) @db.Uuid
+  tenant_id  String   @db.Uuid
+  name       String
+  phone      String?
+  email      String?
+  status     String   @default("new")
+  notes      String?
+  metadata   Json     @default("{}")
+  created_by String?  @db.Uuid
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  updated_at DateTime @updatedAt @db.Timestamptz(6)
+
+  tenant        Tenant        @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  creator       User?         @relation(fields: [created_by], references: [id])
+  orders        Order[]
+  appointments  Appointment[]
+  bookings      Booking[]
+  contracts     Contract[]
+  try_ons       TryOn[]
+  portal_tokens PortalToken[]
+  installments  Installment[]
+
+  @@index([tenant_id])
+  @@map("customers")
+}
+
+model Product {
+  id                   String   @id @default(uuid()) @db.Uuid
+  tenant_id            String   @db.Uuid
+  name                 String
+  barcode              String?
+  sku                  String?
+  category             String?
+  image_url            String?
+  price                Float    @default(0)
+  cost                 Float    @default(0)
+  stock_quantity       Int      @default(0)
+  description          String?
+  metadata             Json     @default("{}")
+  lifecycle_stage      String   @default("in_stock")
+  lifecycle_updated_at DateTime @default(now()) @db.Timestamptz(6)
+  created_by           String?  @db.Uuid
+  created_at           DateTime @default(now()) @db.Timestamptz(6)
+  updated_at           DateTime @updatedAt @db.Timestamptz(6)
+
+  tenant        Tenant                @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  creator       User?                 @relation(fields: [created_by], references: [id])
+  try_ons       TryOn[]
+  lifecycle_log ProductLifecycleLog[]
+  show_items    TrunkShowItem[]
+
+  @@index([tenant_id])
+  @@index([barcode])
+  @@map("products")
+}
+
+model Order {
+  id                String   @id @default(uuid()) @db.Uuid
+  tenant_id         String   @db.Uuid
+  ref_no            String
+  customer_id       String   @db.Uuid
+  order_type        String   @default("sale")
+  status            String   @default("draft")
+  order_date        String? // date — "2026-09-02"
+  delivery_date     String? // date
+  sales_person      String?
+  list_total        Float    @default(0)
+  discounted_total  Float    @default(0)
+  deposit_amount    Float    @default(0)
+  remaining_balance Float    @default(0)
+  notes             String?
+  metadata          Json     @default("{}")
+  created_by        String?  @db.Uuid
+  created_at        DateTime @default(now()) @db.Timestamptz(6)
+  updated_at        DateTime @updatedAt @db.Timestamptz(6)
+
+  tenant       Tenant        @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  customer     Customer      @relation(fields: [customer_id], references: [id], onDelete: Cascade)
+  creator      User?         @relation(fields: [created_by], references: [id])
+  contracts    Contract[]
+  installments Installment[]
+
+  @@unique([tenant_id, ref_no])
+  @@index([tenant_id])
+  @@index([customer_id])
+  @@map("orders")
+}
+
+model Appointment {
+  id               String   @id @default(uuid()) @db.Uuid
+  tenant_id        String   @db.Uuid
+  customer_id      String   @db.Uuid
+  title            String?
+  description      String?
+  appointment_date DateTime @db.Timestamptz(6)
+  status           String   @default("pending")
+  created_by       String?  @db.Uuid
+  created_at       DateTime @default(now()) @db.Timestamptz(6)
+
+  tenant   Tenant   @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  customer Customer @relation(fields: [customer_id], references: [id], onDelete: Cascade)
+  try_ons  TryOn[]
+
+  @@index([tenant_id])
+  @@map("appointments")
+}
+
+// ─────────────────────────────────────────────────────────────
+// Salon: hizmetler, personel, rezervasyon
+// ─────────────────────────────────────────────────────────────
+
+model Service {
+  id          String   @id @default(uuid()) @db.Uuid
+  tenant_id   String   @db.Uuid
+  name        String
+  category    String?
+  duration    Int      @default(30)
+  price       Float    @default(0)
+  price_max   Float?
+  description String?
+  is_active   Boolean  @default(true)
+  sort_order  Int      @default(0)
+  created_at  DateTime @default(now()) @db.Timestamptz(6)
+
+  tenant   Tenant         @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  staff    StaffService[]
+  bookings Booking[]
+
+  @@index([tenant_id])
+  @@map("services")
+}
+
+model StaffSchedule {
+  id          String  @id @default(uuid()) @db.Uuid
+  tenant_id   String  @db.Uuid
+  member_id   String  @db.Uuid
+  day_of_week Int // 0-6
+  start_time  String  @default("09:00") // time
+  end_time    String  @default("18:00") // time
+  break_start String? // time
+  break_end   String? // time
+  is_off      Boolean @default(false)
+
+  tenant Tenant       @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  member TenantMember @relation(fields: [member_id], references: [id], onDelete: Cascade)
+
+  @@unique([member_id, day_of_week])
+  @@index([member_id])
+  @@map("staff_schedules")
+}
+
+model StaffService {
+  id         String @id @default(uuid()) @db.Uuid
+  member_id  String @db.Uuid
+  service_id String @db.Uuid
+
+  member  TenantMember @relation(fields: [member_id], references: [id], onDelete: Cascade)
+  service Service      @relation(fields: [service_id], references: [id], onDelete: Cascade)
+
+  @@unique([member_id, service_id])
+  @@map("staff_services")
+}
+
+model StaffTimeOff {
+  id         String   @id @default(uuid()) @db.Uuid
+  tenant_id  String   @db.Uuid
+  member_id  String   @db.Uuid
+  date       String // date
+  reason     String?
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+
+  tenant Tenant       @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  member TenantMember @relation(fields: [member_id], references: [id], onDelete: Cascade)
+
+  @@map("staff_time_off")
+}
+
+model Booking {
+  id             String   @id @default(uuid()) @db.Uuid
+  tenant_id      String   @db.Uuid
+  customer_id    String?  @db.Uuid
+  member_id      String?  @db.Uuid
+  service_id     String?  @db.Uuid
+  customer_name  String
+  customer_phone String?
+  customer_email String?
+  booking_date   String // date
+  start_time     String // time
+  end_time       String // time
+  status         String   @default("confirmed") // pending, confirmed, completed, cancelled, no_show
+  notes          String?
+  source         String   @default("online") // online, walk_in, phone, instagram, google
+  amount         Float    @default(0)
+  tip_amount     Float    @default(0)
+  payment_method String?
+  paid           Boolean  @default(false)
+  created_at     DateTime @default(now()) @db.Timestamptz(6)
+
+  tenant   Tenant        @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  customer Customer?     @relation(fields: [customer_id], references: [id], onDelete: SetNull)
+  member   TenantMember? @relation(fields: [member_id], references: [id], onDelete: SetNull)
+  service  Service?      @relation(fields: [service_id], references: [id], onDelete: SetNull)
+
+  @@index([tenant_id])
+  @@index([booking_date])
+  @@index([member_id])
+  @@map("bookings")
+}
+
+// ─────────────────────────────────────────────────────────────
+// Sözleşme, otomasyon, trunk show
+// ─────────────────────────────────────────────────────────────
+
+model Contract {
+  id             String    @id @default(uuid()) @db.Uuid
+  tenant_id      String    @db.Uuid
+  order_id       String?   @db.Uuid
+  customer_id    String    @db.Uuid
+  title          String
+  content        String
+  total_amount   Float     @default(0)
+  status         String    @default("draft") // draft, sent, viewed, signed, expired
+  token          String    @unique
+  signed_at      DateTime? @db.Timestamptz(6)
+  signature_data String?
+  ip_address     String?
+  created_by     String?   @db.Uuid
+  created_at     DateTime  @default(now()) @db.Timestamptz(6)
+
+  tenant   Tenant   @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  order    Order?   @relation(fields: [order_id], references: [id], onDelete: SetNull)
+  customer Customer @relation(fields: [customer_id], references: [id], onDelete: Cascade)
+
+  @@index([tenant_id])
+  @@map("contracts")
+}
+
+model Workflow {
+  id            String   @id @default(uuid()) @db.Uuid
+  tenant_id     String   @db.Uuid
+  name          String
+  trigger_type  String // appointment_created, order_created, ...
+  action_type   String // send_email, send_reminder, ...
+  action_config Json     @default("{}")
+  delay_minutes Int      @default(0)
+  is_active     Boolean  @default(true)
+  created_by    String?  @db.Uuid
+  created_at    DateTime @default(now()) @db.Timestamptz(6)
+
+  tenant Tenant @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+
+  @@index([tenant_id])
+  @@map("workflows")
+}
+
+model TrunkShow {
+  id         String   @id @default(uuid()) @db.Uuid
+  tenant_id  String   @db.Uuid
+  name       String
+  vendor     String?
+  start_date String // date
+  end_date   String // date
+  status     String   @default("upcoming") // upcoming, active, completed, cancelled
+  notes      String?
+  created_by String?  @db.Uuid
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+
+  tenant Tenant          @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  items  TrunkShowItem[]
+
+  @@index([tenant_id])
+  @@map("trunk_shows")
+}
+
+model TrunkShowItem {
+  id            String  @id @default(uuid()) @db.Uuid
+  trunk_show_id String  @db.Uuid
+  product_id    String? @db.Uuid
+  gown_name     String
+  size          String?
+  status        String  @default("available") // available, tried, reserved, returned
+  try_count     Int     @default(0)
+  notes         String?
+
+  trunk_show TrunkShow @relation(fields: [trunk_show_id], references: [id], onDelete: Cascade)
+  product    Product?  @relation(fields: [product_id], references: [id], onDelete: SetNull)
+
+  @@map("trunk_show_items")
+}
+
+// ─────────────────────────────────────────────────────────────
+// Try-on, ürün yaşam döngüsü, müşteri portalı
+// ─────────────────────────────────────────────────────────────
+
+model TryOn {
+  id             String   @id @default(uuid()) @db.Uuid
+  tenant_id      String   @db.Uuid
+  customer_id    String   @db.Uuid
+  appointment_id String?  @db.Uuid
+  product_id     String   @db.Uuid
+  stylist        String?
+  rating         Int? // 1-5
+  reaction       String? // loved, liked, maybe, no
+  photo_urls     String[] @default([])
+  notes          String?
+  created_by     String?  @db.Uuid
+  created_at     DateTime @default(now()) @db.Timestamptz(6)
+
+  tenant      Tenant       @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  customer    Customer     @relation(fields: [customer_id], references: [id], onDelete: Cascade)
+  appointment Appointment? @relation(fields: [appointment_id], references: [id], onDelete: SetNull)
+  product     Product      @relation(fields: [product_id], references: [id], onDelete: Cascade)
+
+  @@index([customer_id])
+  @@index([product_id])
+  @@map("try_ons")
+}
+
+model ProductLifecycleLog {
+  id         String   @id @default(uuid()) @db.Uuid
+  tenant_id  String   @db.Uuid
+  product_id String   @db.Uuid
+  from_stage String?
+  to_stage   String
+  notes      String?
+  created_by String?  @db.Uuid
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+
+  tenant  Tenant  @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [product_id], references: [id], onDelete: Cascade)
+
+  @@index([product_id])
+  @@map("product_lifecycle_log")
+}
+
+model PortalToken {
+  id          String    @id @default(uuid()) @db.Uuid
+  tenant_id   String    @db.Uuid
+  customer_id String    @db.Uuid
+  token       String    @unique
+  expires_at  DateTime? @db.Timestamptz(6)
+  created_at  DateTime  @default(now()) @db.Timestamptz(6)
+
+  tenant   Tenant   @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  customer Customer @relation(fields: [customer_id], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@map("portal_tokens")
+}
+
+// ─────────────────────────────────────────────────────────────
+// Taksit ve hatırlatma
+// ─────────────────────────────────────────────────────────────
+
+model Installment {
+  id                          String    @id @default(uuid()) @db.Uuid
+  tenant_id                   String    @db.Uuid
+  order_id                    String?   @db.Uuid
+  customer_id                 String?   @db.Uuid
+  installment_no              Int       @default(1)
+  total_count                 Int       @default(1)
+  amount                      Float     @default(0)
+  due_date                    String // date
+  paid_at                     DateTime? @db.Timestamptz(6)
+  status                      String    @default("pending") // pending, due, overdue, paid, cancelled
+  stripe_subscription_item_id String?
+  notes                       String?
+  created_at                  DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at                  DateTime  @updatedAt @db.Timestamptz(6)
+
+  tenant    Tenant                @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  order     Order?                @relation(fields: [order_id], references: [id], onDelete: Cascade)
+  customer  Customer?             @relation(fields: [customer_id], references: [id], onDelete: SetNull)
+  reminders InstallmentReminder[]
+
+  @@index([tenant_id])
+  @@index([due_date])
+  @@index([status])
+  @@map("installments")
+}
+
+model InstallmentReminder {
+  id             String   @id @default(uuid()) @db.Uuid
+  tenant_id      String   @db.Uuid
+  installment_id String   @db.Uuid
+  kind           String   @default("upcoming") // upcoming, due_today, overdue
+  sent_at        DateTime @default(now()) @db.Timestamptz(6)
+  channel        String?  @default("email")
+
+  tenant      Tenant      @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  installment Installment @relation(fields: [installment_id], references: [id], onDelete: Cascade)
+
+  @@unique([installment_id, kind])
+  @@index([tenant_id])
+  @@map("installment_reminders")
+}
+
+// ─────────────────────────────────────────────────────────────
+// Onboarding ve analitik
+// ─────────────────────────────────────────────────────────────
+
+model OnboardingDraft {
+  user_id    String   @id @db.Uuid
+  data       Json     @default("{}")
+  step       Int      @default(1)
+  updated_at DateTime @updatedAt @db.Timestamptz(6)
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("onboarding_drafts")
+}
+
+model FunnelEvent {
+  id         String   @id @default(uuid()) @db.Uuid
+  tenant_id  String   @db.Uuid
+  user_id    String?  @db.Uuid
+  event      String
+  metadata   Json     @default("{}")
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+
+  tenant Tenant @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  user   User?  @relation(fields: [user_id], references: [id], onDelete: SetNull)
+
+  @@index([tenant_id])
+  @@index([event])
+  @@map("funnel_events")
+}
+
+/// Parola sıfırlama jetonu. Ham jeton asla saklanmaz; yalnızca SHA-256 özeti
+/// tutulur, böylece veritabanını okuyan biri hesapları ele geçiremez.
+model PasswordResetToken {
+  id         String    @id @default(uuid()) @db.Uuid
+  user_id    String    @db.Uuid
+  token_hash String    @unique
+  expires_at DateTime  @db.Timestamptz(6)
+  used_at    DateTime? @db.Timestamptz(6)
+  created_at DateTime  @default(now()) @db.Timestamptz(6)
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@map("password_reset_tokens")
+}
+
+/// Ekip daveti. Jeton özeti saklanır; kabul edilince TenantMember oluşur.
+model Invitation {
+  id          String    @id @default(uuid()) @db.Uuid
+  tenant_id   String    @db.Uuid
+  email       String
+  role        String    @default("stylist")
+  token_hash  String    @unique
+  invited_by  String?   @db.Uuid
+  expires_at  DateTime  @db.Timestamptz(6)
+  accepted_at DateTime? @db.Timestamptz(6)
+  created_at  DateTime  @default(now()) @db.Timestamptz(6)
+
+  tenant  Tenant @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  inviter User?  @relation(fields: [invited_by], references: [id], onDelete: SetNull)
+
+  @@unique([tenant_id, email])
+  @@index([tenant_id])
+  @@map("invitations")
+}

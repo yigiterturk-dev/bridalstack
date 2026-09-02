@@ -1,17 +1,17 @@
-import { createClient } from "@/lib/supabase/server";
+import { prisma } from "@/lib/prisma";
 import SignContract from "./sign-contract";
 
 type Props = { params: Promise<{ token: string }> };
 
 export default async function ContractSignPage({ params }: Props) {
   const { token } = await params;
-  const supabase = await createClient();
-
-  const { data: contract } = await supabase
-    .from("contracts")
-    .select("*, customers(name, email), tenants:tenant_id(name)")
-    .eq("token", token)
-    .maybeSingle();
+  const contract = await prisma.contract.findUnique({
+    where: { token },
+    include: {
+      customer: { select: { name: true, email: true } },
+      tenant: { select: { name: true } },
+    },
+  });
 
   if (!contract) {
     return (
@@ -24,8 +24,8 @@ export default async function ContractSignPage({ params }: Props) {
     );
   }
 
-  const tenant = (Array.isArray(contract.tenants) ? contract.tenants[0] : contract.tenants) as { name: string } | null;
-  const customer = (Array.isArray(contract.customers) ? contract.customers[0] : contract.customers) as { name: string; email: string | null } | null;
+  const tenant = contract.tenant;
+  const customer = contract.customer;
 
   if (contract.status === "signed") {
     return (

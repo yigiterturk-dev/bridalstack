@@ -1,17 +1,18 @@
-import { createClient } from "@/lib/supabase/server";
+import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 
 type Props = { params: Promise<{ token: string }> };
 
 export default async function ClientPortalPage({ params }: Props) {
   const { token } = await params;
-  const supabase = await createClient();
-
-  const { data: portal } = await supabase
-    .from("portal_tokens")
-    .select("tenant_id, customer_id, tenants(name, logo_url, accent_color)")
-    .eq("token", token)
-    .maybeSingle();
+  // Süresi dolmuş token geçersiz (expires_at null ise süresiz).
+  const portal = await prisma.portalToken.findFirst({
+    where: { token, OR: [{ expires_at: null }, { expires_at: { gt: new Date() } }] },
+    select: {
+      tenant_id: true, customer_id: true,
+      tenant: { select: { name: true, logo_url: true, accent_color: true } },
+    },
+  });
 
   if (!portal) {
     return (
@@ -24,16 +25,22 @@ export default async function ClientPortalPage({ params }: Props) {
     );
   }
 
-  const tenant = (Array.isArray(portal.tenants) ? portal.tenants[0] : portal.tenants) as { name: string; logo_url: string | null; accent_color: string | null } | null;
+  const tenant = portal.tenant;
   const shopName = tenant?.name ?? "Bridal Shop";
   const accent = tenant?.accent_color ?? "#e11d48";
 
-  const [{ data: customer }, { data: appointments }, { data: orders }, { data: tryOns }] = await Promise.all([
-    supabase.from("customers").select("name, phone, email, metadata").eq("id", portal.customer_id).single(),
-    supabase.from("appointments").select("title, appointment_date, status").eq("customer_id", portal.customer_id).order("appointment_date", { ascending: true }).limit(10),
-    supabase.from("orders").select("ref_no, order_type, status, discounted_total, remaining_balance, delivery_date").eq("customer_id", portal.customer_id).order("created_at", { ascending: false }).limit(10),
-    supabase.from("try_ons").select("reaction, rating, notes, photo_urls, created_at, products(name, category)").eq("customer_id", portal.customer_id).order("created_at", { ascending: false }).limit(20),
+  const scope = { customer_id: portal.customer_id, tenant_id: portal.tenant_id };
+  const [customer, appointments, orders, tryOnRows] = await Promise.all([
+    prisma.customer.findFirst({ where: { id: portal.customer_id, tenant_id: portal.tenant_id }, select: { name: true, phone: true, email: true, metadata: true } }),
+    prisma.appointment.findMany({ where: scope, select: { title: true, appointment_date: true, status: true }, orderBy: { appointment_date: "asc" }, take: 10 }),
+    prisma.order.findMany({ where: scope, select: { ref_no: true, order_type: true, status: true, discounted_total: true, remaining_balance: true, delivery_date: true }, orderBy: { created_at: "desc" }, take: 10 }),
+    prisma.tryOn.findMany({
+      where: scope,
+      select: { reaction: true, rating: true, notes: true, photo_urls: true, created_at: true, product: { select: { name: true, category: true } } },
+      orderBy: { created_at: "desc" }, take: 20,
+    }),
   ]);
+  const tryOns = tryOnRows.map(({ product, ...t }) => ({ ...t, products: product }));
 
   const REACTION_EMOJI: Record<string, string> = { loved: "😍", liked: "👍", maybe: "🤔", no: "👎" };
   const STATUS_LABEL: Record<string, string> = { pending: "Upcoming", confirmed: "Confirmed", completed: "Done", cancelled: "Cancelled", draft: "Processing", delivered: "Delivered" };

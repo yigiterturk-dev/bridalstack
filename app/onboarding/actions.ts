@@ -1,6 +1,7 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
+import { prisma } from "@/lib/prisma";
+import { getCurrentUserId } from "@/lib/tenant";
 import { PACKS, type PackId } from "@/config/modules";
 
 export type OnboardingDraft = {
@@ -13,37 +14,34 @@ export type OnboardingDraft = {
 
 // Taslağı yükle (giriş yapan kullanıcı için)
 export async function loadDraft(): Promise<OnboardingDraft | null> {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return null;
+  const userId = await getCurrentUserId();
+  if (!userId) return null;
 
-  const { data } = await supabase
-    .from("onboarding_drafts")
-    .select("data, step")
-    .eq("user_id", user.id)
-    .maybeSingle();
+  const draft = await prisma.onboardingDraft.findUnique({
+    where: { user_id: userId },
+    select: { data: true, step: true },
+  });
 
-  if (!data) return null;
-  return { ...(data.data as OnboardingDraft), step: data.step };
+  if (!draft) return null;
+  return { ...(draft.data as OnboardingDraft), step: draft.step };
 }
 
 // Taslağı kaydet (her adımda otomatik)
 export async function saveDraft(draft: OnboardingDraft): Promise<{ ok: boolean }> {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { ok: false };
+  const userId = await getCurrentUserId();
+  if (!userId) return { ok: false };
 
   const step = Math.max(1, Math.min(4, Number(draft.step) || 1));
-  const { error } = await supabase.from("onboarding_drafts").upsert(
-    {
-      user_id: user.id,
-      data: draft,
-      step,
-      updated_at: new Date().toISOString(),
-    },
-    { onConflict: "user_id" }
-  );
-  return { ok: !error };
+  try {
+    await prisma.onboardingDraft.upsert({
+      where: { user_id: userId },
+      update: { data: draft as object, step },
+      create: { user_id: userId, data: draft as object, step },
+    });
+    return { ok: true };
+  } catch {
+    return { ok: false };
+  }
 }
 
 type FinishInput = {
@@ -57,14 +55,13 @@ type FinishInput = {
 export async function finishOnboarding(
   input: FinishInput
 ): Promise<{ ok: boolean; error?: string }> {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { ok: false, error: "Oturum bulunamadı" };
+  const userId = await getCurrentUserId();
+  if (!userId) return { ok: false, error: "Not signed in" };
 
   // Sınır doğrulaması
   const shopName = String(input.shopName || "").trim();
-  if (!shopName) return { ok: false, error: "İşletme adı gerekli" };
-  if (shopName.length > 120) return { ok: false, error: "İşletme adı çok uzun" };
+  if (!shopName) return { ok: false, error: "Shop name is required" };
+  if (shopName.length > 120) return { ok: false, error: "That shop name is too long" };
 
   const validPacks = (Array.isArray(input.packs) ? input.packs : [])
     .filter((p): p is PackId => typeof p === "string" && p in PACKS);
@@ -73,40 +70,15 @@ export async function finishOnboarding(
     : (["base", ...validPacks] as PackId[]);
 
   // Zaten bir workspace'i varsa tekrar oluşturma
-  const { data: existing } = await supabase
-    .from("tenant_members")
-    .select("tenant_id")
-    .eq("user_id", user.id)
-    .maybeSingle();
+  const existing = await prisma.tenantMember.findFirst({
+    where: { user_id: userId },
+    select: { tenant_id: true },
+  });
   if (existing) return { ok: true };
 
   const baseSlug = shopName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
   const slug = baseSlug ? `${baseSlug}-${Date.now().toString(36)}` : `shop-${Date.now()}`;
 
-  const { data: tenant, error: tErr } = await supabase
-    .from("tenants")
-    .insert({
-      name: shopName,
-      slug,
-      owner_id: user.id,
-      packs,
-      plan: packs.length > 1 ? "starter" : "free",
-      signup_source: String(input.signupSource || "direct").slice(0, 60),
-      onboarding_completed_at: new Date().toISOString(),
-    })
-    .select()
-    .single();
-
-  if (tErr || !tenant) return { ok: false, error: tErr?.message || "İşletme oluşturulamadı" };
-
-  const { error: mErr } = await supabase.from("tenant_members").insert({
-    tenant_id: tenant.id,
-    user_id: user.id,
-    role: "owner",
-  });
-  if (mErr) return { ok: false, error: mErr.message };
-
-  // Servisleri ekle (varsa)
   const services = (Array.isArray(input.services) ? input.services : [])
     .map((s) => ({
       name: String(s?.name || "").trim().slice(0, 120),
@@ -116,28 +88,51 @@ export async function finishOnboarding(
     .filter((s) => s.name.length > 0)
     .slice(0, 50);
 
-  if (services.length > 0) {
-    await supabase.from("services").insert(
-      services.map((s, i) => ({
-        tenant_id: tenant.id,
-        name: s.name,
-        duration: s.duration,
-        price: s.price,
-        sort_order: i,
-      }))
-    );
+  try {
+    // Hepsi tek işlemde: yarım kalan kurulum kullanıcıyı tenant'sız bırakmasın.
+    await prisma.$transaction(async (tx) => {
+      const tenant = await tx.tenant.create({
+        data: {
+          name: shopName,
+          slug,
+          owner_id: userId,
+          packs,
+          plan: packs.length > 1 ? "starter" : "free",
+          signup_source: String(input.signupSource || "direct").slice(0, 60),
+          onboarding_completed_at: new Date(),
+        },
+      });
+
+      await tx.tenantMember.create({
+        data: { tenant_id: tenant.id, user_id: userId, role: "owner" },
+      });
+
+      if (services.length > 0) {
+        await tx.service.createMany({
+          data: services.map((s, i) => ({
+            tenant_id: tenant.id,
+            name: s.name,
+            duration: s.duration,
+            price: s.price,
+            sort_order: i,
+          })),
+        });
+      }
+
+      await tx.funnelEvent.create({
+        data: {
+          tenant_id: tenant.id,
+          user_id: userId,
+          event: "onboarding_completed",
+          metadata: { packs, service_count: services.length },
+        },
+      });
+
+      await tx.onboardingDraft.deleteMany({ where: { user_id: userId } });
+    });
+  } catch (e) {
+    return { ok: false, error: "Could not create the shop" };
   }
-
-  // Funnel: signup olayı
-  await supabase.from("funnel_events").insert({
-    tenant_id: tenant.id,
-    user_id: user.id,
-    event: "onboarding_completed",
-    metadata: { packs, service_count: services.length },
-  });
-
-  // Taslağı temizle
-  await supabase.from("onboarding_drafts").delete().eq("user_id", user.id);
 
   return { ok: true };
 }

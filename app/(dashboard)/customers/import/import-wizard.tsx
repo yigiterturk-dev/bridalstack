@@ -24,7 +24,7 @@ export default function ImportWizard() {
     setError("");
     setDone(null);
     if (file.size > 5_000_000) {
-      setError("Dosya çok büyük (maks 5MB).");
+      setError("That file is too large (5MB maximum).");
       return;
     }
     setFileName(file.name);
@@ -37,7 +37,7 @@ export default function ImportWizard() {
       setValidCount(result.validCount);
       setErrorCount(result.errorCount);
     } catch {
-      setError("Dosya okunamadı.");
+      setError("Could not read that file.");
     } finally {
       setParsing(false);
     }
@@ -49,7 +49,7 @@ export default function ImportWizard() {
     const res = await importCustomers(csvText);
     setImporting(false);
     if (!res.ok) {
-      setError(res.error || "İçe aktarma başarısız.");
+      setError(res.error || "Import failed.");
       return;
     }
     setDone({ inserted: res.inserted ?? 0, skipped: res.skipped ?? 0 });
@@ -72,10 +72,10 @@ export default function ImportWizard() {
         <span className="material-symbols-outlined text-4xl text-green-500 mb-3 block">
           task_alt
         </span>
-        <h2 className="text-lg font-semibold text-gray-900 mb-1">İçe aktarma tamamlandı</h2>
+        <h2 className="text-lg font-semibold text-gray-900 mb-1">Import complete</h2>
         <p className="text-sm text-gray-500 mb-6">
-          {done.inserted} müşteri eklendi
-          {done.skipped > 0 ? `, ${done.skipped} satır atlandı` : ""}.
+          {done.inserted} {done.inserted === 1 ? "customer" : "customers"} added
+          {done.skipped > 0 ? `, ${done.skipped} ${done.skipped === 1 ? "row" : "rows"} skipped` : ""}.
         </p>
         <div className="flex gap-3 justify-center">
           <button
@@ -104,7 +104,7 @@ export default function ImportWizard() {
               upload_file
             </span>
             <p className="text-sm text-gray-600">
-              {fileName || "CSV dosyası seçmek için tıklayın"}
+              {fileName || "Click to choose a CSV file"}
             </p>
             <input
               type="file"
@@ -134,7 +134,7 @@ export default function ImportWizard() {
         </div>
       )}
 
-      {parsing && <p className="text-sm text-gray-500">Ayrıştırılıyor…</p>}
+      {parsing && <p className="text-sm text-gray-500">Parsing…</p>}
 
       {rows.length > 0 && (
         <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
@@ -151,7 +151,7 @@ export default function ImportWizard() {
               disabled={importing || validCount === 0}
               className="px-5 py-2.5 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-800 disabled:opacity-50"
             >
-              {importing ? "İçe aktarılıyor…" : `${validCount} müşteriyi içe aktar`}
+              {importing ? "Importing…" : `Import ${validCount} ${validCount === 1 ? "customer" : "customers"}`}
             </button>
           </div>
           <div className="overflow-x-auto max-h-96 overflow-y-auto">

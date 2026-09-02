@@ -1,22 +1,18 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
+import { prisma } from "@/lib/prisma";
 import { getCurrentTenant } from "@/lib/tenant";
 import { createOrder } from "@/lib/actions";
 
 export default async function NewOrderPage() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
-
   const tenant = await getCurrentTenant();
   if (!tenant) redirect("/onboarding");
 
-  const { data: customers } = await supabase
-    .from("customers")
-    .select("id, name")
-    .eq("tenant_id", tenant.id)
-    .order("name");
+  const customers = await prisma.customer.findMany({
+    where: { tenant_id: tenant.id },
+    select: { id: true, name: true },
+    orderBy: { name: "asc" },
+  });
 
   return (
     <div className="max-w-xl">

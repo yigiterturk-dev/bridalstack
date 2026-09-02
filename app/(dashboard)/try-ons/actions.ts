@@ -2,13 +2,12 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
-import { getCurrentTenant } from "@/lib/tenant";
+import { prisma } from "@/lib/prisma";
+import { getCurrentTenant, getCurrentUserId } from "@/lib/tenant";
 
 export async function addTryOn(formData: FormData) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+  const userId = await getCurrentUserId();
+  if (!userId) redirect("/login");
   const tenant = await getCurrentTenant();
   if (!tenant) redirect("/onboarding");
 
@@ -18,20 +17,29 @@ export async function addTryOn(formData: FormData) {
   const rating = parseInt(String(formData.get("rating") || "")) || null;
   const stylist = String(formData.get("stylist") || "").trim() || null;
   const notes = String(formData.get("notes") || "").trim() || null;
+  // Sadece kendi Blob alanımızdan gelen adresler kabul edilir.
+  const BLOB = /^https:\/\/[a-z0-9-]+\.public\.blob\.vercel-storage\.com\//i;
+  const photo_urls = formData
+    .getAll("photo_urls")
+    .map((v) => String(v).trim())
+    .filter((v) => BLOB.test(v))
+    .slice(0, 12);
 
   if (!customer_id || !product_id) redirect("/try-ons?error=required");
 
-  await supabase.from("try_ons").insert({
-    tenant_id: tenant.id, customer_id, product_id, reaction, rating, stylist, notes, created_by: user.id,
-  });
-
-  await supabase.from("products").update({
-    lifecycle_stage: "in_fitting", lifecycle_updated_at: new Date().toISOString(),
-  }).eq("id", product_id).eq("tenant_id", tenant.id);
-
-  await supabase.from("product_lifecycle_log").insert({
-    tenant_id: tenant.id, product_id, to_stage: "in_fitting", notes: `Try-on by customer`, created_by: user.id,
-  });
+  // Üçü tek işlemde: yarım kalan kayıt ürünü yanlış aşamada bırakmasın.
+  await prisma.$transaction([
+    prisma.tryOn.create({
+      data: { tenant_id: tenant.id, customer_id, product_id, reaction, rating, stylist, notes, photo_urls, created_by: userId },
+    }),
+    prisma.product.updateMany({
+      where: { id: product_id, tenant_id: tenant.id },
+      data: { lifecycle_stage: "in_fitting", lifecycle_updated_at: new Date() },
+    }),
+    prisma.productLifecycleLog.create({
+      data: { tenant_id: tenant.id, product_id, to_stage: "in_fitting", notes: "Try-on by customer", created_by: userId },
+    }),
+  ]);
 
   revalidatePath("/try-ons");
   redirect("/try-ons?success=logged");

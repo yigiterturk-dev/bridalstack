@@ -1,14 +1,25 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { prisma } from "@/lib/prisma";
 import { getCurrentTenant } from "@/lib/tenant";
-import ModuleGuard from "@/components/module-guard";
 import { createAppointment, updateAppointmentStatus } from "@/lib/actions";
+import ModuleGuard from "@/components/module-guard";
+
+function statusStyle(status: string) {
+  switch (status) {
+    case "pending":
+      return "bg-amber-50 text-amber-600 border-amber-100";
+    case "confirmed":
+      return "bg-blue-50 text-blue-600 border-blue-100";
+    case "completed":
+      return "bg-emerald-50 text-emerald-600 border-emerald-100";
+    case "cancelled":
+      return "bg-rose-50 text-rose-600 border-rose-100";
+    default:
+      return "bg-stone-50 text-stone-600 border-stone-200";
+  }
+}
 
 export default async function AppointmentsPage() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
-
   const tenant = await getCurrentTenant();
   if (!tenant) redirect("/onboarding");
 
@@ -20,123 +31,155 @@ export default async function AppointmentsPage() {
 }
 
 async function AppointmentsContent({ tenantId }: { tenantId: string }) {
-  const supabase = await createClient();
-
-  const [{ data: appointments }, { data: customers }] = await Promise.all([
-    supabase.from("appointments").select("*, customers(name, phone)").eq("tenant_id", tenantId).order("appointment_date", { ascending: true }).limit(50),
-    supabase.from("customers").select("id, name").eq("tenant_id", tenantId).order("name"),
+  const [list, customers] = await Promise.all([
+    prisma.appointment.findMany({
+      where: { tenant_id: tenantId },
+      orderBy: { appointment_date: "desc" },
+      take: 200,
+      select: {
+        id: true, title: true, appointment_date: true, status: true,
+        customer: { select: { name: true, phone: true } },
+      },
+    }),
+    prisma.customer.findMany({
+      where: { tenant_id: tenantId },
+      orderBy: { name: "asc" },
+      select: { id: true, name: true },
+    }),
   ]);
 
-  const list = appointments ?? [];
   const now = new Date();
-
-  const STATUS_STYLE: Record<string, string> = {
-    pending: "bg-amber-100 text-amber-700",
-    confirmed: "bg-blue-100 text-blue-700",
-    completed: "bg-green-100 text-green-700",
-    cancelled: "bg-red-100 text-red-700",
-    "no-show": "bg-gray-100 text-gray-700",
-  };
+  const today = now.toISOString().split("T")[0];
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-6">
+    <div className="animate-fade-in-up">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-10">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Appointments</h1>
-          <p className="text-sm text-gray-500 mt-1">{list.length} appointments</p>
+          <h1 className="text-3xl lg:text-4xl font-extrabold text-stone-900 tracking-tight flex items-center gap-3">
+            Appointments <span className="text-rose-400 font-normal">✧</span>
+          </h1>
+          <p className="text-stone-500 mt-2 font-medium">
+            {list.length === 0
+              ? "No appointments scheduled yet"
+              : `You have ${list.length} ${list.length === 1 ? "appointment" : "appointments"} scheduled`}
+          </p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* New Appointment Form */}
-        <div className="bg-white rounded-2xl border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">New Appointment</h2>
-          <form action={createAppointment} className="flex flex-col gap-3">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Customer *</label>
-              <select name="customer_id" required className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none">
-                <option value="">Select...</option>
-                {(customers ?? []).map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
-              <input name="title" className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none" placeholder="Fitting appointment" />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
+        <div className="bg-white/60 backdrop-blur-xl rounded-[2rem] border border-stone-200/60 shadow-sm p-8 h-fit">
+          <div className="flex items-center gap-3 mb-6">
+            <span className="flex items-center justify-center w-10 h-10 rounded-xl bg-stone-900 text-white material-symbols-outlined text-[20px]">add</span>
+            <h2 className="text-xl font-bold text-stone-900">New Booking</h2>
+          </div>
+          {customers.length === 0 ? (
+            <p className="text-sm text-stone-500">
+              Add a bride first, then you can schedule appointments for her.
+            </p>
+          ) : (
+            <form action={createAppointment} className="flex flex-col gap-5">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Date *</label>
-                <input name="date" type="date" required className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none" />
+                <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">Customer *</label>
+                <select name="customer_id" required className="w-full px-4 py-3.5 rounded-2xl border border-stone-200 bg-white/50 text-stone-700 text-sm outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-50 transition-all">
+                  <option value="">Select a bride...</option>
+                  {customers.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Time</label>
-                <input name="time" type="time" defaultValue="10:00" className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none" />
+                <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">Title</label>
+                <input name="title" className="w-full px-4 py-3.5 rounded-2xl border border-stone-200 bg-white/50 text-stone-700 text-sm outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-50 transition-all" placeholder="e.g. First Fitting" />
               </div>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
-              <textarea name="description" rows={2} className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none resize-y" placeholder="Optional..." />
-            </div>
-            <button type="submit" className="mt-2 py-2.5 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors">Create</button>
-          </form>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">Date *</label>
+                  <input name="date" type="date" required defaultValue={today} className="w-full px-4 py-3.5 rounded-2xl border border-stone-200 bg-white/50 text-stone-700 text-sm outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-50 transition-all" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">Time</label>
+                  <input name="time" type="time" defaultValue="10:00" className="w-full px-4 py-3.5 rounded-2xl border border-stone-200 bg-white/50 text-stone-700 text-sm outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-50 transition-all" />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">Notes</label>
+                <textarea name="description" rows={2} className="w-full px-4 py-3.5 rounded-2xl border border-stone-200 bg-white/50 text-stone-700 text-sm outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-50 transition-all resize-y" placeholder="Optional notes for stylist..." />
+              </div>
+              <button type="submit" className="mt-2 w-full py-3.5 bg-stone-900 text-white rounded-2xl text-sm font-bold hover:bg-rose-600 hover:shadow-[0_8px_20px_-6px_rgba(225,29,72,0.4)] transition-all duration-300">
+                Schedule Appointment
+              </button>
+            </form>
+          )}
         </div>
 
         {/* Appointment List */}
-        <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-200 overflow-x-auto">
+        <div className="lg:col-span-2 bg-white/60 backdrop-blur-xl rounded-[2rem] border border-stone-200/60 shadow-sm overflow-hidden">
           {list.length > 0 ? (
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-100">
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Customer</th>
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Title</th>
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Date & Time</th>
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Status</th>
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50">
-                {list.map((a) => {
-                  const cust = (Array.isArray(a.customers) ? a.customers[0] : a.customers) as { name: string; phone: string | null } | null;
-                  const dt = new Date(a.appointment_date);
-                  const isPast = dt < now && a.status === "pending";
-                  return (
-                    <tr key={a.id} className={`hover:bg-gray-50 ${isPast ? "bg-red-50/50" : ""}`}>
-                      <td className="px-6 py-3 text-sm font-medium text-gray-900">{cust?.name ?? "—"}</td>
-                      <td className="px-6 py-3 text-sm text-gray-600">{a.title ?? "—"}</td>
-                      <td className="px-6 py-3 text-sm text-gray-600">
-                        {dt.toLocaleDateString("en-US", { month: "short", day: "numeric" })} at {dt.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
-                      </td>
-                      <td className="px-6 py-3">
-                        <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium ${STATUS_STYLE[a.status] ?? STATUS_STYLE.pending}`}>
-                          {a.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-3">
-                        {a.status === "pending" && (
-                          <div className="flex gap-1">
-                            <form action={updateAppointmentStatus} className="inline">
-                              <input type="hidden" name="id" value={a.id} />
-                              <input type="hidden" name="status" value="confirmed" />
-                              <button type="submit" className="text-xs px-2 py-1 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100">Confirm</button>
-                            </form>
-                            <form action={updateAppointmentStatus} className="inline">
-                              <input type="hidden" name="id" value={a.id} />
-                              <input type="hidden" name="status" value="completed" />
-                              <button type="submit" className="text-xs px-2 py-1 rounded-lg bg-green-50 text-green-700 hover:bg-green-100">Done</button>
-                            </form>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-stone-50/50 border-b border-stone-100/80">
+                    <th className="px-8 py-5 text-xs font-bold text-stone-500 uppercase tracking-wider">Bride</th>
+                    <th className="px-8 py-5 text-xs font-bold text-stone-500 uppercase tracking-wider">Appointment</th>
+                    <th className="px-8 py-5 text-xs font-bold text-stone-500 uppercase tracking-wider">Date &amp; Time</th>
+                    <th className="px-8 py-5 text-xs font-bold text-stone-500 uppercase tracking-wider">Status</th>
+                    <th className="px-8 py-5 text-xs font-bold text-stone-500 uppercase tracking-wider text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-stone-100/50">
+                  {list.map((a) => {
+                    const dt = a.appointment_date;
+                    const isPast = dt < now && a.status === "pending";
+                    return (
+                      <tr key={a.id} className={`hover:bg-white/80 transition-colors group ${isPast ? "bg-rose-50/30" : ""}`}>
+                        <td className="px-8 py-6">
+                          <div className="flex flex-col">
+                            <span className="font-bold text-stone-900 group-hover:text-rose-600 transition-colors">{a.customer?.name ?? "—"}</span>
+                            <span className="text-xs text-stone-400 mt-0.5">{a.customer?.phone ?? ""}</span>
                           </div>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                        </td>
+                        <td className="px-8 py-6 text-sm font-medium text-stone-700">{a.title ?? "—"}</td>
+                        <td className="px-8 py-6">
+                          <div className="flex flex-col">
+                            <span className="text-sm font-bold text-stone-800">{dt.toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
+                            <span className="text-xs text-stone-500">{dt.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}</span>
+                          </div>
+                        </td>
+                        <td className="px-8 py-6">
+                          <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold tracking-wide uppercase border ${statusStyle(a.status)}`}>
+                            {a.status}
+                          </span>
+                        </td>
+                        <td className="px-8 py-6 text-right">
+                          {a.status === "pending" && (
+                            <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+                              <form action={updateAppointmentStatus}>
+                                <input type="hidden" name="id" value={a.id} />
+                                <input type="hidden" name="status" value="confirmed" />
+                                <button type="submit" className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-500 hover:text-white transition-colors" title="Confirm">
+                                  <span className="material-symbols-outlined text-[16px]">check</span>
+                                </button>
+                              </form>
+                              <form action={updateAppointmentStatus}>
+                                <input type="hidden" name="id" value={a.id} />
+                                <input type="hidden" name="status" value="completed" />
+                                <button type="submit" className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 hover:bg-emerald-500 hover:text-white transition-colors" title="Mark Completed">
+                                  <span className="material-symbols-outlined text-[16px]">done_all</span>
+                                </button>
+                              </form>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           ) : (
-            <div className="p-16 text-center">
-              <span className="material-symbols-outlined text-4xl text-gray-300 mb-4 block">event</span>
-              <h3 className="text-lg font-semibold text-gray-900">No appointments yet</h3>
-              <p className="text-sm text-gray-500">Create one using the form.</p>
+            <div className="p-16 text-center flex flex-col items-center justify-center h-full">
+              <span className="flex items-center justify-center w-16 h-16 rounded-3xl bg-rose-50 text-rose-500 mb-5 material-symbols-outlined text-[32px]">event_busy</span>
+              <h3 className="text-xl font-bold text-stone-900 mb-2">No appointments</h3>
+              <p className="text-stone-500">Your calendar is clear. Schedule a fitting to get started.</p>
             </div>
           )}
         </div>
