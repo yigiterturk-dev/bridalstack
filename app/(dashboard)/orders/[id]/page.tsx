@@ -103,7 +103,16 @@ export default async function OrderDetailPage({ params, searchParams }: Props) {
             {customer?.name ?? "—"} · <span className="capitalize">{order.order_type}</span> · {order.order_date ? new Date(order.order_date).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) : "—"}
           </p>
         </div>
-        <span className={`px-3 py-1 rounded-full text-xs font-medium ${STATUS_STYLE[order.status] ?? STATUS_STYLE.draft}`}>{order.status}</span>
+        <div className="flex items-center gap-3">
+          <Link
+            href={`/print/order/${order.id}`}
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+          >
+            <span className="material-symbols-outlined text-[18px]">print</span>
+            Invoice
+          </Link>
+          <span className={`px-3 py-1 rounded-full text-xs font-medium ${STATUS_STYLE[order.status] ?? STATUS_STYLE.draft}`}>{order.status}</span>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

@@ -124,3 +124,50 @@
     transition-duration: 0.001ms !important;
   }
 }
+
+/* ─── Yazdırma ───────────────────────────────────────────────────────────
+   Belge sayfaları (fatura, sözleşme) tarayıcının "PDF olarak kaydet"
+   akışıyla çıktıya gider. Ekranda görünen kabuk, düğmeler ve gölgeler
+   kâğıda basılmaz; sayfa kenar boşlukları burada belirlenir. */
+
+@media print {
+  @page {
+    size: A4;
+    margin: 16mm;
+  }
+
+  html,
+  body {
+    background: #fff !important;
+  }
+
+  /* Kenar çubuğu, üst bar ve yazdırma düğmesi kâğıda gitmez. */
+  .no-print,
+  nav,
+  aside {
+    display: none !important;
+  }
+
+  /* Belge kabuğu kâğıtta çerçevesiz ve tam genişlikte olsun. */
+  .print-sheet {
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+
+  /* Satırlar ve imza bloğu sayfa arasında bölünmesin. */
+  tr,
+  .print-keep {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* Arka plan renkleri varsayılan olarak basılmaz; rozetler okunsun. */
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

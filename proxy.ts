@@ -10,6 +10,7 @@ const PROTECTED_PREFIX = [
   "/dashboard",
   "/customers",
   "/follow-ups",
+  "/print",
   "/appointments",
   "/orders",
   "/products",

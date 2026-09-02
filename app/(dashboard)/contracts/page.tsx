@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { formatPrice } from "@/config/modules";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getCurrentTenant } from "@/lib/tenant";
@@ -79,11 +80,15 @@ export default async function ContractsPage() {
                   <div key={c.id} className="bg-white rounded-2xl border border-gray-200 p-5 flex items-center justify-between">
                     <div>
                       <h3 className="font-medium text-gray-900 text-sm">{c.title}</h3>
-                      <p className="text-xs text-gray-500 mt-0.5">{cust?.name ?? "—"} · ${Number(c.total_amount).toLocaleString()} · {new Date(c.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</p>
+                      <p className="text-xs text-gray-500 mt-0.5">{cust?.name ?? "—"} · {formatPrice(Number(c.total_amount))} · {new Date(c.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</p>
                     </div>
                     <div className="flex items-center gap-3">
                       <span className={`text-xs px-2.5 py-0.5 rounded-full font-medium ${STATUS_STYLE[c.status] ?? STATUS_STYLE.draft}`}>{c.status}</span>
                       <button onClick={() => navigator.clipboard.writeText(`${window.location.origin}/contracts/${c.token}`)} className="text-xs text-gray-500 hover:text-gray-900">Copy Link</button>
+                      <Link href={`/print/contract/${c.id}`} className="text-xs text-gray-500 hover:text-gray-900 inline-flex items-center gap-1">
+                        <span className="material-symbols-outlined text-[14px]">print</span>
+                        Print
+                      </Link>
                     </div>
                   </div>
                 );

@@ -13,6 +13,7 @@ node tests/e2e/stage5.mjs      # taksit planı, vade durumları, tahsilat özeti
 node tests/e2e/stage6.mjs      # fotoğraf yükleme, görsel gösterimi, migration sırası
 node tests/e2e/stage7.mjs      # takip listesi, elbise dönüşüm oranı
 node tests/e2e/stage8.mjs      # günlük brifing, sinyal önceliklendirme
+node tests/e2e/stage9.mjs      # yazdırılabilir fatura ve sözleşme, erişim kontrolü
 ```
 
 Betikler `@prisma/client`'ı çözebilmek için proje kökünden çalıştırılmalı.
