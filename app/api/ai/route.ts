@@ -62,14 +62,23 @@ ${(customers ?? []).map(c => `- ${c.name} | ${c.status}`).join("\n")}
         method: "POST",
         headers: { "Content-Type": "application/json", "x-api-key": process.env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01" },
         body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 1024,
+          model: "claude-opus-5",
+          max_tokens: 4096,
+          // Dükkan verisi üzerinde kısa soru-cevap; düşük çaba yeterli ve daha ucuz.
+          output_config: { effort: "low" },
           system: context,
           messages: [{ role: "user", content: query }],
         }),
       });
       const data = await res.json();
-      return NextResponse.json({ answer: data.content?.[0]?.text ?? "No response" });
+      if (!res.ok) {
+        return NextResponse.json({ error: data?.error?.message ?? "AI request failed" }, { status: 502 });
+      }
+      // Yanıt metni ilk blokta olmayabilir (ör. düşünme bloğu önce gelir).
+      const text = Array.isArray(data.content)
+        ? data.content.find((b: { type?: string }) => b?.type === "text")?.text
+        : null;
+      return NextResponse.json({ answer: text ?? "No response" });
     }
 
     if (process.env.OPENAI_API_KEY) {
@@ -83,6 +92,9 @@ ${(customers ?? []).map(c => `- ${c.name} | ${c.status}`).join("\n")}
         }),
       });
       const data = await res.json();
+      if (!res.ok) {
+        return NextResponse.json({ error: data?.error?.message ?? "AI request failed" }, { status: 502 });
+      }
       return NextResponse.json({ answer: data.choices?.[0]?.message?.content ?? "No response" });
     }
   } catch (e) {

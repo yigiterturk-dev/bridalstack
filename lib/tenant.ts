@@ -9,6 +9,9 @@ export type Tenant = {
   name: string;
   slug: string;
   owner_id: string;
+  logo_url?: string | null;
+  primary_color?: string | null;
+  accent_color?: string | null;
   packs: PackId[];
   enabled_modules: ModuleId[];
   settings: Record<string, unknown>;

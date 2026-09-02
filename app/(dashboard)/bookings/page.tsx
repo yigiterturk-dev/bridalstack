@@ -11,7 +11,7 @@ type Booking = {
   booking_date: string;
   start_time: string;
   end_time: string;
-  status: "confirmed" | "completed" | "cancelled" | "no_show";
+  status: "pending" | "confirmed" | "completed" | "cancelled" | "no_show";
   notes: string | null;
   amount: number;
   services: { name: string } | null;
@@ -70,6 +70,7 @@ export default function BookingsPage() {
 
   const stats = {
     total: bookings.length,
+    pending: bookings.filter((b) => b.status === "pending").length,
     confirmed: bookings.filter((b) => b.status === "confirmed").length,
     completed: bookings.filter((b) => b.status === "completed").length,
     cancelled: bookings.filter((b) => b.status === "cancelled").length,
@@ -86,10 +87,14 @@ export default function BookingsPage() {
       </div>
 
       {/* Stats Widget */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         <div className="bg-white p-5 rounded-2xl border border-gray-200">
           <div className="text-xs font-semibold text-gray-400 uppercase">Total Bookings</div>
           <div className="text-2xl font-bold text-gray-900 mt-1">{stats.total}</div>
+        </div>
+        <div className="bg-white p-5 rounded-2xl border border-gray-200">
+          <div className="text-xs font-semibold uppercase text-amber-600">Awaiting Approval</div>
+          <div className="text-2xl font-bold text-amber-600 mt-1">{stats.pending}</div>
         </div>
         <div className="bg-white p-5 rounded-2xl border border-gray-200">
           <div className="text-xs font-semibold text-gray-400 uppercase text-rose-600">Confirmed</div>
@@ -118,7 +123,7 @@ export default function BookingsPage() {
         </div>
 
         <div className="flex gap-2 w-full md:w-auto">
-          {["all", "confirmed", "completed", "cancelled", "no_show"].map((filter) => (
+          {["all", "pending", "confirmed", "completed", "cancelled", "no_show"].map((filter) => (
             <button
               key={filter}
               onClick={() => setStatusFilter(filter)}
@@ -193,7 +198,9 @@ export default function BookingsPage() {
                     <td className="p-4">
                       <span
                         className={`px-2 py-0.5 rounded-full text-xs font-semibold uppercase border ${
-                          b.status === "confirmed"
+                          b.status === "pending"
+                            ? "bg-amber-50 border-amber-100 text-amber-700"
+                            : b.status === "confirmed"
                             ? "bg-rose-50 border-rose-100 text-rose-700"
                             : b.status === "completed"
                             ? "bg-emerald-50 border-emerald-100 text-emerald-700"
@@ -210,6 +217,22 @@ export default function BookingsPage() {
                         <span className="text-xs text-gray-450 italic">Saving...</span>
                       ) : (
                         <div className="flex gap-2 justify-end">
+                          {b.status === "pending" && (
+                            <>
+                              <button
+                                onClick={() => updateStatus(b.id, "confirmed")}
+                                className="px-2 py-1 bg-rose-500 hover:bg-rose-600 text-white rounded-lg text-xs font-semibold transition-colors"
+                              >
+                                Approve
+                              </button>
+                              <button
+                                onClick={() => updateStatus(b.id, "cancelled")}
+                                className="px-2 py-1 border border-gray-200 hover:bg-gray-50 text-gray-600 rounded-lg text-xs font-semibold transition-colors"
+                              >
+                                Decline
+                              </button>
+                            </>
+                          )}
                           {b.status === "confirmed" && (
                             <>
                               <button
