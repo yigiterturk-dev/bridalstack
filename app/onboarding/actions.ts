@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/tenant";
-import { PACKS, type PackId } from "@/config/modules";
+import { PACKS, FREE_PACK_IDS, type PackId } from "@/config/modules";
 
 export type OnboardingDraft = {
   shopName?: string;
@@ -65,9 +65,8 @@ export async function finishOnboarding(
 
   const validPacks = (Array.isArray(input.packs) ? input.packs : [])
     .filter((p): p is PackId => typeof p === "string" && p in PACKS);
-  const packs: PackId[] = validPacks.includes("base")
-    ? validPacks
-    : (["base", ...validPacks] as PackId[]);
+  // Ücretsiz paketler her zaman açık; kullanıcı seçmeyi unutsa da verilir.
+  const packs: PackId[] = [...new Set([...FREE_PACK_IDS, ...validPacks])];
 
   // Zaten bir workspace'i varsa tekrar oluşturma
   const existing = await prisma.tenantMember.findFirst({

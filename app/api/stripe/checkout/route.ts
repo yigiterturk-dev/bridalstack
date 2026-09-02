@@ -17,6 +17,17 @@ export async function POST(req: NextRequest) {
   const { packs } = (await req.json()) as { packs: PackId[] };
   if (!packs || !Array.isArray(packs)) return NextResponse.json({ error: "Invalid packs" }, { status: 400 });
 
+  // Bilinmeyen paket adı sessizce yok sayılmamalı: yok sayarsak istemci
+  // hatası veya eski bir paket adı, müşterinin planını farkında olmadan
+  // ücretsize düşürür. Fail-closed reddediyoruz.
+  const unknown = packs.filter((p) => typeof p !== "string" || !PACKS[p]);
+  if (unknown.length > 0) {
+    return NextResponse.json(
+      { error: `Unknown plan: ${unknown.join(", ")}` },
+      { status: 400 }
+    );
+  }
+
   // Fail-closed: henüz hiçbir sayfası olmayan paket satılamaz. İstemci gizlese
   // de sunucu tekrar doğrular, aksi halde müşteri boş bir pakete para öder.
   const rejected = packs.filter((p) => p !== "base" && PACKS[p] && !isPackSellable(p));

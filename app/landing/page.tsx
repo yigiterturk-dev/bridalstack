@@ -93,7 +93,6 @@ export default function LandingPage() {
               { icon: "draw", title: "Digital Contracts", desc: "Send a signing link, capture the signature, and keep the signed agreement on the order." },
               { icon: "analytics", title: "Advanced Analytics", desc: "Deep insights into monthly revenue, top-performing categories, and conversion rates." },
               { icon: "account_balance", title: "Finance & Ledger", desc: "Installment plans, cash register, and daily revenue collection.", soon: true },
-              { icon: "chat", title: "WhatsApp Automation", desc: "Automated appointment reminders and payment alerts sent straight to brides.", soon: true },
               { icon: "payments", title: "Staff Commissions", desc: "Stylist performance tracking with automatic commission and bonus calculation.", soon: true },
             ].map((f) => (
               <div key={f.title} className={`bg-white/70 backdrop-blur-sm p-10 rounded-[2.5rem] border border-stone-100 transition-all duration-500 group ${f.soon ? "" : "hover:border-rose-200 hover:shadow-[0_20px_40px_-15px_rgba(225,29,72,0.1)] hover:-translate-y-1"}`}>

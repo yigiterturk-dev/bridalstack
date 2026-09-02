@@ -101,7 +101,7 @@ await fetch(`${BASE}/api/auth/register`, { method: "POST", headers: { "content-t
 // ── Satılamayan paketler ──
 {
   const j = await login(OWNER, PW);
-  for (const pack of ["finance", "communication"]) {
+  for (const pack of ["finance"]) {
     const res = await fetch(`${BASE}/api/stripe/checkout`, { method: "POST",
       headers: { "content-type": "application/json", cookie: j.hdr() },
       body: JSON.stringify({ packs: ["base", pack] }) });

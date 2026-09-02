@@ -46,7 +46,7 @@ model Tenant {
   name                    String
   slug                    String    @unique
   owner_id                String    @db.Uuid
-  packs                   String[]  @default(["base"])
+  packs                   String[]  @default(["base", "salon"])
   plan                    String    @default("free")
   settings                Json      @default("{}")
   logo_url                String?

@@ -5,10 +5,8 @@ export type ModuleId =
   | "invoices"
   | "finance"
   | "inventory"
-  | "whatsapp"
   | "reports"
   | "commissions"
-  | "efatura"
   | "booking"
   | "services";
 
@@ -26,7 +24,7 @@ export type ModuleDefinition = {
   dependencies?: ModuleId[];
 };
 
-export type PackId = "base" | "sales" | "finance" | "inventory" | "communication" | "pro" | "salon";
+export type PackId = "base" | "sales" | "finance" | "inventory" | "pro" | "salon";
 
 export type PackDefinition = {
   id: PackId;
@@ -145,30 +143,6 @@ export const MODULES: Record<ModuleId, ModuleDefinition> = {
     ],
     dependencies: ["sales"],
   },
-  whatsapp: {
-    id: "whatsapp",
-    name: "WhatsApp & Messaging",
-    description: "WhatsApp integration, inbox, templates",
-    icon: "chat",
-    pack: "communication",
-    routes: ["/inbox", "/whatsapp", "/templates"],
-    navItems: [
-      { href: "/inbox", label: "Messages", icon: "chat", soon: true },
-      { href: "/whatsapp", label: "WhatsApp", icon: "phone_in_talk", soon: true },
-    ],
-  },
-  efatura: {
-    id: "efatura",
-    name: "e-Fatura / e-Arşiv",
-    description: "E-invoice integration, incoming/outgoing invoices",
-    icon: "receipt_long",
-    pack: "pro",
-    routes: ["/invoices/efatura"],
-    navItems: [
-      { href: "/invoices/efatura", label: "e-Fatura", icon: "receipt_long", soon: true },
-    ],
-    dependencies: ["invoices"],
-  },
   booking: {
     id: "booking",
     name: "Online Booking",
@@ -227,19 +201,11 @@ export const PACKS: Record<PackId, PackDefinition> = {
     monthlyPrice: 29,
     color: "#7c3aed",
   },
-  communication: {
-    id: "communication",
-    name: "Communication",
-    description: "WhatsApp and messaging",
-    modules: ["whatsapp"],
-    monthlyPrice: 19,
-    color: "#059669",
-  },
   pro: {
     id: "pro",
     name: "Pro",
     description: "Team, automations and the AI stylist",
-    modules: ["commissions", "efatura"],
+    modules: ["commissions"],
     monthlyPrice: 29,
     color: "#d97706",
   },
@@ -290,8 +256,7 @@ export function getNavForModules(enabledModules: ModuleId[]) {
     sales: { section: "Sales", moduleIds: ["sales", "invoices", "reports"] },
     finance: { section: "Finance", moduleIds: ["finance"] },
     inventory: { section: "Inventory", moduleIds: ["inventory"] },
-    communication: { section: "Communication", moduleIds: ["whatsapp"] },
-    pro: { section: "Management", moduleIds: ["commissions", "efatura"] },
+    pro: { section: "Management", moduleIds: ["commissions"] },
   };
 
   for (const group of Object.values(sectionMap)) {
@@ -340,9 +305,18 @@ export function packUpcomingModules(packId: PackId): ModuleId[] {
   return (PACKS[packId]?.modules ?? []).filter((m) => !isModuleLive(m));
 }
 
+/**
+ * Ücretsiz paketler her kiracıda açık gelir. Tanıtım sayfası online randevu
+ * sayfasını ve müşteri portalını ücretsiz katmanın parçası olarak vaat ediyor;
+ * yeni kayıtlara bunları vermezsek vaat tutmaz.
+ */
+export const FREE_PACK_IDS: PackId[] = ALL_PACK_IDS.filter(
+  (id) => PACKS[id].monthlyPrice === 0
+);
+
 /** Satın alınabilir mi? Hiç çalışan modülü olmayan paket satışa kapalıdır. */
 export function isPackSellable(packId: PackId): boolean {
-  if (packId === "base") return false; // zaten herkeste var
+  if (PACKS[packId]?.monthlyPrice === 0) return false; // ücretsiz, zaten herkeste
   return packLiveModules(packId).length > 0;
 }
 

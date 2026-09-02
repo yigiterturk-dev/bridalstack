@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+import { FREE_PACK_IDS } from "@/config/modules";
 
 export async function POST(req: Request) {
   try {
@@ -34,6 +35,8 @@ export async function POST(req: Request) {
         name: shopName,
         slug,
         owner_id: user.id,
+        // Ücretsiz paketler baştan açık: randevu sayfası ve hizmetler dahil.
+        packs: FREE_PACK_IDS,
       }
     });
 
