@@ -27,6 +27,7 @@ export const EXPENSE_CATEGORIES = [
   { id: "commission", label: "Commission" },
   { id: "marketing", label: "Marketing" },
   { id: "refund", label: "Refund" },
+  { id: "cleaning", label: "Cleaning & repairs" },
   { id: "utilities", label: "Utilities" },
   { id: "other", label: "Other expense" },
 ] as const;

@@ -118,7 +118,12 @@ export const MODULES: Record<ModuleId, ModuleDefinition> = {
     description: "Products, stock, suppliers, counts, returns",
     icon: "checkroom",
     pack: "inventory",
-    routes: ["/products", "/products/new", "/products/[id]", "/suppliers", "/inventory-count", "/returns", "/rentals", "/cleaning", "/alterations", "/try-ons"],
+    routes: [
+      "/products", "/products/new", "/products/[id]",
+      "/suppliers", "/inventory-count", "/returns",
+      "/rentals", "/cleaning", "/alterations",
+      "/try-ons", "/trunk-shows",
+    ],
     navItems: [
       { href: "/products", label: "Products", icon: "checkroom" },
       { href: "/try-ons", label: "Try-Ons", icon: "favorite" },
@@ -126,6 +131,9 @@ export const MODULES: Record<ModuleId, ModuleDefinition> = {
       { href: "/suppliers", label: "Suppliers", icon: "local_shipping" },
       { href: "/inventory-count", label: "Stock Count", icon: "inventory" },
       { href: "/returns", label: "Returns", icon: "swap_horiz" },
+      { href: "/rentals", label: "Rentals", icon: "event_available" },
+      { href: "/alterations", label: "Alterations", icon: "content_cut" },
+      { href: "/cleaning", label: "Cleaning", icon: "local_laundry_service" },
     ],
   },
   commissions: {

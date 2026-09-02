@@ -91,11 +91,24 @@ export type ReturnLine = {
 /**
  * İade tamamlanınca stoğa kaç adet geri döner.
  * Hasarlı mal rafa geri konmaz — kutu işaretli olsa bile.
+ * Temizlik isteyen mal da DOĞRUDAN dönmez: temizleme işine geçer ve rafa
+ * ancak temizlemeden döndüğünde girer (bkz. `needsCleaningJob`). Kirli
+ * elbiseyi rafa koyarsak bir sonraki geline kirli elbise gösteririz.
  */
 export function restockUnits(line: ReturnLine): number {
   if (!line.restock) return 0;
   if (line.condition === "damaged") return 0;
+  if (line.condition === "needs_cleaning") return 0;
   return Math.max(0, line.quantity);
+}
+
+/**
+ * İade kapanırken temizleme işi açılmalı mı?
+ * Mal rafa dönecekse ve kirliyse evet — böylece elbise iki kayıt arasında
+ * kaybolmaz; hep bir yerde görünür.
+ */
+export function needsCleaningJob(line: ReturnLine): boolean {
+  return line.restock && line.condition === "needs_cleaning";
 }
 
 /** Bir iade bu durumdan hangi durumlara geçebilir? Bitmiş iade geri alınmaz. */

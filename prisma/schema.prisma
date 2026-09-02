@@ -91,6 +91,9 @@ model Tenant {
   commission_payouts CommissionPayout[]
   cash_movements     CashMovement[]
   checks             Check[]
+  rentals            Rental[]
+  cleaning_jobs      CleaningJob[]
+  alterations        Alteration[]
 
   @@index([cohort_month])
   @@map("tenants")
@@ -149,6 +152,9 @@ model Customer {
   installments  Installment[]
   follow_ups    FollowUpEmail[]
   returns       ProductReturn[]
+  rentals       Rental[]
+  cleaning_jobs CleaningJob[]
+  alterations   Alteration[]
 
   @@index([tenant_id])
   @@map("customers")
@@ -182,6 +188,9 @@ model Product {
   show_items    TrunkShowItem[]
   count_items   StockCountItem[]
   returns       ProductReturn[]
+  rentals       Rental[]
+  cleaning_jobs CleaningJob[]
+  alterations   Alteration[]
 
   @@index([tenant_id])
   @@index([barcode])
@@ -215,6 +224,8 @@ model Order {
   contracts    Contract[]
   installments Installment[]
   returns      ProductReturn[]
+  rentals      Rental[]
+  alterations  Alteration[]
 
   @@unique([tenant_id, ref_no])
   @@index([tenant_id])
@@ -612,10 +623,11 @@ model ProductReturn {
   created_at    DateTime  @default(now()) @db.Timestamptz(6)
   processed_at  DateTime? @db.Timestamptz(6)
 
-  tenant   Tenant    @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
-  order    Order?    @relation(fields: [order_id], references: [id], onDelete: SetNull)
-  customer Customer? @relation(fields: [customer_id], references: [id], onDelete: SetNull)
-  product  Product?  @relation(fields: [product_id], references: [id], onDelete: SetNull)
+  tenant   Tenant       @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  order    Order?       @relation(fields: [order_id], references: [id], onDelete: SetNull)
+  customer Customer?    @relation(fields: [customer_id], references: [id], onDelete: SetNull)
+  product  Product?     @relation(fields: [product_id], references: [id], onDelete: SetNull)
+  cleaning CleaningJob?
 
   @@index([tenant_id, status])
   @@map("product_returns")
@@ -627,25 +639,31 @@ model ProductReturn {
 
 /// Kasaya giren/çıkan her kuruş. Defter de, günlük kasa da bunu okur.
 model CashMovement {
-  id             String   @id @default(uuid()) @db.Uuid
-  tenant_id      String   @db.Uuid
+  id              String   @id @default(uuid()) @db.Uuid
+  tenant_id       String   @db.Uuid
   /// in = tahsilat, out = gider
-  direction      String   @default("in")
-  amount         Float    @default(0)
+  direction       String   @default("in")
+  amount          Float    @default(0)
   /// cash, card, transfer, check, other
-  method         String   @default("cash")
-  category       String   @default("other")
+  method          String   @default("cash")
+  category        String   @default("other")
   /// "2026-09-02" — hangi güne yazıldığı
-  occurred_on    String
-  description    String?
-  order_id       String?  @db.Uuid
-  customer_id    String?  @db.Uuid
+  occurred_on     String
+  description     String?
+  order_id        String?  @db.Uuid
+  customer_id     String?  @db.Uuid
   /// Taksit tahsilatından otomatik doğduysa hangi taksit — mükerrer kayıt olmasın
-  installment_id String?  @unique @db.Uuid
+  installment_id  String?  @unique @db.Uuid
   /// Çek tahsilatından doğduysa hangi çek — çek dönerse kayıt kimlikle geri alınır
-  check_id       String?  @db.Uuid
-  created_by     String?  @db.Uuid
-  created_at     DateTime @default(now()) @db.Timestamptz(6)
+  check_id        String?  @db.Uuid
+  /// Kiralamadan doğduysa hangi kiralama — kira bedeli iki kez yazılamaz
+  rental_id       String?  @unique @db.Uuid
+  /// Tadilattan doğduysa hangi iş — tadilat ücreti iki kez yazılamaz
+  alteration_id   String?  @unique @db.Uuid
+  /// Temizleme giderinden doğduysa hangi iş — gider iki kez yazılamaz
+  cleaning_job_id String?  @unique @db.Uuid
+  created_by      String?  @db.Uuid
+  created_at      DateTime @default(now()) @db.Timestamptz(6)
 
   tenant Tenant @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
 
@@ -812,4 +830,116 @@ model Invitation {
   @@unique([tenant_id, email])
   @@index([tenant_id])
   @@map("invitations")
+}
+
+// ─────────────────────────────────────────────────────────────
+// Kiralama, temizleme, tadilat
+// ─────────────────────────────────────────────────────────────
+
+/// Kiraya verilen elbise. Aynı elbisenin tarihleri çakışamaz.
+model Rental {
+  id                 String   @id @default(uuid()) @db.Uuid
+  tenant_id          String   @db.Uuid
+  customer_id        String   @db.Uuid
+  product_id         String   @db.Uuid
+  order_id           String?  @db.Uuid
+  /// reserved, out, returned, cancelled
+  status             String   @default("reserved")
+  /// "2026-09-02" — rezervasyonun kapattığı ilk gün
+  start_date         String
+  /// Dönüş için söz verilen gün (bu gün dahil geç sayılmaz)
+  due_date           String
+  picked_up_on       String?
+  returned_on        String?
+  /// Kira bedeli. Elbise çıkarken (out) bir kez kasaya yazılır.
+  rental_fee         Float    @default(0)
+  /// İade edilecek teminat. Gelir değildir, kasaya YAZILMAZ.
+  deposit            Float    @default(0)
+  /// Gecikilen gün başına ücret. Otomatik tahsil edilmez, ekranda hatırlatılır.
+  late_fee_per_day   Float    @default(0)
+  /// Bugüne dek tahsil edilen gecikme bedeli. Aynı gün ikinci kez tahsil
+  /// edilemesin diye ekranda kalan tutar bundan düşülerek gösterilir.
+  late_fee_collected Float    @default(0)
+  notes              String?
+  created_by         String?  @db.Uuid
+  created_at         DateTime @default(now()) @db.Timestamptz(6)
+  updated_at         DateTime @updatedAt @db.Timestamptz(6)
+
+  tenant   Tenant        @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  customer Customer      @relation(fields: [customer_id], references: [id], onDelete: Cascade)
+  product  Product       @relation(fields: [product_id], references: [id], onDelete: Cascade)
+  order    Order?        @relation(fields: [order_id], references: [id], onDelete: SetNull)
+  cleaning CleaningJob[]
+
+  @@index([tenant_id, status])
+  @@index([tenant_id, product_id, start_date])
+  @@map("rentals")
+}
+
+/// Temizlemeye giden elbise. Mal, iş boyunca raftan DIŞARIDADIR.
+/// Rafa yalnızca "returned" adımında ve yalnızca bir kez döner.
+model CleaningJob {
+  id          String   @id @default(uuid()) @db.Uuid
+  tenant_id   String   @db.Uuid
+  product_id  String?  @db.Uuid
+  customer_id String?  @db.Uuid
+  /// stock = raftan çekildi · return = iadeden geldi · rental = kiradan döndü
+  source      String   @default("stock")
+  /// Hangi iadeden doğdu — aynı iade iki temizleme işi doğurmasın
+  return_id   String?  @unique @db.Uuid
+  /// Hangi kiralamadan doğdu — aynı kiralama iki temizleme işi doğurmasın
+  rental_id   String?  @unique @db.Uuid
+  vendor      String?
+  quantity    Int      @default(1)
+  /// pending, sent, returned, written_off
+  status      String   @default("pending")
+  sent_on     String?
+  expected_on String?
+  returned_on String?
+  cost        Float    @default(0)
+  notes       String?
+  created_by  String?  @db.Uuid
+  created_at  DateTime @default(now()) @db.Timestamptz(6)
+  updated_at  DateTime @updatedAt @db.Timestamptz(6)
+
+  tenant     Tenant         @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  product    Product?       @relation(fields: [product_id], references: [id], onDelete: SetNull)
+  customer   Customer?      @relation(fields: [customer_id], references: [id], onDelete: SetNull)
+  return_ref ProductReturn? @relation(fields: [return_id], references: [id], onDelete: SetNull)
+  rental_ref Rental?        @relation(fields: [rental_id], references: [id], onDelete: SetNull)
+
+  @@index([tenant_id, status])
+  @@map("cleaning_jobs")
+}
+
+/// Tadilat/prova işi. Ücret yalnız teslimde bir kez kasaya yazılır.
+model Alteration {
+  id            String    @id @default(uuid()) @db.Uuid
+  tenant_id     String    @db.Uuid
+  customer_id   String    @db.Uuid
+  product_id    String?   @db.Uuid
+  order_id      String?   @db.Uuid
+  /// hem, bust, waist, straps, bustle, beading, other
+  kind          String    @default("hem")
+  /// requested, in_progress, ready, delivered, cancelled
+  status        String    @default("requested")
+  fitting_date  String?
+  /// Geline söz verilen gün — geciken işler listenin başına çıkar
+  promised_date String?
+  seamstress    String?
+  price         Float     @default(0)
+  notes         String?
+  created_by    String?   @db.Uuid
+  created_at    DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at    DateTime  @updatedAt @db.Timestamptz(6)
+  delivered_at  DateTime? @db.Timestamptz(6)
+
+  tenant   Tenant   @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  customer Customer @relation(fields: [customer_id], references: [id], onDelete: Cascade)
+  product  Product? @relation(fields: [product_id], references: [id], onDelete: SetNull)
+  order    Order?   @relation(fields: [order_id], references: [id], onDelete: SetNull)
+
+  @@index([tenant_id, status])
+  @@index([tenant_id, promised_date])
+  @@map("alterations")
 }

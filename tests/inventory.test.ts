@@ -5,6 +5,7 @@ import {
   summarizeCount,
   closingQuantity,
   restockUnits,
+  needsCleaningJob,
   allowedTransitions,
   canTransition,
 } from "../lib/inventory.ts";
@@ -58,8 +59,18 @@ test("hasarlı mal işaret kutusu açık olsa da rafa dönmez", () => {
   assert.equal(restockUnits({ quantity: 2, condition: "damaged", restock: true }), 0);
 });
 
-test("temizlik isteyen mal rafa döner", () => {
-  assert.equal(restockUnits({ quantity: 1, condition: "needs_cleaning", restock: true }), 1);
+test("temizlik isteyen mal doğrudan rafa dönmez, temizlemeye gider", () => {
+  const line = { quantity: 1, condition: "needs_cleaning", restock: true };
+  assert.equal(restockUnits(line), 0);
+  assert.equal(needsCleaningJob(line), true);
+});
+
+test("hasarlı mal temizleme işi de doğurmaz", () => {
+  assert.equal(needsCleaningJob({ quantity: 1, condition: "damaged", restock: true }), false);
+});
+
+test("rafa dönmeyecek mal temizleme işi doğurmaz", () => {
+  assert.equal(needsCleaningJob({ quantity: 1, condition: "needs_cleaning", restock: false }), false);
 });
 
 test("restock kapalıysa hiçbir şey dönmez", () => {
