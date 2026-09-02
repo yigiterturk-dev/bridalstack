@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
+import { prisma } from "@/lib/prisma";
 import { getCurrentTenant } from "@/lib/tenant";
 import PortalLinkButton from "@/components/portal-link-button";
 import { updateCustomer } from "./actions";
@@ -9,19 +9,22 @@ type Props = { params: Promise<{ id: string }> };
 
 export default async function CustomerDetailPage({ params }: Props) {
   const { id } = await params;
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
-
   const tenant = await getCurrentTenant();
   if (!tenant) redirect("/onboarding");
 
-  const [{ data: customer }, { data: appointments }, { data: orders }, { data: tryOns }] = await Promise.all([
-    supabase.from("customers").select("*").eq("id", id).eq("tenant_id", tenant.id).single(),
-    supabase.from("appointments").select("*").eq("customer_id", id).order("appointment_date", { ascending: false }).limit(10),
-    supabase.from("orders").select("*").eq("customer_id", id).order("created_at", { ascending: false }).limit(10),
-    supabase.from("try_ons").select("*, products(name, category)").eq("customer_id", id).order("created_at", { ascending: false }).limit(10),
+  // Her sorguda tenant_id: RLS yok, izolasyon burada kuruluyor.
+  const [customer, appointments, orders, tryOnRows] = await Promise.all([
+    prisma.customer.findFirst({ where: { id, tenant_id: tenant.id } }),
+    prisma.appointment.findMany({ where: { customer_id: id, tenant_id: tenant.id }, orderBy: { appointment_date: "desc" }, take: 10 }),
+    prisma.order.findMany({ where: { customer_id: id, tenant_id: tenant.id }, orderBy: { created_at: "desc" }, take: 10 }),
+    prisma.tryOn.findMany({
+      where: { customer_id: id, tenant_id: tenant.id },
+      orderBy: { created_at: "desc" },
+      take: 10,
+      include: { product: { select: { name: true, category: true } } },
+    }),
   ]);
+  const tryOns = tryOnRows.map(({ product, ...t }) => ({ ...t, products: product }));
 
   if (!customer) redirect("/customers");
 

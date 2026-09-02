@@ -1,18 +1,21 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { prisma } from "@/lib/prisma";
 import { getCurrentTenant } from "@/lib/tenant";
 import { createTrunkShow } from "./actions";
 
 export default async function TrunkShowsPage() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
-
   const tenant = await getCurrentTenant();
   if (!tenant) redirect("/onboarding");
 
-  const { data: shows } = await supabase.from("trunk_shows").select("*, trunk_show_items(id, gown_name, status, try_count)").eq("tenant_id", tenant.id).order("start_date", { ascending: false });
-  const list = shows ?? [];
+  const shows = await prisma.trunkShow.findMany({
+    where: { tenant_id: tenant.id },
+    orderBy: { start_date: "desc" },
+    include: {
+      items: { select: { id: true, gown_name: true, status: true, try_count: true } },
+    },
+  });
+  // Şablon `trunk_show_items` adını bekliyor (Supabase iç içe select kalıntısı).
+  const list = shows.map(({ items, ...s }) => ({ ...s, trunk_show_items: items }));
 
   const STATUS_STYLE: Record<string, string> = {
     upcoming: "bg-blue-100 text-blue-700", active: "bg-green-100 text-green-700",

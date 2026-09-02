@@ -1,13 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { prisma } from "@/lib/prisma";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/auth";
 import { stripe, STRIPE_PRICE_IDS } from "@/lib/stripe";
 import { getCurrentTenant } from "@/lib/tenant";
 import { PackId, PACKS, calculateMonthlyPrice } from "@/config/modules";
 
 export async function POST(req: NextRequest) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const session = await getServerSession(authOptions);
+  const user = session?.user;
+  if (!user?.id || !user.email) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const tenant = await getCurrentTenant();
   if (!tenant) return NextResponse.json({ error: "No tenant" }, { status: 400 });
@@ -25,12 +27,12 @@ export async function POST(req: NextRequest) {
     .filter(Boolean) as { price: string; quantity: number }[];
 
   if (lineItems.length === 0) {
-    await supabase.from("tenants").update({ packs: ["base"], plan: "free" }).eq("id", tenant.id);
+    await prisma.tenant.update({ where: { id: tenant.id }, data: { packs: ["base"], plan: "free" } });
     return NextResponse.json({ url: "/settings?success=updated" });
   }
 
-  const session = await stripe.checkout.sessions.create({
-    customer_email: user.email!,
+  const checkout = await stripe.checkout.sessions.create({
+    customer_email: user.email,
     mode: "subscription",
     line_items: lineItems,
     success_url: `${req.nextUrl.origin}/settings?success=subscribed`,
@@ -41,5 +43,5 @@ export async function POST(req: NextRequest) {
     },
   });
 
-  return NextResponse.json({ url: session.url });
+  return NextResponse.json({ url: checkout.url });
 }

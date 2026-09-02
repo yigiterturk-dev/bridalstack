@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { prisma } from "@/lib/prisma";
 import { getCurrentTenant } from "@/lib/tenant";
 import { createService, deleteService, toggleService } from "./actions";
 
@@ -7,14 +7,13 @@ const CATEGORIES = ["Hair", "Nails", "Skin", "Massage", "Makeup", "Tattoo", "Bar
 const DURATIONS = [15, 30, 45, 60, 90, 120, 150, 180];
 
 export default async function ServicesPage() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
   const tenant = await getCurrentTenant();
   if (!tenant) redirect("/onboarding");
 
-  const { data: services } = await supabase.from("services").select("*").eq("tenant_id", tenant.id).order("sort_order").order("name");
-  const list = services ?? [];
+  const list = await prisma.service.findMany({
+    where: { tenant_id: tenant.id },
+    orderBy: [{ sort_order: "asc" }, { name: "asc" }],
+  });
 
   const grouped = list.reduce((acc, s) => {
     const cat = s.category || "Other";

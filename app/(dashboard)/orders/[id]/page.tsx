@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
+import { prisma } from "@/lib/prisma";
 import { getCurrentTenant } from "@/lib/tenant";
 import { updateOrderStatus } from "./actions";
 
@@ -10,17 +10,16 @@ type Props = { params: Promise<{ id: string }> };
 
 export default async function OrderDetailPage({ params }: Props) {
   const { id } = await params;
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
-
   const tenant = await getCurrentTenant();
   if (!tenant) redirect("/onboarding");
 
-  const { data: order } = await supabase.from("orders").select("*, customers(name, phone, email)").eq("id", id).eq("tenant_id", tenant.id).single();
+  const order = await prisma.order.findFirst({
+    where: { id, tenant_id: tenant.id },
+    include: { customer: { select: { name: true, phone: true, email: true } } },
+  });
   if (!order) redirect("/orders");
 
-  const customer = (Array.isArray(order.customers) ? order.customers[0] : order.customers) as { name: string; phone: string | null; email: string | null } | null;
+  const customer = order.customer;
   const STATUS_STYLE: Record<string, string> = {
     draft: "bg-gray-100 text-gray-700", confirmed: "bg-blue-100 text-blue-700", in_progress: "bg-amber-100 text-amber-700",
     delivered: "bg-green-100 text-green-700", completed: "bg-green-100 text-green-700", cancelled: "bg-red-100 text-red-700",

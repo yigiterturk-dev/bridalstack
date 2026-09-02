@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { getBookableStaff, getSchedules, saveSchedules } from "./actions";
 
 type Member = {
   id: string;
@@ -30,7 +30,6 @@ const DAYS = [
 ];
 
 export default function SchedulePage() {
-  const supabase = createClient();
   const [members, setMembers] = useState<Member[]>([]);
   const [selectedMemberId, setSelectedMemberId] = useState<string>("");
   const [schedules, setSchedules] = useState<Schedule[]>([]);
@@ -51,22 +50,8 @@ export default function SchedulePage() {
   async function fetchStaff() {
     setLoading(true);
     try {
-      const { data: tenantData } = await supabase
-        .from("tenant_members")
-        .select("tenant_id")
-        .limit(1)
-        .single();
-
-      if (!tenantData) return;
-
-      const { data, error } = await supabase
-        .from("tenant_members")
-        .select("id, display_name, title")
-        .eq("tenant_id", tenantData.tenant_id)
-        .eq("is_bookable", true);
-
-      if (error) throw error;
-      setMembers(data || []);
+      const data = await getBookableStaff();
+      setMembers(data);
       if (data && data.length > 0) {
         setSelectedMemberId(data[0].id);
       } else {
@@ -81,12 +66,7 @@ export default function SchedulePage() {
   async function fetchSchedules(memberId: string) {
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from("staff_schedules")
-        .select("id, day_of_week, start_time, end_time, break_start, break_end, is_off")
-        .eq("member_id", memberId);
-
-      if (error) throw error;
+      const data = await getSchedules(memberId);
 
       // Populate missing days default schedule
       const finalScheds = DAYS.map((d) => {
@@ -115,26 +95,8 @@ export default function SchedulePage() {
     setSaving(true);
     setMessage("");
     try {
-      const { data: tenantData } = await supabase
-        .from("tenant_members")
-        .select("tenant_id")
-        .eq("id", selectedMemberId)
-        .single();
-
-      if (!tenantData) throw new Error("Tenant not found");
-
-      const payload = schedules.map((s) => ({
-        ...s,
-        tenant_id: tenantData.tenant_id,
-        member_id: selectedMemberId,
-      }));
-
-      // Upsert the schedule records
-      const { error } = await supabase.from("staff_schedules").upsert(payload, {
-        onConflict: "member_id,day_of_week",
-      });
-
-      if (error) throw error;
+      const res = await saveSchedules(selectedMemberId, schedules);
+      if (!res.ok) throw new Error(res.error || "Save failed");
 
       setMessage("Working hours saved successfully!");
       setTimeout(() => setMessage(""), 3000);

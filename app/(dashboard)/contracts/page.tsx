@@ -1,24 +1,26 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
+import { prisma } from "@/lib/prisma";
 import { getCurrentTenant } from "@/lib/tenant";
 import { createContract } from "./actions";
 
 export default async function ContractsPage() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
-
   const tenant = await getCurrentTenant();
   if (!tenant) redirect("/onboarding");
 
-  const [{ data: contracts }, { data: customers }, { data: orders }] = await Promise.all([
-    supabase.from("contracts").select("*, customers(name)").eq("tenant_id", tenant.id).order("created_at", { ascending: false }).limit(50),
-    supabase.from("customers").select("id, name").eq("tenant_id", tenant.id).order("name"),
-    supabase.from("orders").select("id, ref_no, discounted_total").eq("tenant_id", tenant.id).order("created_at", { ascending: false }).limit(20),
+  const [contractRows, customers, orders] = await Promise.all([
+    prisma.contract.findMany({
+      where: { tenant_id: tenant.id },
+      orderBy: { created_at: "desc" },
+      take: 50,
+      include: { customer: { select: { name: true } } },
+    }),
+    prisma.customer.findMany({ where: { tenant_id: tenant.id }, select: { id: true, name: true }, orderBy: { name: "asc" } }),
+    prisma.order.findMany({ where: { tenant_id: tenant.id }, select: { id: true, ref_no: true, discounted_total: true }, orderBy: { created_at: "desc" }, take: 20 }),
   ]);
 
-  const list = contracts ?? [];
+  // Şablon Supabase'in `customers` adını bekliyor.
+  const list = contractRows.map(({ customer, ...c }) => ({ ...c, customers: customer }));
 
   const STATUS_STYLE: Record<string, string> = {
     draft: "bg-gray-100 text-gray-700", sent: "bg-blue-100 text-blue-700", viewed: "bg-amber-100 text-amber-700",

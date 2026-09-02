@@ -1,5 +1,5 @@
 import { getCurrentTenant } from "@/lib/tenant";
-import { createClient } from "@/lib/supabase/server";
+import { prisma } from "@/lib/prisma";
 import { addTryOn } from "./actions";
 
 const REACTIONS = [
@@ -30,13 +30,24 @@ type TryOnRow = {
 async function TryOnsContent({ tenantId }: { tenantId: string }) {
   let tryOns: TryOnRow[] = [], customers: OptionRow[] = [], products: OptionRow[] = [];
   try {
-    const supabase = await createClient();
     const [r1, r2, r3] = await Promise.all([
-      supabase.from("try_ons").select("*, customers(name), products(name, category, barcode)").eq("tenant_id", tenantId).order("created_at", { ascending: false }).limit(50),
-      supabase.from("customers").select("id, name").eq("tenant_id", tenantId).order("name"),
-      supabase.from("products").select("id, name, barcode, category").eq("tenant_id", tenantId).order("name"),
+      prisma.tryOn.findMany({
+        where: { tenant_id: tenantId },
+        orderBy: { created_at: "desc" },
+        take: 50,
+        include: {
+          customer: { select: { name: true } },
+          product: { select: { name: true, category: true, barcode: true } },
+        },
+      }),
+      prisma.customer.findMany({ where: { tenant_id: tenantId }, select: { id: true, name: true }, orderBy: { name: "asc" } }),
+      prisma.product.findMany({ where: { tenant_id: tenantId }, select: { id: true, name: true, barcode: true, category: true }, orderBy: { name: "asc" } }),
     ]);
-    tryOns = r1.data ?? []; customers = r2.data ?? []; products = r3.data ?? [];
+    // Şablon Supabase'in `customers` / `products` adlarını bekliyor.
+    tryOns = r1.map(({ customer, product, created_at, ...t }) => ({
+      ...t, created_at: created_at.toISOString(), customers: customer, products: product,
+    }));
+    customers = r2; products = r3;
   } catch {}
 
   const list = tryOns ?? [];

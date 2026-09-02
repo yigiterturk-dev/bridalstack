@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
-import { getCurrentTenant } from "@/lib/tenant";
+import { prisma } from "@/lib/prisma";
+import { getCurrentTenant, getCurrentUserId } from "@/lib/tenant";
 
 export async function POST(req: NextRequest) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const userId = await getCurrentUserId();
+  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const tenant = await getCurrentTenant();
   if (!tenant) return NextResponse.json({ error: "No tenant" }, { status: 400 });
@@ -13,12 +12,18 @@ export async function POST(req: NextRequest) {
   const { query } = await req.json();
   if (!query) return NextResponse.json({ error: "No query" }, { status: 400 });
 
-  const [{ data: products }, { data: customers }, { data: tryOns }, { data: orders }] = await Promise.all([
-    supabase.from("products").select("name, category, price, cost, stock_quantity, lifecycle_stage").eq("tenant_id", tenant.id).limit(50),
-    supabase.from("customers").select("name, status, metadata").eq("tenant_id", tenant.id).limit(50),
-    supabase.from("try_ons").select("reaction, rating, notes, products(name, category, price), customers(name)").eq("tenant_id", tenant.id).limit(100),
-    supabase.from("orders").select("ref_no, order_type, status, discounted_total, created_at").eq("tenant_id", tenant.id).limit(50),
+  const scope = { tenant_id: tenant.id };
+  const [products, customers, tryOnRows, orders] = await Promise.all([
+    prisma.product.findMany({ where: scope, select: { name: true, category: true, price: true, cost: true, stock_quantity: true, lifecycle_stage: true }, take: 50 }),
+    prisma.customer.findMany({ where: scope, select: { name: true, status: true, metadata: true }, take: 50 }),
+    prisma.tryOn.findMany({
+      where: scope,
+      select: { reaction: true, rating: true, notes: true, product: { select: { name: true, category: true, price: true } }, customer: { select: { name: true } } },
+      take: 100,
+    }),
+    prisma.order.findMany({ where: scope, select: { ref_no: true, order_type: true, status: true, discounted_total: true, created_at: true }, take: 50 }),
   ]);
+  const tryOns = tryOnRows.map(({ product, customer, ...t }) => ({ ...t, products: product, customers: customer }));
 
   const context = `
 You are an AI Stylist assistant for a bridal shop called "${tenant.name}".

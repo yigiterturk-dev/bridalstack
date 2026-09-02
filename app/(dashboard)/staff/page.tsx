@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
-import { getCurrentTenant, getCurrentMember } from "@/lib/tenant";
+import { prisma } from "@/lib/prisma";
+import { getCurrentTenant, getCurrentMember, getCurrentUserId } from "@/lib/tenant";
 import {
   hasPermission,
   normalizeRole,
@@ -14,23 +14,17 @@ type PageProps = { searchParams?: Promise<{ success?: string; error?: string }> 
 
 export default async function StaffPage({ searchParams }: PageProps) {
   const params = await searchParams;
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
-
   const tenant = await getCurrentTenant();
   if (!tenant) redirect("/onboarding");
 
+  const userId = await getCurrentUserId();
   const member = await getCurrentMember();
   const canManage = hasPermission(member?.role, "staff.manage");
 
-  const { data: members } = await supabase
-    .from("tenant_members")
-    .select("*")
-    .eq("tenant_id", tenant.id)
-    .order("created_at");
-
-  const list = members ?? [];
+  const list = await prisma.tenantMember.findMany({
+    where: { tenant_id: tenant.id },
+    orderBy: { created_at: "asc" },
+  });
 
   return (
     <div>
@@ -118,7 +112,7 @@ export default async function StaffPage({ searchParams }: PageProps) {
             <tbody className="divide-y divide-gray-50">
               {list.map((m) => {
                 const role = normalizeRole(m.role);
-                const isSelf = m.user_id === user.id;
+                const isSelf = m.user_id === userId;
                 const editable = canManage && role !== "owner" && !isSelf;
                 return (
                   <tr key={m.id} className="hover:bg-gray-50">

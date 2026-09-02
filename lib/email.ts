@@ -87,7 +87,7 @@ export function installmentReminderEmail(
         <p style="color: #555; line-height: 1.6;">
           Sorularınız için bizimle iletişime geçebilirsiniz.
         </p>
-        <p style="color: #999; font-size: 12px; margin-top: 32px;">StackCRM ile gönderildi</p>
+        <p style="color: #999; font-size: 12px; margin-top: 32px;">Sent by Bridal Stack</p>
       </div>
     `,
   };

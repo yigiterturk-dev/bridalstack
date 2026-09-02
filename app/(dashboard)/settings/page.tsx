@@ -1,14 +1,9 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
 import { getCurrentTenant } from "@/lib/tenant";
 import { PACKS, MODULES, ALL_PACK_IDS, calculateMonthlyPrice } from "@/config/modules";
 import { UpgradeButton, ManageBillingButton } from "@/components/billing-buttons";
 
 export default async function SettingsPage() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
-
   const tenant = await getCurrentTenant();
   if (!tenant) redirect("/onboarding");
 

@@ -1,10 +1,8 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { getCurrentUserId } from "@/lib/tenant";
 
 export default async function Home() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (user) redirect("/dashboard");
+  const userId = await getCurrentUserId();
+  if (userId) redirect("/dashboard");
   redirect("/landing");
 }

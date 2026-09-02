@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { listBookings, updateBookingStatus } from "./actions";
 
 type Booking = {
   id: string;
@@ -19,7 +19,6 @@ type Booking = {
 };
 
 export default function BookingsPage() {
-  const supabase = createClient();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -33,27 +32,8 @@ export default function BookingsPage() {
   async function fetchBookings() {
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from("bookings")
-        .select(`
-          id,
-          customer_name,
-          customer_phone,
-          customer_email,
-          booking_date,
-          start_time,
-          end_time,
-          status,
-          notes,
-          amount,
-          services ( name ),
-          tenant_members ( display_name )
-        `)
-        .order("booking_date", { ascending: false })
-        .order("start_time", { ascending: false });
-
-      if (error) throw error;
-      setBookings((data as any) || []);
+      const data = await listBookings();
+      setBookings(data as Booking[]);
     } catch (err) {
       console.error("Error fetching bookings:", err);
     } finally {
@@ -64,12 +44,8 @@ export default function BookingsPage() {
   async function updateStatus(id: string, newStatus: string) {
     setUpdatingId(id);
     try {
-      const { error } = await supabase
-        .from("bookings")
-        .update({ status: newStatus })
-        .eq("id", id);
-
-      if (error) throw error;
+      const res = await updateBookingStatus(id, newStatus);
+      if (!res.ok) throw new Error(res.error);
       setBookings((prev) =>
         prev.map((b) => (b.id === id ? { ...b, status: newStatus as any } : b))
       );

@@ -2,14 +2,13 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
-import { getCurrentTenant, getCurrentMember } from "@/lib/tenant";
+import { prisma } from "@/lib/prisma";
+import { getCurrentTenant, getCurrentMember, getCurrentUserId } from "@/lib/tenant";
 import { hasPermission } from "@/lib/rbac";
 
 export async function updateCustomer(formData: FormData) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+  const userId = await getCurrentUserId();
+  if (!userId) redirect("/login");
   const tenant = await getCurrentTenant();
   if (!tenant) redirect("/onboarding");
   const member = await getCurrentMember();
@@ -24,8 +23,11 @@ export async function updateCustomer(formData: FormData) {
 
   if (!id || !name) redirect(`/customers/${id}?error=required`);
 
-  // Tenant kapsamı (defense-in-depth, RLS'e ek)
-  await supabase.from("customers").update({ name, phone, email, status, notes, updated_at: new Date().toISOString() }).eq("id", id).eq("tenant_id", tenant.id);
+  // tenant_id filtresi izolasyonun tek garantisi — RLS yok.
+  await prisma.customer.updateMany({
+    where: { id, tenant_id: tenant.id },
+    data: { name, phone, email, status, notes },
+  });
 
   revalidatePath(`/customers/${id}`);
   revalidatePath("/customers");

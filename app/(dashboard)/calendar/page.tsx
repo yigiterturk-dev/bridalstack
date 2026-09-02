@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { prisma } from "@/lib/prisma";
 import { getCurrentTenant } from "@/lib/tenant";
 import ModuleGuard from "@/components/module-guard";
 import CalendarView from "./calendar-view";
@@ -8,10 +8,6 @@ type PageProps = { searchParams?: Promise<{ month?: string }> };
 
 export default async function CalendarPage({ searchParams }: PageProps) {
   const params = await searchParams;
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
-
   const tenant = await getCurrentTenant();
   if (!tenant) redirect("/onboarding");
 
@@ -22,24 +18,19 @@ export default async function CalendarPage({ searchParams }: PageProps) {
   const start = new Date(year, month - 1, 1);
   const end = new Date(year, month, 0, 23, 59, 59);
 
-  const { data: appointments } = await supabase
-    .from("appointments")
-    .select("id, title, appointment_date, status, customers(name)")
-    .eq("tenant_id", tenant.id)
-    .gte("appointment_date", start.toISOString())
-    .lte("appointment_date", end.toISOString())
-    .order("appointment_date");
-
-  const events = (appointments ?? []).map((a) => {
-    const cust = (Array.isArray(a.customers) ? a.customers[0] : a.customers) as { name: string } | null;
-    return {
-      id: a.id,
-      title: a.title ?? "Appointment",
-      customerName: cust?.name ?? "",
-      date: a.appointment_date,
-      status: a.status,
-    };
+  const appointments = await prisma.appointment.findMany({
+    where: { tenant_id: tenant.id, appointment_date: { gte: start, lte: end } },
+    select: { id: true, title: true, appointment_date: true, status: true, customer: { select: { name: true } } },
+    orderBy: { appointment_date: "asc" },
   });
+
+  const events = appointments.map((a) => ({
+    id: a.id,
+    title: a.title ?? "Appointment",
+    customerName: a.customer?.name ?? "",
+    date: a.appointment_date.toISOString(),
+    status: a.status,
+  }));
 
   return (
     <ModuleGuard moduleId="appointments" enabledModules={tenant.enabled_modules}>

@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { prisma } from "@/lib/prisma";
 import { getCurrentTenant } from "@/lib/tenant";
 import { createWorkflow, toggleWorkflow, deleteWorkflow } from "./actions";
 
@@ -21,15 +21,13 @@ const ACTIONS = [
 ];
 
 export default async function WorkflowsPage() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
-
   const tenant = await getCurrentTenant();
   if (!tenant) redirect("/onboarding");
 
-  const { data: workflows } = await supabase.from("workflows").select("*").eq("tenant_id", tenant.id).order("created_at", { ascending: false });
-  const list = workflows ?? [];
+  const list = await prisma.workflow.findMany({
+    where: { tenant_id: tenant.id },
+    orderBy: { created_at: "desc" },
+  });
 
   return (
     <div>

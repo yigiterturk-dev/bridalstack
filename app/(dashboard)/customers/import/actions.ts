@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { prisma } from "@/lib/prisma";
 import { getCurrentTenant, getCurrentMember } from "@/lib/tenant";
 import { hasPermission } from "@/lib/rbac";
 
@@ -145,7 +145,6 @@ export async function importCustomers(csvText: string): Promise<ImportResult> {
     return { ok: false, error: "Geçerli satır yok", inserted: 0, skipped: rows.length, errors };
   }
 
-  const supabase = await createClient();
   const payload = valid.map((r) => ({
     tenant_id: tenant.id,
     name: r.name,
@@ -156,13 +155,15 @@ export async function importCustomers(csvText: string): Promise<ImportResult> {
     created_by: member.userId,
   }));
 
-  // Toplu insert (RLS WITH CHECK tenant izolasyonunu zorunlu kılar)
-  const { error, count } = await supabase
-    .from("customers")
-    .insert(payload, { count: "exact" });
-
-  if (error) return { ok: false, error: error.message, errors };
+  // Toplu insert. tenant_id her satıra elle yazılıyor — RLS yok, izolasyon burada.
+  let count: number;
+  try {
+    const res = await prisma.customer.createMany({ data: payload });
+    count = res.count;
+  } catch {
+    return { ok: false, error: "Kayıtlar eklenemedi", errors };
+  }
 
   revalidatePath("/customers");
-  return { ok: true, inserted: count ?? valid.length, skipped: errors.length, errors };
+  return { ok: true, inserted: count, skipped: errors.length, errors };
 }

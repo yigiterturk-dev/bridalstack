@@ -1,15 +1,10 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
 import { getCurrentTenant, getCurrentMember } from "@/lib/tenant";
 import { hasPermission } from "@/lib/rbac";
 import ImportWizard from "./import-wizard";
 
 export default async function ImportCustomersPage() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
-
   const tenant = await getCurrentTenant();
   if (!tenant) redirect("/onboarding");
 

@@ -2,28 +2,27 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
-import { getCurrentTenant, getCurrentMember } from "@/lib/tenant";
+import { prisma } from "@/lib/prisma";
+import { getCurrentTenant, getCurrentMember, getCurrentUserId } from "@/lib/tenant";
 import { hasPermission, type Permission } from "@/lib/rbac";
 
 // Auth + tenant + (opsiyonel) izin kapısı. Fail-closed: yetkisiz reddedilir.
 async function requireAuth(permission?: Permission, denyRedirect = "/dashboard?error=forbidden") {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+  const userId = await getCurrentUserId();
+  if (!userId) redirect("/login");
   const tenant = await getCurrentTenant();
   if (!tenant) redirect("/onboarding");
   if (permission) {
     const member = await getCurrentMember();
     if (!hasPermission(member?.role, permission)) redirect(denyRedirect);
   }
-  return { supabase, user, tenant };
+  return { userId, tenant };
 }
 
 // ─── Customers ───
 
 export async function createCustomer(formData: FormData) {
-  const { supabase, user, tenant } = await requireAuth("customers.manage", "/customers?error=forbidden");
+  const { userId, tenant } = await requireAuth("customers.manage", "/customers?error=forbidden");
 
   const name = String(formData.get("name") || "").trim();
   const phone = String(formData.get("phone") || "").trim() || null;
@@ -32,11 +31,14 @@ export async function createCustomer(formData: FormData) {
 
   if (!name) redirect("/customers/new?error=required");
 
-  const { error } = await supabase.from("customers").insert({
-    tenant_id: tenant.id, name, phone, email, notes, created_by: user.id,
-  });
+  try {
+    await prisma.customer.create({
+      data: { tenant_id: tenant.id, name, phone, email, notes, created_by: userId },
+    });
+  } catch {
+    redirect("/customers/new?error=insert");
+  }
 
-  if (error) redirect("/customers/new?error=insert");
   revalidatePath("/customers");
   redirect("/customers?success=created");
 }
@@ -44,7 +46,7 @@ export async function createCustomer(formData: FormData) {
 // ─── Appointments ───
 
 export async function createAppointment(formData: FormData) {
-  const { supabase, user, tenant } = await requireAuth("appointments.manage", "/appointments?error=forbidden");
+  const { userId, tenant } = await requireAuth("appointments.manage", "/appointments?error=forbidden");
 
   const customer_id = String(formData.get("customer_id") || "").trim();
   const title = String(formData.get("title") || "").trim() || "Appointment";
@@ -54,32 +56,44 @@ export async function createAppointment(formData: FormData) {
 
   if (!customer_id || !date) redirect("/appointments?error=required");
 
-  const { error } = await supabase.from("appointments").insert({
-    tenant_id: tenant.id, customer_id, title, description,
-    appointment_date: `${date}T${time}`,
-    created_by: user.id,
-  });
+  try {
+    await prisma.appointment.create({
+      data: {
+        tenant_id: tenant.id,
+        customer_id,
+        title,
+        description,
+        appointment_date: new Date(`${date}T${time}`),
+        created_by: userId,
+      },
+    });
+  } catch {
+    redirect("/appointments?error=insert");
+  }
 
-  if (error) redirect("/appointments?error=insert");
   revalidatePath("/appointments");
   redirect("/appointments?success=created");
 }
 
 export async function updateAppointmentStatus(formData: FormData) {
-  const { supabase, tenant } = await requireAuth("appointments.manage", "/appointments?error=forbidden");
+  const { tenant } = await requireAuth("appointments.manage", "/appointments?error=forbidden");
 
   const id = String(formData.get("id") || "").trim();
   const status = String(formData.get("status") || "").trim();
   if (!id || !status) return;
 
-  await supabase.from("appointments").update({ status }).eq("id", id).eq("tenant_id", tenant.id);
+  // tenant_id filtresi izolasyonun garantisi — id tek başına yeterli değil.
+  await prisma.appointment.updateMany({
+    where: { id, tenant_id: tenant.id },
+    data: { status },
+  });
   revalidatePath("/appointments");
 }
 
 // ─── Products ───
 
 export async function createProduct(formData: FormData) {
-  const { supabase, user, tenant } = await requireAuth("products.manage", "/products?error=forbidden");
+  const { userId, tenant } = await requireAuth("products.manage", "/products?error=forbidden");
 
   const name = String(formData.get("name") || "").trim();
   const sku = String(formData.get("sku") || "").trim() || null;
@@ -100,12 +114,17 @@ export async function createProduct(formData: FormData) {
     barcode = `${prefix}-${ts}-${rand}`;
   }
 
-  const { error } = await supabase.from("products").insert({
-    tenant_id: tenant.id, name, barcode, sku, category, price, cost,
-    stock_quantity, description, created_by: user.id,
-  });
+  try {
+    await prisma.product.create({
+      data: {
+        tenant_id: tenant.id, name, barcode, sku, category, price, cost,
+        stock_quantity, description, created_by: userId,
+      },
+    });
+  } catch {
+    redirect("/products/new?error=insert");
+  }
 
-  if (error) redirect("/products/new?error=insert");
   revalidatePath("/products");
   redirect("/products?success=created");
 }
@@ -113,7 +132,7 @@ export async function createProduct(formData: FormData) {
 // ─── Orders ───
 
 export async function createOrder(formData: FormData) {
-  const { supabase, user, tenant } = await requireAuth("orders.manage", "/orders?error=forbidden");
+  const { userId, tenant } = await requireAuth("orders.manage", "/orders?error=forbidden");
 
   const customer_id = String(formData.get("customer_id") || "").trim();
   const order_type = String(formData.get("order_type") || "sale").trim();
@@ -132,15 +151,20 @@ export async function createOrder(formData: FormData) {
   const rand = Math.random().toString(36).substring(2, 6).toUpperCase();
   const ref_no = `S${y}${m}${d}-${rand}`;
 
-  const { error } = await supabase.from("orders").insert({
-    tenant_id: tenant.id, ref_no, customer_id, order_type, order_date,
-    delivery_date: delivery_date && /^\d{4}-\d{2}-\d{2}$/.test(delivery_date) ? delivery_date : null,
-    sales_person, discounted_total, deposit_amount,
-    remaining_balance: Math.max(0, discounted_total - deposit_amount),
-    list_total: discounted_total, notes, created_by: user.id,
-  });
+  try {
+    await prisma.order.create({
+      data: {
+        tenant_id: tenant.id, ref_no, customer_id, order_type, order_date,
+        delivery_date: delivery_date && /^\d{4}-\d{2}-\d{2}$/.test(delivery_date) ? delivery_date : null,
+        sales_person, discounted_total, deposit_amount,
+        remaining_balance: Math.max(0, discounted_total - deposit_amount),
+        list_total: discounted_total, notes, created_by: userId,
+      },
+    });
+  } catch {
+    redirect("/orders/new?error=insert");
+  }
 
-  if (error) redirect("/orders/new?error=insert");
   revalidatePath("/orders");
   redirect("/orders?success=created");
 }

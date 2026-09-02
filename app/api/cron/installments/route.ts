@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServiceClient } from "@/lib/supabase/service";
+import { Prisma } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { sendEmail, installmentReminderEmail } from "@/lib/email";
-import { deriveStatus, reminderFor } from "@/lib/installments";
+import { deriveStatus, reminderFor, type InstallmentStatus } from "@/lib/installments";
 
 export const dynamic = "force-dynamic";
 
@@ -9,72 +10,60 @@ export const dynamic = "force-dynamic";
 // ║  Taksit otomasyonu cron'u — CRON_SECRET korumalı, fail-closed.            ║
 // ║  1) Ödenmemiş taksitlerin durumunu (pending→due→overdue) günceller.       ║
 // ║  2) Vade penceresine göre hatırlatma e-postası kuyruğa alır (deduplike).  ║
-// ║  NOT: Gerçek Stripe tekrarlı tahsilat, mevcut Stripe env'ine bağlı olarak  ║
-// ║  sonraya bırakıldı; burada SADECE plan/durum/hatırlatma yürütülür.        ║
+// ║  Tüm kiracılar için çalışır — bilinçli olarak tenant filtresi yok.        ║
 // ╚══════════════════════════════════════════════════════════════════════════╝
 export async function GET(req: NextRequest) {
-  // Auth: CRON_SECRET tanımlı değilse fail-closed (çalıştırma).
   const secret = process.env.CRON_SECRET;
   const authHeader = req.headers.get("authorization");
   if (!secret || authHeader !== `Bearer ${secret}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // RLS'i baypas etmek için service-role gerekir; yoksa güvenli şekilde dur.
-  const supabase = createServiceClient();
-  if (!supabase) {
-    return NextResponse.json(
-      { error: "SUPABASE_SERVICE_ROLE_KEY ayarlı değil; cron devre dışı (fail-closed).", processed: 0 },
-      { status: 503 }
-    );
-  }
-
   const now = new Date();
 
-  // Yalnızca açık (ödenmemiş/iptal olmayan) taksitleri al.
-  const { data: installments, error } = await supabase
-    .from("installments")
-    .select("id, tenant_id, customer_id, amount, due_date, paid_at, status, customers(name, email), tenants:tenant_id(name)")
-    .in("status", ["pending", "due", "overdue"]);
-
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
+  const installments = await prisma.installment.findMany({
+    where: { status: { in: ["pending", "due", "overdue"] } },
+    select: {
+      id: true, tenant_id: true, customer_id: true, amount: true, due_date: true, paid_at: true, status: true,
+      customer: { select: { name: true, email: true } },
+      tenant: { select: { name: true } },
+    },
+  });
 
   let statusUpdated = 0;
   let remindersSent = 0;
   let emailsSent = 0;
 
-  for (const inst of installments ?? []) {
-    const row = inst as any;
+  for (const row of installments) {
+    const paidAt = row.paid_at ? row.paid_at.toISOString() : null;
 
     // 1) Durum geçişi
-    const next = deriveStatus({ due_date: row.due_date, paid_at: row.paid_at, status: row.status }, now);
+    const next = deriveStatus({ due_date: row.due_date, paid_at: paidAt, status: row.status as InstallmentStatus }, now);
     if (next !== row.status) {
-      await supabase.from("installments").update({ status: next, updated_at: now.toISOString() }).eq("id", row.id);
+      await prisma.installment.update({ where: { id: row.id }, data: { status: next } });
       statusUpdated++;
     }
 
     // 2) Hatırlatma kararı
-    const kind = reminderFor({ due_date: row.due_date, paid_at: row.paid_at, status: next }, now);
+    const kind = reminderFor({ due_date: row.due_date, paid_at: paidAt, status: next }, now);
     if (!kind) continue;
 
-    // Deduplike: aynı taksit+tür için tekrar gönderme (UNIQUE installment_id, kind)
-    const { error: insErr } = await supabase
-      .from("installment_reminders")
-      .insert({ tenant_id: row.tenant_id, installment_id: row.id, kind, channel: "email" });
-
-    // UNIQUE ihlali => bu hatırlatma zaten gönderilmiş, atla.
-    if (insErr) continue;
+    // Deduplike: UNIQUE(installment_id, kind) ihlali => zaten gönderilmiş, atla.
+    try {
+      await prisma.installmentReminder.create({
+        data: { tenant_id: row.tenant_id, installment_id: row.id, kind, channel: "email" },
+      });
+    } catch (e) {
+      if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") continue;
+      throw e;
+    }
     remindersSent++;
 
-    // E-posta gönder (Resend env yoksa lib/email no-op yapar).
-    const customer = (Array.isArray(row.customers) ? row.customers[0] : row.customers) as { name: string; email: string | null } | null;
-    const tenant = (Array.isArray(row.tenants) ? row.tenants[0] : row.tenants) as { name: string } | null;
+    const customer = row.customer;
     if (customer?.email) {
-      const amountStr = `₺${Number(row.amount || 0).toLocaleString("tr-TR")}`;
-      const dueStr = new Date(row.due_date + "T12:00:00").toLocaleDateString("tr-TR", { day: "numeric", month: "long", year: "numeric" });
-      const mail = installmentReminderEmail(customer.name, tenant?.name ?? "İşletmeniz", amountStr, dueStr, kind);
+      const amountStr = `$${Number(row.amount || 0).toLocaleString("en-US")}`;
+      const dueStr = new Date(row.due_date + "T12:00:00").toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" });
+      const mail = installmentReminderEmail(customer.name, row.tenant?.name ?? "Your boutique", amountStr, dueStr, kind);
       try {
         await sendEmail({ to: customer.email, ...mail });
         emailsSent++;
@@ -86,11 +75,10 @@ export async function GET(req: NextRequest) {
 
   return NextResponse.json({
     ok: true,
-    total: (installments ?? []).length,
+    total: installments.length,
     statusUpdated,
     remindersSent,
     emailsSent,
-    // Stripe tekrarlı tahsilat: anahtar geldiğinde etkinleşecek.
     stripeChargingEnabled: false,
   });
 }

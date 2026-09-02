@@ -5,7 +5,7 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
-  title: "BridalStack — Modern CRM for Bridal Shops",
+  title: "Bridal Stack — Modern CRM for Bridal Shops",
   description: "Manage appointments, sales, inventory & payments — built for bridal boutiques.",
 };
 

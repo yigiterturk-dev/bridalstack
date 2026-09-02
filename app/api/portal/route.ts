@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
-import { getCurrentTenant } from "@/lib/tenant";
+import { prisma } from "@/lib/prisma";
+import { getCurrentTenant, getCurrentUserId } from "@/lib/tenant";
 
 export async function POST(req: NextRequest) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const userId = await getCurrentUserId();
+  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const tenant = await getCurrentTenant();
   if (!tenant) return NextResponse.json({ error: "No tenant" }, { status: 400 });
@@ -13,15 +12,22 @@ export async function POST(req: NextRequest) {
   const { customer_id } = await req.json();
   if (!customer_id) return NextResponse.json({ error: "customer_id required" }, { status: 400 });
 
+  // Müşteri gerçekten bu kiracıya mı ait? RLS yok, elle doğruluyoruz.
+  const customer = await prisma.customer.findFirst({
+    where: { id: customer_id, tenant_id: tenant.id },
+    select: { id: true },
+  });
+  if (!customer) return NextResponse.json({ error: "Customer not found" }, { status: 404 });
+
   const token = crypto.randomUUID().replace(/-/g, "").slice(0, 16);
 
-  const { error } = await supabase.from("portal_tokens").insert({
-    tenant_id: tenant.id,
-    customer_id,
-    token,
-  });
-
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  try {
+    await prisma.portalToken.create({
+      data: { tenant_id: tenant.id, customer_id, token },
+    });
+  } catch (e) {
+    return NextResponse.json({ error: "Could not create portal link" }, { status: 500 });
+  }
 
   const url = `${req.nextUrl.origin}/portal/${token}`;
   return NextResponse.json({ url, token });

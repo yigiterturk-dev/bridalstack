@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { prisma } from "@/lib/prisma";
 import { rateLimit, clientIp } from "@/lib/ratelimit";
 import { UUID_RE, validateBookingInput } from "@/lib/booking-validation";
 
@@ -55,16 +55,12 @@ export async function POST(req: Request) {
     }
 
     const member_id = member_id_raw && UUID_RE.test(member_id_raw) ? member_id_raw : null;
-    const supabase = await createClient();
 
     // 3. Tenant + servis gerçekten var mı? (uydurma id ile yazımı engelle)
-    const { data: svc } = await supabase
-      .from("services")
-      .select("id, price, duration")
-      .eq("id", service_id)
-      .eq("tenant_id", tenant_id)
-      .eq("is_active", true)
-      .maybeSingle();
+    const svc = await prisma.service.findFirst({
+      where: { id: service_id, tenant_id, is_active: true },
+      select: { id: true, price: true, duration: true },
+    });
 
     if (!svc) {
       return NextResponse.json({ error: "Hizmet bulunamadı." }, { status: 404 });
@@ -74,18 +70,22 @@ export async function POST(req: Request) {
 
     // 4. Çakışma kontrolü: aynı personel + tarih + saatte zaten kayıt var mı?
     if (member_id) {
-      const { data: clash } = await supabase
-        .from("bookings")
-        .select("id")
-        .eq("tenant_id", tenant_id)
-        .eq("member_id", member_id)
-        .eq("booking_date", booking_date)
-        .lt("start_time", end_time)
-        .gt("end_time", start_time)
-        .not("status", "in", "(cancelled,no_show)")
-        .limit(1);
+      // Personel bu butiğe ait mi? (başka kiracının personeline rezervasyon yazılmasın)
+      const staff = await prisma.tenantMember.findFirst({ where: { id: member_id, tenant_id }, select: { id: true } });
+      if (!staff) {
+        return NextResponse.json({ error: "Personel bulunamadı." }, { status: 404 });
+      }
+      const clash = await prisma.booking.findFirst({
+        where: {
+          tenant_id, member_id, booking_date,
+          start_time: { lt: end_time },
+          end_time: { gt: start_time },
+          status: { notIn: ["cancelled", "no_show"] },
+        },
+        select: { id: true },
+      });
 
-      if (clash && clash.length > 0) {
+      if (clash) {
         return NextResponse.json(
           { error: "Bu saat artık müsait değil. Lütfen başka bir saat seçin." },
           { status: 409 }
@@ -93,22 +93,22 @@ export async function POST(req: Request) {
       }
     }
 
-    // 5. Müşteri profilini en iyi çabayla eşle/oluştur (RLS engellerse yok say)
+    // 5. Müşteri profilini en iyi çabayla eşle/oluştur
     let customerId: string | null = null;
     try {
       if (customer_email || customer_phone) {
-        let q = supabase.from("customers").select("id").eq("tenant_id", tenant_id);
-        q = customer_email ? q.eq("email", customer_email) : q.eq("phone", customer_phone);
-        const { data: existing } = await q.maybeSingle();
+        const existing = await prisma.customer.findFirst({
+          where: { tenant_id, ...(customer_email ? { email: customer_email } : { phone: customer_phone }) },
+          select: { id: true },
+        });
         if (existing) {
           customerId = existing.id;
         } else {
-          const { data: created } = await supabase
-            .from("customers")
-            .insert({ tenant_id, name: customer_name, phone: customer_phone || null, email: customer_email || null, status: "new" })
-            .select("id")
-            .maybeSingle();
-          if (created) customerId = created.id;
+          const created = await prisma.customer.create({
+            data: { tenant_id, name: customer_name, phone: customer_phone || null, email: customer_email || null, status: "new" },
+            select: { id: true },
+          });
+          customerId = created.id;
         }
       }
     } catch (e) {
@@ -116,29 +116,29 @@ export async function POST(req: Request) {
     }
 
     // 6. ONAY BEKLEYEN (pending) rezervasyon yaz — salon kabul edince confirmed olur.
-    const { data: booking, error } = await supabase
-      .from("bookings")
-      .insert({
-        tenant_id,
-        customer_id: customerId,
-        member_id,
-        service_id,
-        customer_name,
-        customer_phone: customer_phone || null,
-        customer_email: customer_email || null,
-        booking_date,
-        start_time,
-        end_time,
-        notes,
-        amount,
-        status: "pending",
-        source: "online",
-      })
-      .select("id, status, booking_date, start_time")
-      .single();
-
-    if (error) {
-      console.error("Rezervasyon yazılamadı:", error.message);
+    let booking: { id: string; status: string; booking_date: string; start_time: string };
+    try {
+      booking = await prisma.booking.create({
+        data: {
+          tenant_id,
+          customer_id: customerId,
+          member_id,
+          service_id,
+          customer_name,
+          customer_phone: customer_phone || null,
+          customer_email: customer_email || null,
+          booking_date,
+          start_time,
+          end_time,
+          notes,
+          amount,
+          status: "pending",
+          source: "online",
+        },
+        select: { id: true, status: true, booking_date: true, start_time: true },
+      });
+    } catch (e) {
+      console.error("Rezervasyon yazılamadı:", e);
       return NextResponse.json({ error: "Rezervasyon oluşturulamadı." }, { status: 500 });
     }
 
