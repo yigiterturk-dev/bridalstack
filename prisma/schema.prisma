@@ -719,6 +719,10 @@ model CommissionRule {
   scope           String   @default("all")
   /// scope=staff ise siparişteki sales_person ile eşleşecek isim
   staff_name      String?
+  /// order = siparişin tamamına · kind = yalnız belirli türdeki kalemlere
+  applies_to      String   @default("order")
+  /// applies_to=kind ise hangi kalem türü (gown, veil, accessory, alteration, service, other)
+  line_kind       String?
   rate_percent    Float    @default(0)
   flat_amount     Float    @default(0)
   /// Bu tutarın altındaki siparişe prim yok

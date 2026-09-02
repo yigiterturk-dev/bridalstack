@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getCurrentTenant } from "@/lib/tenant";
 import { formatPrice } from "@/config/modules";
+import { kindLabel } from "@/lib/order-lines";
 import ModuleGuard from "@/components/module-guard";
 import {
   summarizeByStaff,
@@ -11,6 +12,9 @@ import {
   formatPeriod,
   commissionFor,
   matchRule,
+  commissionBreakdown,
+  isKindRule,
+  type CommissionLine,
   isEarning,
   salesPersonOf,
   type CommissionOrder,
@@ -49,7 +53,7 @@ async function CommissionsContent({
   period?: string;
   error?: string;
 }) {
-  const [orders, rules, payouts] = await Promise.all([
+  const [orders, rules, payouts, orderLines] = await Promise.all([
     prisma.order.findMany({
       where: { tenant_id: tenantId },
       orderBy: { created_at: "desc" },
@@ -61,13 +65,25 @@ async function CommissionsContent({
     }),
     prisma.commissionRule.findMany({ where: { tenant_id: tenantId }, orderBy: { priority: "desc" } }),
     prisma.commissionPayout.findMany({ where: { tenant_id: tenantId } }),
+    prisma.orderLine.findMany({
+      where: { order: { tenant_id: tenantId } },
+      select: { order_id: true, kind: true, quantity: true, unit_price: true, discount: true },
+    }),
   ]);
+
+  // Prim tür kırılımını okuyabilsin diye kalemler siparişe göre gruplanır.
+  const linesByOrder = new Map<string, CommissionLine[]>();
+  for (const { order_id, ...line } of orderLines) {
+    const rows = linesByOrder.get(order_id) ?? [];
+    rows.push(line);
+    linesByOrder.set(order_id, rows);
+  }
 
   const all = orders as CommissionOrder[];
   const periods = periodOptions(all);
   const active = period && periods.includes(period) ? period : periods[0];
   const inPeriod = all.filter((o) => periodOf(o) === active);
-  const rows = summarizeByStaff(inPeriod, rules);
+  const rows = summarizeByStaff(inPeriod, rules, linesByOrder);
 
   const paidKey = new Map(payouts.map((p) => [`${p.staff_name.toLowerCase()}|${p.period}`, p]));
   const totalCommission = rows.reduce((s, r) => s + r.commission, 0);
@@ -210,8 +226,13 @@ async function CommissionsContent({
                 </thead>
                 <tbody>
                   {inPeriod.map((order) => {
-                    const rule = isEarning(order) ? matchRule(order, rules) : null;
-                    const amount = commissionFor(order, rules);
+                    const lines = linesByOrder.get(order.id) ?? [];
+                    const amount = commissionFor(order, rules, lines);
+                    // Tür kuralı işlediyse tek bir "uygulanan kural" yoktur;
+                    // hangi türün hangi kuraldan kazandırdığı tek tek yazılır.
+                    const breakdown = commissionBreakdown(order, rules, lines).filter((b) => b.rule);
+                    const perKind = breakdown.some((b) => isKindRule(b.rule!));
+                    const orderRule = isEarning(order) ? matchRule(order, rules) : null;
                     return (
                       <tr key={order.id} className="border-b border-stone-50 last:border-0">
                         <td className="px-6 py-3">
@@ -223,7 +244,21 @@ async function CommissionsContent({
                           )}
                         </td>
                         <td className="px-4 py-3 text-stone-600">{salesPersonOf(order)}</td>
-                        <td className="px-4 py-3 text-stone-400">{rule?.name ?? "—"}</td>
+                        <td className="px-4 py-3 text-stone-400">
+                          {perKind ? (
+                            <span className="flex flex-col gap-0.5">
+                              {breakdown.map((b) => (
+                                <span key={b.kind}>
+                                  <span className="text-stone-500">{kindLabel(b.kind)}</span>
+                                  {" · "}
+                                  {b.rule!.name}
+                                </span>
+                              ))}
+                            </span>
+                          ) : (
+                            orderRule?.name ?? "—"
+                          )}
+                        </td>
                         <td className="px-4 py-3 text-right tabular-nums text-stone-600">
                           {formatPrice(Math.round(order.discounted_total))}
                         </td>

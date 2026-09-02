@@ -5,11 +5,14 @@ import { getCurrentTenant } from "@/lib/tenant";
 import { formatPrice } from "@/config/modules";
 import ModuleGuard from "@/components/module-guard";
 import SelectField from "@/components/select-field";
+import { LINE_KINDS, kindLabel } from "@/lib/order-lines";
 import { createRule, toggleRule, deleteRule } from "../actions";
 
 export const dynamic = "force-dynamic";
 
 const ERRORS: Record<string, string> = {
+  kind: "Pick which kind of item the rule covers.",
+  kindrate: "An item rule needs a percentage — a flat bonus is paid once per order, not per item kind.",
   forbidden: "Only the owner can change commission rules.",
   required: "Give the rule a name.",
   staff: "Pick whose rule this is.",
@@ -87,7 +90,7 @@ async function RulesContent({ tenantId, error }: { tenantId: string; error?: str
               <input name="name" required maxLength={80} className={INPUT} placeholder="e.g. Standard 5%" />
             </Field>
 
-            <Field label="Applies to">
+            <Field label="Paid to">
               <SelectField
                 name="scope"
                 defaultValue="all"
@@ -96,6 +99,27 @@ async function RulesContent({ tenantId, error }: { tenantId: string; error?: str
                   { value: "all", label: "Everyone" },
                   { value: "staff", label: "One stylist" },
                 ]}
+              />
+            </Field>
+
+            <Field label="Earned on">
+              <SelectField
+                name="applies_to"
+                defaultValue="order"
+                searchable={false}
+                options={[
+                  { value: "order", label: "The whole order" },
+                  { value: "kind", label: "One kind of item" },
+                ]}
+              />
+            </Field>
+
+            <Field label="Item kind (only for an item rule)">
+              <SelectField
+                name="line_kind"
+                placeholder="Select…"
+                searchable={false}
+                options={LINE_KINDS.map((k) => ({ value: k.id, label: k.label }))}
               />
             </Field>
 
@@ -124,6 +148,12 @@ async function RulesContent({ tenantId, error }: { tenantId: string; error?: str
                 <input name="priority" type="number" min="0" max="999" className={INPUT} placeholder="0" />
               </Field>
             </div>
+
+            <p className="text-xs text-stone-400 leading-relaxed">
+              An item rule only pays on that kind of item, and it never stacks with a
+              whole-order rule — the most specific rule decides each item on its own.
+              A flat bonus belongs to a whole-order rule: it is paid once per order.
+            </p>
 
             <button
               type="submit"
@@ -164,6 +194,11 @@ async function RulesContent({ tenantId, error }: { tenantId: string; error?: str
                       <h3 className="font-bold text-stone-900">{r.name}</h3>
                       <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-stone-100 text-stone-600">
                         {r.scope === "staff" ? r.staff_name : "Everyone"}
+                      </span>
+                      <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-violet-50 text-violet-700 border border-violet-100">
+                        {r.applies_to === "kind" && r.line_kind
+                          ? `${kindLabel(r.line_kind)} only`
+                          : "Whole order"}
                       </span>
                       {r.priority > 0 && (
                         <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-sky-50 text-sky-700 border border-sky-100">

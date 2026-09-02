@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentMember } from "@/lib/tenant";
 import { hasPermission } from "@/lib/rbac";
 import { summarizeByStaff, periodOf, UNASSIGNED, type CommissionOrder } from "@/lib/commissions";
+import { LINE_KINDS } from "@/lib/order-lines";
 
 // Prim para işidir: billing.manage (yalnız owner) gerekir.
 async function requireCommissionManager(back: string) {
@@ -13,6 +14,23 @@ async function requireCommissionManager(back: string) {
   if (!member) redirect("/login");
   if (!hasPermission(member.role, "billing.manage")) redirect(`${back}?error=forbidden`);
   return member;
+}
+
+/** Dönemdeki siparişlerin kalemleri — prim hesabı tür kırılımını buradan okur. */
+async function loadLinesByOrder(tenantId: string, orderIds: string[]) {
+  const map = new Map<string, { kind: string; quantity: number; unit_price: number; discount: number }[]>();
+  if (orderIds.length === 0) return map;
+
+  const lines = await prisma.orderLine.findMany({
+    where: { order_id: { in: orderIds }, order: { tenant_id: tenantId } },
+    select: { order_id: true, kind: true, quantity: true, unit_price: true, discount: true },
+  });
+  for (const { order_id, ...line } of lines) {
+    const rows = map.get(order_id) ?? [];
+    rows.push(line);
+    map.set(order_id, rows);
+  }
+  return map;
 }
 
 export async function createRule(formData: FormData) {
@@ -25,12 +43,21 @@ export async function createRule(formData: FormData) {
   const staff_name = String(formData.get("staff_name") || "").trim() || null;
   if (scope === "staff" && !staff_name) redirect("/commissions/rules?error=staff");
 
+  // Kural siparişin tamamına mı, yoksa tek bir kalem türüne mi?
+  const applies_to = String(formData.get("applies_to") || "order") === "kind" ? "kind" : "order";
+  const rawKind = String(formData.get("line_kind") || "").trim();
+  const line_kind = LINE_KINDS.some((k) => k.id === rawKind) ? rawKind : null;
+  if (applies_to === "kind" && !line_kind) redirect("/commissions/rules?error=kind");
+
   const rate_percent = Math.min(100, Math.max(0, parseFloat(String(formData.get("rate_percent") || "0")) || 0));
   const flat_amount = Math.max(0, parseFloat(String(formData.get("flat_amount") || "0")) || 0);
   const min_order_total = Math.max(0, parseFloat(String(formData.get("min_order_total") || "0")) || 0);
   const priority = Math.max(0, parseInt(String(formData.get("priority") || "0"), 10) || 0);
 
   if (rate_percent === 0 && flat_amount === 0) redirect("/commissions/rules?error=empty");
+  // Sabit bonus sipariş başınadır; tür kuralına verilirse her türde bir kez
+  // sayılmaya çalışılır ve kullanıcı beklemediği bir tutar görür.
+  if (applies_to === "kind" && rate_percent === 0) redirect("/commissions/rules?error=kindrate");
 
   await prisma.commissionRule.create({
     data: {
@@ -38,8 +65,10 @@ export async function createRule(formData: FormData) {
       name,
       scope,
       staff_name: scope === "staff" ? staff_name : null,
+      applies_to,
+      line_kind: applies_to === "kind" ? line_kind : null,
       rate_percent,
-      flat_amount,
+      flat_amount: applies_to === "kind" ? 0 : flat_amount,
       min_order_total,
       priority,
     },
@@ -99,7 +128,8 @@ export async function markPaid(formData: FormData) {
   ]);
 
   const inPeriod = (orders as CommissionOrder[]).filter((o) => periodOf(o) === period);
-  const row = summarizeByStaff(inPeriod, rules).find(
+  const linesByOrder = await loadLinesByOrder(member.tenantId, inPeriod.map((o) => o.id));
+  const row = summarizeByStaff(inPeriod, rules, linesByOrder).find(
     (r) => r.staff.toLowerCase() === staff.toLowerCase()
   );
   if (!row || row.commission <= 0) redirect(`/commissions?period=${period}&error=nothing`);
