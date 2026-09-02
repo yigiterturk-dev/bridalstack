@@ -84,6 +84,9 @@ model Tenant {
   funnel_events FunnelEvent[]
   invitations   Invitation[]
   follow_ups    FollowUpEmail[]
+  suppliers     Supplier[]
+  stock_counts  StockCount[]
+  returns       ProductReturn[]
 
   @@index([cohort_month])
   @@map("tenants")
@@ -131,8 +134,8 @@ model Customer {
   created_at DateTime @default(now()) @db.Timestamptz(6)
   updated_at DateTime @updatedAt @db.Timestamptz(6)
 
-  tenant        Tenant        @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
-  creator       User?         @relation(fields: [created_by], references: [id])
+  tenant        Tenant          @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  creator       User?           @relation(fields: [created_by], references: [id])
   orders        Order[]
   appointments  Appointment[]
   bookings      Booking[]
@@ -141,6 +144,7 @@ model Customer {
   portal_tokens PortalToken[]
   installments  Installment[]
   follow_ups    FollowUpEmail[]
+  returns       ProductReturn[]
 
   @@index([tenant_id])
   @@map("customers")
@@ -161,18 +165,23 @@ model Product {
   metadata             Json     @default("{}")
   lifecycle_stage      String   @default("in_stock")
   lifecycle_updated_at DateTime @default(now()) @db.Timestamptz(6)
+  supplier_id          String?  @db.Uuid
   created_by           String?  @db.Uuid
   created_at           DateTime @default(now()) @db.Timestamptz(6)
   updated_at           DateTime @updatedAt @db.Timestamptz(6)
 
   tenant        Tenant                @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
   creator       User?                 @relation(fields: [created_by], references: [id])
+  supplier      Supplier?             @relation(fields: [supplier_id], references: [id], onDelete: SetNull)
   try_ons       TryOn[]
   lifecycle_log ProductLifecycleLog[]
   show_items    TrunkShowItem[]
+  count_items   StockCountItem[]
+  returns       ProductReturn[]
 
   @@index([tenant_id])
   @@index([barcode])
+  @@index([supplier_id])
   @@map("products")
 }
 
@@ -196,11 +205,12 @@ model Order {
   created_at        DateTime @default(now()) @db.Timestamptz(6)
   updated_at        DateTime @updatedAt @db.Timestamptz(6)
 
-  tenant       Tenant        @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
-  customer     Customer      @relation(fields: [customer_id], references: [id], onDelete: Cascade)
-  creator      User?         @relation(fields: [created_by], references: [id])
+  tenant       Tenant          @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  customer     Customer        @relation(fields: [customer_id], references: [id], onDelete: Cascade)
+  creator      User?           @relation(fields: [created_by], references: [id])
   contracts    Contract[]
   installments Installment[]
+  returns      ProductReturn[]
 
   @@unique([tenant_id, ref_no])
   @@index([tenant_id])
@@ -515,6 +525,96 @@ model InstallmentReminder {
   @@unique([installment_id, kind])
   @@index([tenant_id])
   @@map("installment_reminders")
+}
+
+// ─────────────────────────────────────────────────────────────
+// Envanter: tedarikçiler, stok sayımı, iadeler
+// ─────────────────────────────────────────────────────────────
+
+model Supplier {
+  id             String   @id @default(uuid()) @db.Uuid
+  tenant_id      String   @db.Uuid
+  name           String
+  contact_name   String?
+  email          String?
+  phone          String?
+  website        String?
+  address        String?
+  /// Sipariş verildikten kaç gün sonra elbise gelir — teslim sözü verirken şart.
+  lead_time_days Int?
+  payment_terms  String?
+  notes          String?
+  is_active      Boolean  @default(true)
+  created_at     DateTime @default(now()) @db.Timestamptz(6)
+  updated_at     DateTime @updatedAt @db.Timestamptz(6)
+
+  tenant   Tenant    @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  products Product[]
+
+  @@index([tenant_id])
+  @@map("suppliers")
+}
+
+/// Bir stok sayımı oturumu. Açıldığında o anki stok "beklenen" olarak dondurulur.
+model StockCount {
+  id         String    @id @default(uuid()) @db.Uuid
+  tenant_id  String    @db.Uuid
+  reference  String
+  status     String    @default("open") // open, closed, cancelled
+  notes      String?
+  started_by String?   @db.Uuid
+  started_at DateTime  @default(now()) @db.Timestamptz(6)
+  closed_at  DateTime? @db.Timestamptz(6)
+
+  tenant Tenant           @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  items  StockCountItem[]
+
+  @@index([tenant_id, status])
+  @@map("stock_counts")
+}
+
+model StockCountItem {
+  id           String    @id @default(uuid()) @db.Uuid
+  count_id     String    @db.Uuid
+  product_id   String    @db.Uuid
+  expected_qty Int       @default(0)
+  counted_qty  Int?
+  counted_at   DateTime? @db.Timestamptz(6)
+  note         String?
+
+  count   StockCount @relation(fields: [count_id], references: [id], onDelete: Cascade)
+  product Product    @relation(fields: [product_id], references: [id], onDelete: Cascade)
+
+  @@unique([count_id, product_id])
+  @@index([count_id])
+  @@map("stock_count_items")
+}
+
+/// Gelinin iade/değişim talebi. Onaylanıp stoğa geri konulması ayrı adımdır.
+model ProductReturn {
+  id            String    @id @default(uuid()) @db.Uuid
+  tenant_id     String    @db.Uuid
+  order_id      String?   @db.Uuid
+  customer_id   String?   @db.Uuid
+  product_id    String?   @db.Uuid
+  quantity      Int       @default(1)
+  reason        String    @default("other") // sizing, damaged, changed_mind, wrong_item, other
+  condition     String    @default("resellable") // resellable, needs_cleaning, damaged
+  refund_amount Float     @default(0)
+  restock       Boolean   @default(true)
+  status        String    @default("pending") // pending, approved, rejected, completed
+  notes         String?
+  created_by    String?   @db.Uuid
+  created_at    DateTime  @default(now()) @db.Timestamptz(6)
+  processed_at  DateTime? @db.Timestamptz(6)
+
+  tenant   Tenant    @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  order    Order?    @relation(fields: [order_id], references: [id], onDelete: SetNull)
+  customer Customer? @relation(fields: [customer_id], references: [id], onDelete: SetNull)
+  product  Product?  @relation(fields: [product_id], references: [id], onDelete: SetNull)
+
+  @@index([tenant_id, status])
+  @@map("product_returns")
 }
 
 // ─────────────────────────────────────────────────────────────

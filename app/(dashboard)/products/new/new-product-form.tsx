@@ -5,10 +5,17 @@ import Link from "next/link";
 import { createProduct } from "@/lib/actions";
 import BarcodeScanner from "@/components/barcode-scanner";
 import ImageUpload from "@/components/image-upload";
+import SelectField from "@/components/select-field";
 
 const CATEGORIES = ["Bridal Gown", "Veil", "Tiara", "Accessories", "Bridesmaid", "Evening", "Other"];
 
-export default function NewProductForm({ uploadsOn }: { uploadsOn: boolean }) {
+export default function NewProductForm({
+  uploadsOn,
+  suppliers,
+}: {
+  uploadsOn: boolean;
+  suppliers: { id: string; name: string }[];
+}) {
   const [barcode, setBarcode] = useState("");
   const [showScanner, setShowScanner] = useState(false);
 
@@ -39,15 +46,28 @@ export default function NewProductForm({ uploadsOn }: { uploadsOn: boolean }) {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-            <select name="category" className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none bg-white">
-              <option value="">Select...</option>
-              {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
-            </select>
+            <SelectField
+              name="category"
+              placeholder="Select…"
+              searchable={false}
+              options={CATEGORIES.map((c) => ({ value: c, label: c }))}
+            />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">SKU</label>
             <input name="sku" className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none" placeholder="BG-001" />
           </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Supplier</label>
+          {suppliers.length > 0 ? (
+            <SelectField name="supplier_id" placeholder="Who do you order this from?" options={suppliers.map((s) => ({ value: s.id, label: s.name }))} />
+          ) : (
+            <p className="text-sm text-gray-400 px-1 py-2">
+              No suppliers yet — <Link href="/suppliers" className="underline">add one</Link> to track lead times.
+            </p>
+          )}
         </div>
 
         {/* Barcode Scanner Input */}

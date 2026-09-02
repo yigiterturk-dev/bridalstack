@@ -123,9 +123,9 @@ export const MODULES: Record<ModuleId, ModuleDefinition> = {
       { href: "/products", label: "Products", icon: "checkroom" },
       { href: "/try-ons", label: "Try-Ons", icon: "favorite" },
       { href: "/trunk-shows", label: "Trunk Shows", icon: "event_note" },
-      { href: "/suppliers", label: "Suppliers", icon: "local_shipping", soon: true },
-      { href: "/inventory-count", label: "Stock Count", icon: "inventory", soon: true },
-      { href: "/returns", label: "Returns", icon: "swap_horiz", soon: true },
+      { href: "/suppliers", label: "Suppliers", icon: "local_shipping" },
+      { href: "/inventory-count", label: "Stock Count", icon: "inventory" },
+      { href: "/returns", label: "Returns", icon: "swap_horiz" },
     ],
   },
   commissions: {

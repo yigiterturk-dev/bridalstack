@@ -111,6 +111,15 @@ export async function createProduct(formData: FormData) {
 
   if (!name) redirect("/products/new?error=required");
 
+  // Tedarikçi başka kiracıya aitse sessizce boş bırak — çapraz bağ kurulmasın.
+  const supplierInput = String(formData.get("supplier_id") || "").trim();
+  const supplier = supplierInput
+    ? await prisma.supplier.findFirst({
+        where: { id: supplierInput, tenant_id: tenant.id },
+        select: { id: true },
+      })
+    : null;
+
   let barcode = barcodeInput;
   if (!barcode) {
     const prefix = (category ?? "XX").substring(0, 2).toUpperCase();
@@ -123,6 +132,7 @@ export async function createProduct(formData: FormData) {
     await prisma.product.create({
       data: {
         tenant_id: tenant.id, name, barcode, sku, category, price, cost,
+        supplier_id: supplier?.id ?? null,
         stock_quantity, description, image_url, created_by: userId,
       },
     });
