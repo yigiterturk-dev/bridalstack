@@ -208,7 +208,7 @@ export const PACKS: Record<PackId, PackDefinition> = {
     name: "Sales",
     description: "Orders and digital contracts",
     modules: ["sales", "invoices", "reports"],
-    monthlyPrice: 500,
+    monthlyPrice: 39,
     color: "#2563eb",
   },
   finance: {
@@ -216,7 +216,7 @@ export const PACKS: Record<PackId, PackDefinition> = {
     name: "Finance",
     description: "Cash register, installments, ledger and checks",
     modules: ["finance"],
-    monthlyPrice: 400,
+    monthlyPrice: 29,
     color: "#047857",
   },
   inventory: {
@@ -224,7 +224,7 @@ export const PACKS: Record<PackId, PackDefinition> = {
     name: "Inventory",
     description: "Products, stock, try-ons and trunk shows",
     modules: ["inventory"],
-    monthlyPrice: 300,
+    monthlyPrice: 29,
     color: "#7c3aed",
   },
   communication: {
@@ -232,7 +232,7 @@ export const PACKS: Record<PackId, PackDefinition> = {
     name: "Communication",
     description: "WhatsApp and messaging",
     modules: ["whatsapp"],
-    monthlyPrice: 200,
+    monthlyPrice: 19,
     color: "#059669",
   },
   pro: {
@@ -240,7 +240,7 @@ export const PACKS: Record<PackId, PackDefinition> = {
     name: "Pro",
     description: "Team, automations and the AI stylist",
     modules: ["commissions", "efatura"],
-    monthlyPrice: 600,
+    monthlyPrice: 29,
     color: "#d97706",
   },
   salon: {

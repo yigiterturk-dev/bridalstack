@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { PACKS, ALL_PACK_IDS, MODULES, isPackSellable, isModuleLive, formatPrice } from "@/config/modules";
+import { PACKS, ALL_PACK_IDS, SELLABLE_PACK_IDS, MODULES, isPackSellable, isModuleLive, formatPrice } from "@/config/modules";
 
 export default function LandingPage() {
   return (
@@ -121,9 +121,29 @@ export default function LandingPage() {
         <div className="absolute -top-[50%] left-[50%] -translate-x-1/2 w-[100%] h-[100%] rounded-full bg-rose-500/10 blur-[120px] pointer-events-none" />
         
         <div className="max-w-6xl mx-auto relative z-10">
-          <div className="text-center mb-24">
+          <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight drop-shadow-md">Simple, modular pricing.</h2>
-            <p className="text-stone-400 mt-6 text-xl max-w-2xl mx-auto font-light">Start free. Add modules as your boutique expands.</p>
+            <p className="text-stone-400 mt-6 text-xl max-w-2xl mx-auto font-light">
+              Start free and stay free until you need more. Every price is on this page.
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 mt-10 text-sm text-stone-400">
+              {[
+                "Client portal included, not an add-on",
+                "Online booking page included",
+                "No setup fee, no contract",
+                "Cancel any time",
+              ].map((line) => (
+                <span key={line} className="inline-flex items-center gap-2">
+                  <span className="material-symbols-outlined text-rose-400 text-[18px]">check_circle</span>
+                  {line}
+                </span>
+              ))}
+            </div>
+            <p className="text-stone-500 mt-8 text-sm">
+              Everything we sell today comes to{" "}
+              <strong className="text-white">{formatPrice(SELLABLE_PACK_IDS.reduce((sum, id) => sum + PACKS[id].monthlyPrice, 0))}/mo</strong>{" "}
+              for your whole shop.
+            </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {ALL_PACK_IDS.map((packId) => {
