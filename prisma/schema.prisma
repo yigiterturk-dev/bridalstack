@@ -63,30 +63,32 @@ model Tenant {
   created_at              DateTime  @default(now()) @db.Timestamptz(6)
   updated_at              DateTime  @updatedAt @db.Timestamptz(6)
 
-  owner         User                  @relation(fields: [owner_id], references: [id])
-  members       TenantMember[]
-  customers     Customer[]
-  products      Product[]
-  orders        Order[]
-  appointments  Appointment[]
-  services      Service[]
-  schedules     StaffSchedule[]
-  time_off      StaffTimeOff[]
-  bookings      Booking[]
-  contracts     Contract[]
-  workflows     Workflow[]
-  trunk_shows   TrunkShow[]
-  try_ons       TryOn[]
-  lifecycle_log ProductLifecycleLog[]
-  portal_tokens PortalToken[]
-  installments  Installment[]
-  reminders     InstallmentReminder[]
-  funnel_events FunnelEvent[]
-  invitations   Invitation[]
-  follow_ups    FollowUpEmail[]
-  suppliers     Supplier[]
-  stock_counts  StockCount[]
-  returns       ProductReturn[]
+  owner              User                  @relation(fields: [owner_id], references: [id])
+  members            TenantMember[]
+  customers          Customer[]
+  products           Product[]
+  orders             Order[]
+  appointments       Appointment[]
+  services           Service[]
+  schedules          StaffSchedule[]
+  time_off           StaffTimeOff[]
+  bookings           Booking[]
+  contracts          Contract[]
+  workflows          Workflow[]
+  trunk_shows        TrunkShow[]
+  try_ons            TryOn[]
+  lifecycle_log      ProductLifecycleLog[]
+  portal_tokens      PortalToken[]
+  installments       Installment[]
+  reminders          InstallmentReminder[]
+  funnel_events      FunnelEvent[]
+  invitations        Invitation[]
+  follow_ups         FollowUpEmail[]
+  suppliers          Supplier[]
+  stock_counts       StockCount[]
+  returns            ProductReturn[]
+  commission_rules   CommissionRule[]
+  commission_payouts CommissionPayout[]
 
   @@index([cohort_month])
   @@map("tenants")
@@ -615,6 +617,54 @@ model ProductReturn {
 
   @@index([tenant_id, status])
   @@map("product_returns")
+}
+
+// ─────────────────────────────────────────────────────────────
+// Prim (Pro paketi)
+// ─────────────────────────────────────────────────────────────
+
+/// Prim kuralı. Bir siparişe uyan kurallardan önceliği en yüksek olan uygulanır.
+model CommissionRule {
+  id              String   @id @default(uuid()) @db.Uuid
+  tenant_id       String   @db.Uuid
+  name            String
+  /// all = herkese, staff = tek satışçıya
+  scope           String   @default("all")
+  /// scope=staff ise siparişteki sales_person ile eşleşecek isim
+  staff_name      String?
+  rate_percent    Float    @default(0)
+  flat_amount     Float    @default(0)
+  /// Bu tutarın altındaki siparişe prim yok
+  min_order_total Float    @default(0)
+  /// Büyük sayı önce uygulanır
+  priority        Int      @default(0)
+  is_active       Boolean  @default(true)
+  created_at      DateTime @default(now()) @db.Timestamptz(6)
+  updated_at      DateTime @updatedAt @db.Timestamptz(6)
+
+  tenant Tenant @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+
+  @@index([tenant_id, is_active])
+  @@map("commission_rules")
+}
+
+/// Bir satışçının bir aylık priminin ödendiği an. Aynı ay iki kez ödenmesin.
+model CommissionPayout {
+  id         String   @id @default(uuid()) @db.Uuid
+  tenant_id  String   @db.Uuid
+  staff_name String
+  /// "2026-09" — ay bazında
+  period     String
+  amount     Float    @default(0)
+  notes      String?
+  paid_by    String?  @db.Uuid
+  paid_at    DateTime @default(now()) @db.Timestamptz(6)
+
+  tenant Tenant @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+
+  @@unique([tenant_id, staff_name, period])
+  @@index([tenant_id, period])
+  @@map("commission_payouts")
 }
 
 // ─────────────────────────────────────────────────────────────

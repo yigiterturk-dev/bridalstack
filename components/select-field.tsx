@@ -19,6 +19,7 @@ export default function SelectField({
   required = false,
   searchable,
   className = "",
+  onChange,
 }: {
   name: string;
   options: SelectOption[];
@@ -27,6 +28,8 @@ export default function SelectField({
   required?: boolean;
   searchable?: boolean;
   className?: string;
+  /** Seçim değiştiğinde haber ver — filtre gibi form dışı kullanımlar için. */
+  onChange?: (value: string) => void;
 }) {
   const [value, setValue] = useState(defaultValue);
   const [open, setOpen] = useState(false);
@@ -66,6 +69,7 @@ export default function SelectField({
     setValue(next);
     setOpen(false);
     setQuery("");
+    onChange?.(next);
   }
 
   return (

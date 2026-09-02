@@ -136,7 +136,7 @@ export const MODULES: Record<ModuleId, ModuleDefinition> = {
     pack: "pro",
     routes: ["/commissions", "/commissions/rules", "/staff", "/workflows", "/ai-stylist"],
     navItems: [
-      { href: "/commissions", label: "Commissions", icon: "payments", soon: true },
+      { href: "/commissions", label: "Commissions", icon: "payments" },
       { href: "/staff", label: "Team", icon: "badge" },
       { href: "/workflows", label: "Automations", icon: "bolt" },
       { href: "/ai-stylist", label: "AI Stylist", icon: "auto_awesome" },
