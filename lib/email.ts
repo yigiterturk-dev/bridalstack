@@ -155,3 +155,50 @@ export function teamInviteEmail(shopName: string, inviteUrl: string, roleLabel: 
     `,
   };
 }
+
+/** Günlük brifing e-postası. Satırlar buildBriefing çıktısından gelir. */
+export function dailyBriefingEmail(
+  shopName: string,
+  items: { tone: string; title: string; detail: string; href: string }[],
+  baseUrl: string
+) {
+  const toneColor: Record<string, string> = {
+    urgent: "#e11d48",
+    opportunity: "#059669",
+    watch: "#78716c",
+  };
+
+  const rows = items
+    .map(
+      (i) => `
+        <tr>
+          <td style="padding:14px 0;border-bottom:1px solid #f0efee;">
+            <div style="display:inline-block;width:8px;height:8px;border-radius:9999px;background:${toneColor[i.tone] ?? "#78716c"};margin-right:8px;"></div>
+            <a href="${baseUrl}${i.href}" style="color:#111827;font-weight:600;text-decoration:none;">${i.title}</a>
+            <div style="color:#6b7280;font-size:14px;margin-top:4px;padding-left:16px;">${i.detail}</div>
+          </td>
+        </tr>`
+    )
+    .join("");
+
+  return {
+    subject: `Today at ${shopName}`,
+    html: `
+      <div style="font-family: system-ui, sans-serif; max-width: 560px; margin: 0 auto; padding: 32px;">
+        <h2 style="color:#111827;margin:0 0 4px;">Today at ${shopName}</h2>
+        <p style="color:#6b7280;margin:0 0 24px;line-height:1.6;">
+          ${items.length === 1 ? "One thing needs" : `${items.length} things need`} your attention.
+        </p>
+        <table style="width:100%;border-collapse:collapse;">${rows}</table>
+        <p style="margin:28px 0 0;">
+          <a href="${baseUrl}/dashboard" style="background:#111827;color:#fff;text-decoration:none;padding:12px 22px;border-radius:12px;font-weight:600;display:inline-block;">
+            Open your dashboard
+          </a>
+        </p>
+        <p style="color:#9ca3af;font-size:12px;margin-top:32px;line-height:1.6;">
+          Sent via BridalStack. You can turn these off in Settings.
+        </p>
+      </div>
+    `,
+  };
+}

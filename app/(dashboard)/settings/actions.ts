@@ -26,6 +26,7 @@ export async function updateShopProfile(formData: FormData) {
   const logo_url = String(formData.get("logo_url") || "").trim() || null;
   const primary_color = String(formData.get("primary_color") || "").trim();
   const accent_color = String(formData.get("accent_color") || "").trim();
+  const briefing_emails = formData.get("briefing_emails") === "on";
 
   if (!name) redirect("/settings?error=name_required");
   if (!SLUG.test(slug)) redirect("/settings?error=slug_invalid");
@@ -48,6 +49,7 @@ export async function updateShopProfile(formData: FormData) {
         logo_url,
         primary_color: primary_color || null,
         accent_color: accent_color || null,
+        briefing_emails,
       },
     });
   } catch {

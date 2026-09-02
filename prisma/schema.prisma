@@ -57,6 +57,8 @@ model Tenant {
   converted_at            DateTime? @db.Timestamptz(6)
   signup_source           String?
   cohort_month            String?
+  briefing_emails         Boolean   @default(true)
+  briefing_sent_on        String? // date — "2026-09-02", aynı gün ikinci kez gönderilmesin
   onboarding_completed_at DateTime? @db.Timestamptz(6)
   created_at              DateTime  @default(now()) @db.Timestamptz(6)
   updated_at              DateTime  @updatedAt @db.Timestamptz(6)

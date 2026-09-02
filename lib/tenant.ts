@@ -12,6 +12,7 @@ export type Tenant = {
   logo_url?: string | null;
   primary_color?: string | null;
   accent_color?: string | null;
+  briefing_emails?: boolean;
   packs: PackId[];
   enabled_modules: ModuleId[];
   settings: Record<string, unknown>;

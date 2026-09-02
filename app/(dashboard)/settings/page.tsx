@@ -152,6 +152,23 @@ export default async function SettingsPage({ searchParams }: Props) {
                 </div>
               </div>
 
+              <label className="flex items-start gap-3 p-4 rounded-xl border border-gray-100 cursor-pointer hover:border-gray-300 transition-colors">
+                <input
+                  type="checkbox"
+                  name="briefing_emails"
+                  defaultChecked={tenant.briefing_emails !== false}
+                  className="mt-0.5 w-4 h-4 accent-gray-900"
+                />
+                <span>
+                  <span className="block text-sm font-medium text-gray-900">Daily briefing email</span>
+                  <span className="block text-xs text-gray-500 mt-0.5">
+                    Each morning we email you what needs chasing: unanswered bookings, overdue
+                    payments, brides who loved a gown but have not ordered. Nothing is sent on a
+                    quiet day.
+                  </span>
+                </span>
+              </label>
+
               <div>
                 <button
                   type="submit"
