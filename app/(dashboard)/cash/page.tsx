@@ -20,7 +20,7 @@ const ERRORS: Record<string, string> = {
   forbidden: "Only the owner can open the register.",
   amount: "Enter an amount greater than zero.",
   invalid: "That entry was not valid.",
-  linked: "This came from an installment — undo the payment instead.",
+  linked: "This came from an installment or a check — undo it at the source instead.",
   notfound: "That entry no longer exists.",
 };
 
@@ -123,7 +123,7 @@ async function CashContent({ tenantId, date, error }: { tenantId: string; date?:
                     <div className="flex-1 min-w-0">
                       <div className="font-semibold text-stone-900">
                         {categoryLabel(m.direction, m.category)}
-                        {m.installment_id && (
+                        {(m.installment_id || m.check_id) && (
                           <span className="ml-2 text-[11px] font-bold uppercase tracking-wide text-stone-400">auto</span>
                         )}
                       </div>
@@ -142,7 +142,7 @@ async function CashContent({ tenantId, date, error }: { tenantId: string; date?:
                       {formatPrice(Math.round(m.amount))}
                     </div>
 
-                    {!m.installment_id && (
+                    {!m.installment_id && !m.check_id && (
                       <form action={deleteMovement} className="flex-shrink-0">
                         <input type="hidden" name="id" value={m.id} />
                         <input type="hidden" name="back" value="/cash" />

@@ -327,5 +327,7 @@ export const SELLABLE_PACK_IDS: PackId[] = ALL_PACK_IDS.filter(isPackSellable);
 export const CURRENCY_SYMBOL = process.env.NEXT_PUBLIC_CURRENCY_SYMBOL ?? "$";
 
 export function formatPrice(amount: number): string {
-  return `${CURRENCY_SYMBOL}${amount.toLocaleString()}`;
+  // Eksi işareti para biriminin önüne gelir: "$-250" değil "−$250".
+  const sign = amount < 0 ? "−" : "";
+  return `${sign}${CURRENCY_SYMBOL}${Math.abs(amount).toLocaleString()}`;
 }

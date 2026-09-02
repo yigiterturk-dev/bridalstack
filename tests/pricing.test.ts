@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { PACKS, SELLABLE_PACK_IDS, calculateMonthlyPrice, isPackSellable } from "../config/modules.ts";
+import { PACKS, SELLABLE_PACK_IDS, calculateMonthlyPrice, isPackSellable, formatPrice } from "../config/modules.ts";
 
 /**
  * ABD gelinlik yazılımı pazarı (Eylül 2026 araştırması):
@@ -52,4 +52,10 @@ test("fiyat toplama base'i saymıyor", () => {
 
 test("satılabilir paket listesi boş değil", () => {
   assert.ok(SELLABLE_PACK_IDS.length >= 3, SELLABLE_PACK_IDS.join(", "));
+});
+
+test("negatif tutarda eksi işareti para biriminin önünde", () => {
+  assert.equal(formatPrice(-250), "−$250");
+  assert.equal(formatPrice(250), "$250");
+  assert.equal(formatPrice(0), "$0");
 });

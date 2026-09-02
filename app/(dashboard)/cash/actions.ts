@@ -73,13 +73,14 @@ export async function deleteMovement(formData: FormData) {
   const id = String(formData.get("id") || "").trim();
   if (!id) return;
 
-  // Taksitten doğan kayıt elle silinmez; taksidi geri alınca kendi gider.
+  // Taksitten veya çekten doğan kayıt elle silinmez: kaynağı geri alınca
+  // kendi gider. Elle silinirse defter, tahsil edilmiş çekten kopardı.
   const row = await prisma.cashMovement.findFirst({
     where: { id, tenant_id: member.tenantId },
-    select: { id: true, installment_id: true },
+    select: { id: true, installment_id: true, check_id: true },
   });
   if (!row) redirect(`${back}?error=notfound`);
-  if (row.installment_id) redirect(`${back}?error=linked`);
+  if (row.installment_id || row.check_id) redirect(`${back}?error=linked`);
 
   await prisma.cashMovement.deleteMany({ where: { id: row.id, tenant_id: member.tenantId } });
 
