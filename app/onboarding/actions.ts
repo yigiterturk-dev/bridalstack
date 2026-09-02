@@ -56,12 +56,12 @@ export async function finishOnboarding(
   input: FinishInput
 ): Promise<{ ok: boolean; error?: string }> {
   const userId = await getCurrentUserId();
-  if (!userId) return { ok: false, error: "Oturum bulunamadı" };
+  if (!userId) return { ok: false, error: "Not signed in" };
 
   // Sınır doğrulaması
   const shopName = String(input.shopName || "").trim();
-  if (!shopName) return { ok: false, error: "İşletme adı gerekli" };
-  if (shopName.length > 120) return { ok: false, error: "İşletme adı çok uzun" };
+  if (!shopName) return { ok: false, error: "Shop name is required" };
+  if (shopName.length > 120) return { ok: false, error: "That shop name is too long" };
 
   const validPacks = (Array.isArray(input.packs) ? input.packs : [])
     .filter((p): p is PackId => typeof p === "string" && p in PACKS);
@@ -131,7 +131,7 @@ export async function finishOnboarding(
       await tx.onboardingDraft.deleteMany({ where: { user_id: userId } });
     });
   } catch (e) {
-    return { ok: false, error: "İşletme oluşturulamadı" };
+    return { ok: false, error: "Could not create the shop" };
   }
 
   return { ok: true };

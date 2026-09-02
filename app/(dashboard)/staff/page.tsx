@@ -54,10 +54,10 @@ export default async function StaffPage({ searchParams }: PageProps) {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {canManage && (
           <div className="bg-white rounded-2xl border border-gray-200 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Üye Davet Et</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Invite a team member</h2>
             <form action={addMember} className="flex flex-col gap-3">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">E-posta</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
                 <input
                   name="email"
                   type="email"
@@ -102,11 +102,11 @@ export default async function StaffPage({ searchParams }: PageProps) {
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-100">
-                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Kullanıcı</th>
-                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Rol</th>
-                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Katıldı</th>
+                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">User</th>
+                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Role</th>
+                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Joined</th>
                 {canManage && (
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">İşlemler</th>
+                  <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Actions</th>
                 )}
               </tr>
             </thead>
@@ -155,7 +155,7 @@ export default async function StaffPage({ searchParams }: PageProps) {
                       )}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-400">
-                      {new Date(m.created_at).toLocaleDateString("tr-TR", {
+                      {new Date(m.created_at).toLocaleDateString("en-US", {
                         day: "numeric",
                         month: "short",
                       })}

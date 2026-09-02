@@ -55,7 +55,7 @@ export default async function PublicBookingPage({ params }: Props) {
             </div>
           )}
           <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">{tenant.name}</h1>
-          <p className="text-gray-500 mt-1.5 text-sm">Birkaç adımda online randevunuzu oluşturun</p>
+          <p className="text-gray-500 mt-1.5 text-sm">Book your appointment online in a few steps</p>
         </header>
 
         <BookingForm

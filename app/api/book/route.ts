@@ -16,7 +16,7 @@ export async function POST(req: Request) {
     const rl = rateLimit(`book:${ip}`, 5, 60_000);
     if (!rl.allowed) {
       return NextResponse.json(
-        { error: "Çok fazla deneme. Lütfen biraz sonra tekrar deneyin." },
+        { error: "Too many attempts. Please try again shortly." },
         { status: 429, headers: { "Retry-After": String(rl.retryAfter) } }
       );
     }
@@ -25,7 +25,7 @@ export async function POST(req: Request) {
     try {
       body = await req.json();
     } catch {
-      return NextResponse.json({ error: "Geçersiz istek." }, { status: 400 });
+      return NextResponse.json({ error: "Invalid request." }, { status: 400 });
     }
 
     const tenant_id = clean(body.tenant_id, 64);
@@ -63,7 +63,7 @@ export async function POST(req: Request) {
     });
 
     if (!svc) {
-      return NextResponse.json({ error: "Hizmet bulunamadı." }, { status: 404 });
+      return NextResponse.json({ error: "Service not found." }, { status: 404 });
     }
     // Fiyat istemciden DEĞİL, sunucudaki servis kaydından alınır.
     const amount = Number(svc.price ?? 0);
@@ -73,7 +73,7 @@ export async function POST(req: Request) {
       // Personel bu butiğe ait mi? (başka kiracının personeline rezervasyon yazılmasın)
       const staff = await prisma.tenantMember.findFirst({ where: { id: member_id, tenant_id }, select: { id: true } });
       if (!staff) {
-        return NextResponse.json({ error: "Personel bulunamadı." }, { status: 404 });
+        return NextResponse.json({ error: "Staff member not found." }, { status: 404 });
       }
       const clash = await prisma.booking.findFirst({
         where: {
@@ -87,7 +87,7 @@ export async function POST(req: Request) {
 
       if (clash) {
         return NextResponse.json(
-          { error: "Bu saat artık müsait değil. Lütfen başka bir saat seçin." },
+          { error: "That time is no longer available. Please pick another slot." },
           { status: 409 }
         );
       }
@@ -112,7 +112,7 @@ export async function POST(req: Request) {
         }
       }
     } catch (e) {
-      console.warn("Müşteri profili eşlenemedi:", e);
+      console.warn("Could not link customer profile:", e);
     }
 
     // 6. ONAY BEKLEYEN (pending) rezervasyon yaz — salon kabul edince confirmed olur.
@@ -138,13 +138,13 @@ export async function POST(req: Request) {
         select: { id: true, status: true, booking_date: true, start_time: true },
       });
     } catch (e) {
-      console.error("Rezervasyon yazılamadı:", e);
-      return NextResponse.json({ error: "Rezervasyon oluşturulamadı." }, { status: 500 });
+      console.error("Could not write booking:", e);
+      return NextResponse.json({ error: "Could not create the booking." }, { status: 500 });
     }
 
     return NextResponse.json({ ok: true, booking });
   } catch (err) {
-    console.error("Beklenmeyen rezervasyon hatası:", err);
-    return NextResponse.json({ error: "Beklenmeyen bir hata oluştu." }, { status: 500 });
+    console.error("Unexpected booking error:", err);
+    return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });
   }
 }

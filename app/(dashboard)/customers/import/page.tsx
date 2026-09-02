@@ -17,12 +17,11 @@ export default async function ImportCustomersPage() {
   return (
     <div className="max-w-3xl">
       <Link href="/customers" className="text-sm text-gray-500 hover:text-gray-900 mb-4 inline-block">
-        ← Müşterilere dön
+        ← Back to customers
       </Link>
-      <h1 className="text-2xl font-bold text-gray-900 mb-1">Toplu Müşteri İçe Aktarma</h1>
+      <h1 className="text-2xl font-bold text-gray-900 mb-1">Bulk customer import</h1>
       <p className="text-sm text-gray-500 mb-6">
-        CSV dosyası yükleyin. Sütunlar: <strong>ad, telefon, e-posta, not</strong> (başlık satırı
-        otomatik algılanır).
+        Upload a CSV file. Columns: <strong>name, phone, email, notes</strong>. A header row is detected automatically.
       </p>
       <ImportWizard />
     </div>

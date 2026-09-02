@@ -104,10 +104,10 @@ export async function parseCustomerCsv(text: string): Promise<{
     }
 
     if (!rec.name) {
-      rec._error = "İsim boş";
+      rec._error = "Name is empty";
       errorCount++;
     } else if (rec.email && !EMAIL_RE.test(rec.email)) {
-      rec._error = "Geçersiz e-posta";
+      rec._error = "Invalid email";
       errorCount++;
     } else {
       validCount++;
@@ -121,18 +121,18 @@ export async function parseCustomerCsv(text: string): Promise<{
 // Doğrulanmış satırları ekler. Yalnızca customers.manage izniyle (fail-closed).
 export async function importCustomers(csvText: string): Promise<ImportResult> {
   const member = await getCurrentMember();
-  if (!member) return { ok: false, error: "Oturum bulunamadı" };
+  if (!member) return { ok: false, error: "Not signed in" };
   if (!hasPermission(member.role, "import.run") || !hasPermission(member.role, "customers.manage")) {
-    return { ok: false, error: "Bu işlem için yetkiniz yok" };
+    return { ok: false, error: "You do not have permission for this action" };
   }
   const tenant = await getCurrentTenant();
-  if (!tenant) return { ok: false, error: "İşletme bulunamadı" };
+  if (!tenant) return { ok: false, error: "Shop not found" };
 
   if (typeof csvText !== "string" || csvText.length === 0) {
-    return { ok: false, error: "Dosya boş" };
+    return { ok: false, error: "The file is empty" };
   }
   if (csvText.length > 5_000_000) {
-    return { ok: false, error: "Dosya çok büyük (maks 5MB)" };
+    return { ok: false, error: "That file is too large (5MB maximum)" };
   }
 
   const { rows } = await parseCustomerCsv(csvText);
@@ -142,7 +142,7 @@ export async function importCustomers(csvText: string): Promise<ImportResult> {
     .filter(Boolean) as { line: number; reason: string }[];
 
   if (valid.length === 0) {
-    return { ok: false, error: "Geçerli satır yok", inserted: 0, skipped: rows.length, errors };
+    return { ok: false, error: "No valid rows found", inserted: 0, skipped: rows.length, errors };
   }
 
   const payload = valid.map((r) => ({
@@ -161,7 +161,7 @@ export async function importCustomers(csvText: string): Promise<ImportResult> {
     const res = await prisma.customer.createMany({ data: payload });
     count = res.count;
   } catch {
-    return { ok: false, error: "Kayıtlar eklenemedi", errors };
+    return { ok: false, error: "Could not save the records", errors };
   }
 
   revalidatePath("/customers");

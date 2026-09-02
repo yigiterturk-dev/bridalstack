@@ -28,7 +28,7 @@ export default function Sidebar({ groups, tenantName }: { groups: NavGroup[]; te
           </h1>
           <p className="text-xs font-semibold tracking-wider text-stone-400 uppercase mt-1 truncate">{tenantName}</p>
         </div>
-        <button onClick={() => setOpen(false)} className="lg:hidden text-stone-400 hover:text-rose-500 transition-colors" aria-label="Menüyü kapat">
+        <button onClick={() => setOpen(false)} className="lg:hidden text-stone-400 hover:text-rose-500 transition-colors" aria-label="Close menu">
           <span className="material-symbols-outlined">close</span>
         </button>
       </div>
@@ -86,7 +86,7 @@ export default function Sidebar({ groups, tenantName }: { groups: NavGroup[]; te
     <>
       {/* Mobile header */}
       <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white/80 backdrop-blur-xl border-b border-stone-100 flex items-center justify-between px-5 z-50">
-        <button onClick={() => setOpen(true)} className="text-stone-700 -ml-1 p-2 hover:bg-stone-50 rounded-xl transition-colors" aria-label="Menüyü aç">
+        <button onClick={() => setOpen(true)} className="text-stone-700 -ml-1 p-2 hover:bg-stone-50 rounded-xl transition-colors" aria-label="Open menu">
           <span className="material-symbols-outlined">menu</span>
         </button>
         <h1 className="text-lg text-stone-900"><Wordmark /></h1>

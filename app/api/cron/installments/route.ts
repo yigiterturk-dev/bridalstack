@@ -68,7 +68,7 @@ export async function GET(req: NextRequest) {
         await sendEmail({ to: customer.email, ...mail });
         emailsSent++;
       } catch (e) {
-        console.error("Taksit hatırlatma e-postası gönderilemedi:", e);
+        console.error("Could not send installment reminder email:", e);
       }
     }
   }
