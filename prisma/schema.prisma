@@ -193,6 +193,7 @@ model Product {
   cleaning_jobs CleaningJob[]
   alterations   Alteration[]
   po_lines      PurchaseOrderLine[]
+  order_lines   OrderLine[]
 
   @@index([tenant_id])
   @@index([barcode])
@@ -226,6 +227,7 @@ model Order {
   contracts    Contract[]
   installments Installment[]
   returns      ProductReturn[]
+  lines        OrderLine[]
   rentals      Rental[]
   alterations  Alteration[]
 
@@ -998,4 +1000,29 @@ model PurchaseOrderLine {
   @@unique([po_id, product_id])
   @@index([po_id])
   @@map("purchase_order_lines")
+}
+
+/// Siparişin bir kalemi. Sipariş toplamları kalem varsa BURADAN hesaplanır;
+/// kalemsiz eski siparişler elle girilen toplamıyla aynen çalışmaya devam eder.
+model OrderLine {
+  id          String  @id @default(uuid()) @db.Uuid
+  order_id    String  @db.Uuid
+  product_id  String? @db.Uuid
+  /// Kataloğa bağlı olmayan kalem de yazılabilsin diye ad ayrı tutulur
+  /// (tadilat, duvak, hizmet). Ürün silinse de kalem okunur kalır.
+  description String
+  /// gown, veil, accessory, alteration, service, other
+  kind        String  @default("gown")
+  quantity    Int     @default(1)
+  unit_price  Float   @default(0)
+  /// Bu kaleme özel indirim — tutar olarak, yüzde olarak değil.
+  discount    Float   @default(0)
+  position    Int     @default(0)
+  note        String?
+
+  order   Order    @relation(fields: [order_id], references: [id], onDelete: Cascade)
+  product Product? @relation(fields: [product_id], references: [id], onDelete: SetNull)
+
+  @@index([order_id])
+  @@map("order_lines")
 }
