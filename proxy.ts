@@ -13,6 +13,8 @@ const PROTECTED_PREFIX = [
   "/print",
   "/appointments",
   "/orders",
+  "/invoices",
+  "/reports",
   "/products",
   "/analytics",
   "/calendar",

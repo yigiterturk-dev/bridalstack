@@ -15,6 +15,7 @@ node tests/e2e/stage7.mjs      # takip listesi, elbise dönüşüm oranı
 node tests/e2e/stage8.mjs      # günlük brifing, sinyal önceliklendirme
 node tests/e2e/stage9.mjs      # yazdırılabilir fatura ve sözleşme, erişim kontrolü
 node tests/e2e/stage10.mjs     # günlük brifing e-postası, cron zamanlaması
+node tests/e2e/stage11.mjs     # faturalar (alacak yaşlandırma), raporlar, CSV dışa aktarma
 ```
 
 Betikler `@prisma/client`'ı çözebilmek için proje kökünden çalıştırılmalı.

@@ -78,24 +78,24 @@ export const MODULES: Record<ModuleId, ModuleDefinition> = {
   invoices: {
     id: "invoices",
     name: "Invoicing",
-    description: "Invoice creation, printing, tracking",
+    description: "Outstanding balances, ageing and printable invoices",
     icon: "description",
     pack: "sales",
     routes: ["/invoices", "/invoices/new", "/invoices/[id]"],
     navItems: [
-      { href: "/invoices", label: "Invoices", icon: "description", soon: true },
+      { href: "/invoices", label: "Invoices", icon: "description" },
     ],
     dependencies: ["sales"],
   },
   reports: {
     id: "reports",
     name: "Reports",
-    description: "Sales, customer, performance analytics",
+    description: "Exportable order, stylist and category detail",
     icon: "analytics",
     pack: "sales",
     routes: ["/reports"],
     navItems: [
-      { href: "/reports", label: "Reports", icon: "analytics", soon: true },
+      { href: "/reports", label: "Reports", icon: "analytics" },
     ],
     dependencies: ["sales"],
   },
@@ -206,7 +206,7 @@ export const PACKS: Record<PackId, PackDefinition> = {
   sales: {
     id: "sales",
     name: "Sales",
-    description: "Orders and digital contracts",
+    description: "Orders, contracts, invoices and reports",
     modules: ["sales", "invoices", "reports"],
     monthlyPrice: 39,
     color: "#2563eb",

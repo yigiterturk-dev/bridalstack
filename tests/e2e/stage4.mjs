@@ -126,9 +126,11 @@ await fetch(`${BASE}/api/auth/register`, { method: "POST", headers: { "content-t
   await prisma.tenant.update({ where: { id: tenant.id },
     data: { packs: ["base", "sales", "inventory", "pro", "salon"] } });
   const html = strip(await (await fetch(`${BASE}/dashboard`, { headers: { cookie: j.hdr() } })).text());
-  const dead = ["/invoices", "/reports", "/cash", "/ledger", "/checks", "/suppliers", "/inventory-count", "/returns", "/commissions", "/inbox", "/whatsapp"];
+  // /invoices ve /reports artık yazıldı; listeden çıkarıldılar.
+  const dead = ["/cash", "/ledger", "/checks", "/suppliers", "/inventory-count", "/returns", "/commissions", "/inbox", "/whatsapp"];
   const found = dead.filter(d => html.includes(`href="${d}"`));
   check("Kenar menüsünde 404'e giden bağlantı yok", found.length === 0, `hâlâ var: ${found.join(", ")}`);
+  check("Yazılmış modüller menüde görünüyor", html.includes('href="/invoices"') && html.includes('href="/reports"'));
 }
 
 console.log(out.join("\n"));
