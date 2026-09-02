@@ -10,6 +10,7 @@ node tests/e2e/stage2.mjs      # veri akışı, herkese açık rezervasyon, kira
 node tests/e2e/stage3.mjs      # sözleşme imzalama, müşteri portalı, cron uçları
 node tests/e2e/stage4.mjs      # parola sıfırlama, ekip daveti, satılamayan paketler
 node tests/e2e/stage5.mjs      # taksit planı, vade durumları, tahsilat özeti
+node tests/e2e/stage6.mjs      # fotoğraf yükleme, görsel gösterimi, migration sırası
 ```
 
 Betikler `@prisma/client`'ı çözebilmek için proje kökünden çalıştırılmalı.

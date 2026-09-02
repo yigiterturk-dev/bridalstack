@@ -17,13 +17,20 @@ export async function addTryOn(formData: FormData) {
   const rating = parseInt(String(formData.get("rating") || "")) || null;
   const stylist = String(formData.get("stylist") || "").trim() || null;
   const notes = String(formData.get("notes") || "").trim() || null;
+  // Sadece kendi Blob alanımızdan gelen adresler kabul edilir.
+  const BLOB = /^https:\/\/[a-z0-9-]+\.public\.blob\.vercel-storage\.com\//i;
+  const photo_urls = formData
+    .getAll("photo_urls")
+    .map((v) => String(v).trim())
+    .filter((v) => BLOB.test(v))
+    .slice(0, 12);
 
   if (!customer_id || !product_id) redirect("/try-ons?error=required");
 
   // Üçü tek işlemde: yarım kalan kayıt ürünü yanlış aşamada bırakmasın.
   await prisma.$transaction([
     prisma.tryOn.create({
-      data: { tenant_id: tenant.id, customer_id, product_id, reaction, rating, stylist, notes, created_by: userId },
+      data: { tenant_id: tenant.id, customer_id, product_id, reaction, rating, stylist, notes, photo_urls, created_by: userId },
     }),
     prisma.product.updateMany({
       where: { id: product_id, tenant_id: tenant.id },

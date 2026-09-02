@@ -149,6 +149,7 @@ model Product {
   barcode              String?
   sku                  String?
   category             String?
+  image_url            String?
   price                Float    @default(0)
   cost                 Float    @default(0)
   stock_quantity       Int      @default(0)

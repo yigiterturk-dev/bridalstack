@@ -41,7 +41,7 @@ async function ProductsContent({ tenantId, query }: { tenantId: string; query: s
       take: 200,
       select: {
         id: true, name: true, barcode: true, sku: true, category: true,
-        price: true, cost: true, stock_quantity: true,
+        price: true, cost: true, stock_quantity: true, image_url: true,
       },
     }),
     prisma.product.findMany({
@@ -99,9 +99,18 @@ async function ProductsContent({ tenantId, query }: { tenantId: string; query: s
                     <tr key={p.id} className="hover:bg-white/80 transition-colors group">
                       <td className="px-8 py-6">
                         <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 rounded-2xl bg-stone-100 flex items-center justify-center text-stone-400 group-hover:bg-rose-50 group-hover:text-rose-400 transition-colors">
-                            <span className="material-symbols-outlined text-[24px]">checkroom</span>
-                          </div>
+                          {p.image_url ? (
+                            /* eslint-disable-next-line @next/next/no-img-element */
+                            <img
+                              src={p.image_url}
+                              alt={p.name}
+                              className="w-12 h-12 rounded-2xl object-cover border border-stone-200"
+                            />
+                          ) : (
+                            <div className="w-12 h-12 rounded-2xl bg-stone-100 flex items-center justify-center text-stone-400 group-hover:bg-rose-50 group-hover:text-rose-400 transition-colors">
+                              <span className="material-symbols-outlined text-[24px]">checkroom</span>
+                            </div>
+                          )}
                           <div>
                             <div className="font-bold text-stone-900 group-hover:text-rose-600 transition-colors">{p.name}</div>
                             <div className="text-[11px] text-stone-400 font-mono mt-1">{p.barcode ?? ""}</div>

@@ -103,6 +103,11 @@ export async function createProduct(formData: FormData) {
   const stock_quantity = parseInt(String(formData.get("stock_quantity") || "1")) || 1;
   const description = String(formData.get("description") || "").trim() || null;
   const barcodeInput = String(formData.get("barcode") || "").trim();
+  const imageInput = String(formData.get("image_url") || "").trim();
+  // Sadece kendi Blob alanımızdan gelen adresleri kabul et; keyfi URL yazılmasın.
+  const image_url = /^https:\/\/[a-z0-9-]+\.public\.blob\.vercel-storage\.com\//i.test(imageInput)
+    ? imageInput
+    : null;
 
   if (!name) redirect("/products/new?error=required");
 
@@ -118,7 +123,7 @@ export async function createProduct(formData: FormData) {
     await prisma.product.create({
       data: {
         tenant_id: tenant.id, name, barcode, sku, category, price, cost,
-        stock_quantity, description, created_by: userId,
+        stock_quantity, description, image_url, created_by: userId,
       },
     });
   } catch {
