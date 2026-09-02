@@ -120,7 +120,8 @@ export const MODULES: Record<ModuleId, ModuleDefinition> = {
     pack: "inventory",
     routes: [
       "/products", "/products/new", "/products/[id]",
-      "/suppliers", "/inventory-count", "/returns",
+      "/suppliers", "/purchase-orders", "/purchase-orders/new", "/purchase-orders/[id]",
+      "/inventory-count", "/returns",
       "/rentals", "/cleaning", "/alterations",
       "/try-ons", "/trunk-shows",
     ],
@@ -129,6 +130,7 @@ export const MODULES: Record<ModuleId, ModuleDefinition> = {
       { href: "/try-ons", label: "Try-Ons", icon: "favorite" },
       { href: "/trunk-shows", label: "Trunk Shows", icon: "event_note" },
       { href: "/suppliers", label: "Suppliers", icon: "local_shipping" },
+      { href: "/purchase-orders", label: "Purchase Orders", icon: "inbox" },
       { href: "/inventory-count", label: "Stock Count", icon: "inventory" },
       { href: "/returns", label: "Returns", icon: "swap_horiz" },
       { href: "/rentals", label: "Rentals", icon: "event_available" },

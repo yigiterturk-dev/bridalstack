@@ -92,6 +92,7 @@ model Tenant {
   cash_movements     CashMovement[]
   checks             Check[]
   rentals            Rental[]
+  purchase_orders    PurchaseOrder[]
   cleaning_jobs      CleaningJob[]
   alterations        Alteration[]
 
@@ -191,6 +192,7 @@ model Product {
   rentals       Rental[]
   cleaning_jobs CleaningJob[]
   alterations   Alteration[]
+  po_lines      PurchaseOrderLine[]
 
   @@index([tenant_id])
   @@index([barcode])
@@ -563,8 +565,9 @@ model Supplier {
   created_at     DateTime @default(now()) @db.Timestamptz(6)
   updated_at     DateTime @updatedAt @db.Timestamptz(6)
 
-  tenant   Tenant    @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
-  products Product[]
+  tenant          Tenant          @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  products        Product[]
+  purchase_orders PurchaseOrder[]
 
   @@index([tenant_id])
   @@map("suppliers")
@@ -639,31 +642,33 @@ model ProductReturn {
 
 /// Kasaya giren/çıkan her kuruş. Defter de, günlük kasa da bunu okur.
 model CashMovement {
-  id              String   @id @default(uuid()) @db.Uuid
-  tenant_id       String   @db.Uuid
+  id                String   @id @default(uuid()) @db.Uuid
+  tenant_id         String   @db.Uuid
   /// in = tahsilat, out = gider
-  direction       String   @default("in")
-  amount          Float    @default(0)
+  direction         String   @default("in")
+  amount            Float    @default(0)
   /// cash, card, transfer, check, other
-  method          String   @default("cash")
-  category        String   @default("other")
+  method            String   @default("cash")
+  category          String   @default("other")
   /// "2026-09-02" — hangi güne yazıldığı
-  occurred_on     String
-  description     String?
-  order_id        String?  @db.Uuid
-  customer_id     String?  @db.Uuid
+  occurred_on       String
+  description       String?
+  order_id          String?  @db.Uuid
+  customer_id       String?  @db.Uuid
   /// Taksit tahsilatından otomatik doğduysa hangi taksit — mükerrer kayıt olmasın
-  installment_id  String?  @unique @db.Uuid
+  installment_id    String?  @unique @db.Uuid
   /// Çek tahsilatından doğduysa hangi çek — çek dönerse kayıt kimlikle geri alınır
-  check_id        String?  @db.Uuid
+  check_id          String?  @db.Uuid
   /// Kiralamadan doğduysa hangi kiralama — kira bedeli iki kez yazılamaz
-  rental_id       String?  @unique @db.Uuid
+  rental_id         String?  @unique @db.Uuid
   /// Tadilattan doğduysa hangi iş — tadilat ücreti iki kez yazılamaz
-  alteration_id   String?  @unique @db.Uuid
+  alteration_id     String?  @unique @db.Uuid
   /// Temizleme giderinden doğduysa hangi iş — gider iki kez yazılamaz
-  cleaning_job_id String?  @unique @db.Uuid
-  created_by      String?  @db.Uuid
-  created_at      DateTime @default(now()) @db.Timestamptz(6)
+  cleaning_job_id   String?  @unique @db.Uuid
+  /// Satın alma siparişinden doğduysa hangi sipariş — mal bedeli iki kez yazılamaz
+  purchase_order_id String?  @unique @db.Uuid
+  created_by        String?  @db.Uuid
+  created_at        DateTime @default(now()) @db.Timestamptz(6)
 
   tenant Tenant @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
 
@@ -942,4 +947,55 @@ model Alteration {
   @@index([tenant_id, status])
   @@index([tenant_id, promised_date])
   @@map("alterations")
+}
+
+// ─────────────────────────────────────────────────────────────
+// Satın alma: tedarikçiden gelen mal
+// ─────────────────────────────────────────────────────────────
+
+/// Tedarikçiye verilen sipariş. Envanterin GİRİŞ tarafı burasıdır:
+/// stok yalnız mal teslim alınırken artar, sipariş verilirken değil.
+model PurchaseOrder {
+  id          String   @id @default(uuid()) @db.Uuid
+  tenant_id   String   @db.Uuid
+  supplier_id String   @db.Uuid
+  ref_no      String
+  /// draft, ordered, partial, received, cancelled
+  status      String   @default("draft")
+  /// Tedarikçinin teslim sözü — boşsa tedarikçinin lead_time_days'inden doldurulur
+  expected_on String?
+  ordered_on  String?
+  closed_on   String?
+  notes       String?
+  created_by  String?  @db.Uuid
+  created_at  DateTime @default(now()) @db.Timestamptz(6)
+  updated_at  DateTime @updatedAt @db.Timestamptz(6)
+
+  tenant   Tenant              @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  supplier Supplier            @relation(fields: [supplier_id], references: [id], onDelete: Cascade)
+  lines    PurchaseOrderLine[]
+
+  @@unique([tenant_id, ref_no])
+  @@index([tenant_id, status])
+  @@index([supplier_id])
+  @@map("purchase_orders")
+}
+
+/// Siparişin bir kalemi. `received_qty` yalnız artar ve `ordered_qty`'yi geçemez;
+/// stok her teslim alışta yalnız ARADAKİ FARK kadar artar.
+model PurchaseOrderLine {
+  id           String  @id @default(uuid()) @db.Uuid
+  po_id        String  @db.Uuid
+  product_id   String  @db.Uuid
+  ordered_qty  Int     @default(1)
+  received_qty Int     @default(0)
+  unit_cost    Float   @default(0)
+  note         String?
+
+  po      PurchaseOrder @relation(fields: [po_id], references: [id], onDelete: Cascade)
+  product Product       @relation(fields: [product_id], references: [id], onDelete: Cascade)
+
+  @@unique([po_id, product_id])
+  @@index([po_id])
+  @@map("purchase_order_lines")
 }
