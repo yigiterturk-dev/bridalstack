@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
+import Image from "next/image";
 import BookingForm from "./booking-form";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -45,7 +46,7 @@ export default async function PublicBookingPage({ params }: Props) {
       <div className="max-w-xl w-full mx-auto px-4 -mt-20 flex-1">
         <header className="text-center mb-7">
           {tenant.logo_url ? (
-            <img src={tenant.logo_url as string} alt={tenant.name} className="h-16 mx-auto mb-4 object-contain" />
+            <Image unoptimized src={tenant.logo_url as string} alt={tenant.name} width={160} height={64} className="h-16 w-auto mx-auto mb-4 object-contain" />
           ) : (
             <div
               className="w-16 h-16 mx-auto mb-4 rounded-2xl flex items-center justify-center text-white text-2xl font-semibold shadow-sm"

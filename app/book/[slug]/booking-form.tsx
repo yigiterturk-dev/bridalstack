@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import Image from "next/image";
 
 type Service = { id: string; name: string; category: string | null; duration: number; price: number; price_max: number | null; description: string | null };
 type Staff = { id: string; name: string; title: string | null; photo: string | null; serviceIds: string[] };
@@ -234,7 +235,7 @@ export default function BookingForm({ tenantId, accent, services, staff, schedul
                 className="text-left p-4 rounded-xl border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all flex items-center gap-3"
               >
                 {s.photo ? (
-                  <img src={s.photo} alt={s.name} className="w-10 h-10 rounded-full object-cover shrink-0" />
+                  <Image unoptimized src={s.photo} alt={s.name} width={40} height={40} className="w-10 h-10 rounded-full object-cover shrink-0" />
                 ) : (
                   <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center shrink-0">
                     <span className="material-symbols-outlined text-gray-400 text-[20px]">person</span>

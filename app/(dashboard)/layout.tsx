@@ -6,6 +6,21 @@ import UpgradeCta from "@/components/upgrade-cta";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
+/**
+ * Deneme süresi durumu. Zamanı okumak saf olmayan bir iştir; bileşen gövdesinde
+ * değil burada yapılıyor ki render saf kalsın.
+ */
+function trialState(trialEndsAtIso: string | null | undefined) {
+  if (!trialEndsAtIso) return { daysLeft: null, expired: false, active: false };
+  const endsAt = new Date(trialEndsAtIso).getTime();
+  const now = Date.now();
+  return {
+    daysLeft: Math.max(0, Math.ceil((endsAt - now) / DAY_MS)),
+    expired: endsAt <= now,
+    active: true,
+  };
+}
+
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const tenant = await getCurrentTenant();
   if (!tenant) redirect("/onboarding");
@@ -14,12 +29,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   // Ücretli plandaysa CTA yok. Değilse deneme bitişine kalan gün sayısı gösterilir.
   const isPaid = tenant.plan !== "free" || Boolean(tenant.converted_at);
-  const trialEndsAt = tenant.trial_ends_at ? new Date(tenant.trial_ends_at) : null;
-  const daysLeft = trialEndsAt
-    ? Math.max(0, Math.ceil((trialEndsAt.getTime() - Date.now()) / DAY_MS))
-    : null;
-  const expired = trialEndsAt !== null && trialEndsAt.getTime() <= Date.now();
-  const showCta = !isPaid && trialEndsAt !== null;
+  const trial = trialState(tenant.trial_ends_at);
+  const showCta = !isPaid && trial.active;
 
   return (
     <div className="min-h-screen bg-[#FDFCFB] selection:bg-rose-200 selection:text-rose-900 font-sans">
@@ -28,7 +39,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         <div className="max-w-7xl mx-auto px-5 lg:px-10 py-8 lg:py-10 bs-animate-in">
           {showCta && (
             <div className="mb-8">
-              <UpgradeCta daysLeft={daysLeft} expired={expired} />
+              <UpgradeCta daysLeft={trial.daysLeft} expired={trial.expired} />
             </div>
           )}
           {children}

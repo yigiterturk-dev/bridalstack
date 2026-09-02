@@ -36,6 +36,11 @@ const PLAN_MESSAGES: Record<string, string> = {
   plan_cancelled: "Payment plan cancelled.",
 };
 
+/** Varsayılan ilk vade: bugünden 30 gün sonra. Zaman okuma render dışında. */
+function defaultDueDate(): string {
+  return new Date(Date.now() + 30 * 864e5).toISOString().split("T")[0];
+}
+
 const INSTALLMENT_STYLE: Record<string, string> = {
   paid: "bg-green-100 text-green-700",
   overdue: "bg-red-100 text-red-700",
@@ -81,7 +86,7 @@ export default async function OrderDetailPage({ params, searchParams }: Props) {
   const planTotal = activeRows.reduce((s, r) => s + r.amount, 0);
   const overdueCount = activeRows.filter((r) => r.liveStatus === "overdue").length;
   const hasPlan = activeRows.length > 0;
-  const defaultFirstDue = new Date(Date.now() + 30 * 864e5).toISOString().split("T")[0];
+  const defaultFirstDue = defaultDueDate();
   const STATUS_STYLE: Record<string, string> = {
     draft: "bg-gray-100 text-gray-700", confirmed: "bg-blue-100 text-blue-700", in_progress: "bg-amber-100 text-amber-700",
     delivered: "bg-green-100 text-green-700", completed: "bg-green-100 text-green-700", cancelled: "bg-red-100 text-red-700",

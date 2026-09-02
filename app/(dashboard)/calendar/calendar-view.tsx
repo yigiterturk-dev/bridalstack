@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 type Event = { id: string; title: string; customerName: string; date: string; status: string };

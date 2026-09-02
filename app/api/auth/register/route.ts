@@ -47,7 +47,7 @@ export async function POST(req: Request) {
     });
 
     return new Response(JSON.stringify({ success: true }), { status: 201 });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Registration error:", error);
     return new Response(JSON.stringify({ error: "Something went wrong" }), { status: 500 });
   }

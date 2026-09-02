@@ -101,15 +101,15 @@ export default function SchedulePage() {
       setMessage("Working hours saved successfully!");
       setTimeout(() => setMessage(""), 3000);
       fetchSchedules(selectedMemberId);
-    } catch (err: any) {
+    } catch (err) {
       console.error("Error saving schedule:", err);
-      setMessage(`Error: ${err.message}`);
+      setMessage(`Error: ${err instanceof Error ? err.message : "could not save"}`);
     } finally {
       setSaving(false);
     }
   }
 
-  function handleScheduleChange(dayOfWeek: number, field: keyof Schedule, value: any) {
+  function handleScheduleChange(dayOfWeek: number, field: keyof Schedule, value: Schedule[keyof Schedule]) {
     setSchedules((prev) =>
       prev.map((s) => (s.day_of_week === dayOfWeek ? { ...s, [field]: value } : s))
     );

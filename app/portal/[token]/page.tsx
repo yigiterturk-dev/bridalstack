@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
+import Image from "next/image";
 
 type Props = { params: Promise<{ token: string }> };
 
@@ -122,7 +123,7 @@ export default async function ClientPortalPage({ params }: Props) {
                 return (
                   <div key={i} className="p-4 rounded-xl border border-gray-100 hover:border-gray-300 transition-colors">
                     {(t.photo_urls as string[])?.length > 0 && (
-                      <img src={(t.photo_urls as string[])[0]} alt={product?.name ?? ""} className="w-full h-40 object-cover rounded-lg mb-3" />
+                      <Image unoptimized src={(t.photo_urls as string[])[0]} alt={product?.name ?? ""} width={600} height={400} className="w-full h-40 object-cover rounded-lg mb-3" />
                     )}
                     <div className="font-medium text-gray-900 text-sm">{product?.name ?? "Gown"}</div>
                     {product?.category && <div className="text-xs text-gray-400">{product.category}</div>}

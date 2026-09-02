@@ -66,7 +66,7 @@ export default function SignContract({ token, customerName }: { token: string; c
       <div className="bg-green-50 rounded-2xl border border-green-200 p-8 text-center">
         <span className="material-symbols-outlined text-4xl text-green-600 mb-3 block">check_circle</span>
         <h3 className="text-lg font-bold text-gray-900">Contract Signed!</h3>
-        <p className="text-sm text-gray-500 mt-1">Thank you, {customerName}. You'll receive a confirmation email.</p>
+        <p className="text-sm text-gray-500 mt-1">Thank you, {customerName}. You&apos;ll receive a confirmation email.</p>
       </div>
     );
   }

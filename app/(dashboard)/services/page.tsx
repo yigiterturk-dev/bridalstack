@@ -74,7 +74,7 @@ export default async function ServicesPage() {
         <div className="lg:col-span-2">
           {Object.keys(grouped).length > 0 ? (
             <div className="flex flex-col gap-6">
-              {(Object.entries(grouped) as [string, any[]][]).map(([category, items]) => (
+              {Object.entries(grouped).map(([category, items]) => (
                 <div key={category}>
                   <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">{category}</h3>
                   <div className="flex flex-col gap-2">
