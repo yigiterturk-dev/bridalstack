@@ -44,9 +44,10 @@ export const MODULES: Record<ModuleId, ModuleDefinition> = {
     description: "Customer profiles, notes, status tracking",
     icon: "groups",
     pack: "base",
-    routes: ["/customers", "/customers/new", "/customers/[id]"],
+    routes: ["/customers", "/customers/new", "/customers/[id]", "/follow-ups"],
     navItems: [
       { href: "/customers", label: "Customers", icon: "groups" },
+      { href: "/follow-ups", label: "Follow-ups", icon: "notifications_active" },
     ],
   },
   appointments: {

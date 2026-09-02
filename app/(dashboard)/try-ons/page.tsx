@@ -1,5 +1,8 @@
 import { getCurrentTenant } from "@/lib/tenant";
 import { prisma } from "@/lib/prisma";
+import { redirect } from "next/navigation";
+import ImageUpload from "@/components/image-upload";
+import { uploadsEnabled } from "@/lib/uploads";
 import { addTryOn } from "./actions";
 
 const REACTIONS = [
@@ -8,13 +11,11 @@ const REACTIONS = [
   { value: "maybe", emoji: "🤔", label: "Maybe" },
   { value: "no", emoji: "👎", label: "Not for me" },
 ];
-import ImageUpload from "@/components/image-upload";
-import { uploadsEnabled } from "@/lib/uploads";
-
 export default async function TryOnsPage() {
   const tenant = await getCurrentTenant();
+  if (!tenant) redirect("/onboarding");
 
-  return <TryOnsContent tenantId={tenant?.id ?? "demo"} />;
+  return <TryOnsContent tenantId={tenant.id} />;
 }
 
 type OptionRow = { id: string; name: string; barcode?: string | null; category?: string | null };

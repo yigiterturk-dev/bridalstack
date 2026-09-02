@@ -1,0 +1,256 @@
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { prisma } from "@/lib/prisma";
+import { getCurrentTenant } from "@/lib/tenant";
+import { formatPrice } from "@/config/modules";
+import ModuleGuard from "@/components/module-guard";
+import PortalLinkButton from "@/components/portal-link-button";
+import { buildFollowUps, buildGownPerformance } from "@/lib/follow-ups";
+
+export const dynamic = "force-dynamic";
+
+const REACTION_EMOJI: Record<string, string> = { loved: "😍", liked: "👍", maybe: "🤔", no: "👎" };
+
+export default async function FollowUpsPage() {
+  const tenant = await getCurrentTenant();
+  if (!tenant) redirect("/onboarding");
+
+  return (
+    <ModuleGuard moduleId="crm" enabledModules={tenant.enabled_modules}>
+      <FollowUpsContent tenantId={tenant.id} />
+    </ModuleGuard>
+  );
+}
+
+async function FollowUpsContent({ tenantId }: { tenantId: string }) {
+  const [tryOns, orders] = await Promise.all([
+    prisma.tryOn.findMany({
+      where: { tenant_id: tenantId },
+      orderBy: { created_at: "desc" },
+      take: 1000,
+      select: {
+        customer_id: true, product_id: true, reaction: true, rating: true, created_at: true,
+      },
+    }),
+    prisma.order.findMany({
+      where: { tenant_id: tenantId, status: { not: "cancelled" } },
+      select: { customer_id: true, created_at: true },
+    }),
+  ]);
+
+  const followUps = buildFollowUps(tryOns, orders).slice(0, 50);
+  const gowns = buildGownPerformance(tryOns, orders).slice(0, 8);
+
+  // Sadece listede geçen kayıtları çekiyoruz; tüm kataloğu getirmeye gerek yok.
+  const customerIds = [...new Set(followUps.map((f) => f.customer_id))];
+  const productIds = [...new Set([...followUps.map((f) => f.topProductId), ...gowns.map((g) => g.product_id)])];
+
+  const [customers, products] = await Promise.all([
+    customerIds.length
+      ? prisma.customer.findMany({
+          where: { id: { in: customerIds }, tenant_id: tenantId },
+          select: { id: true, name: true, phone: true, email: true, status: true },
+        })
+      : [],
+    productIds.length
+      ? prisma.product.findMany({
+          where: { id: { in: productIds }, tenant_id: tenantId },
+          select: { id: true, name: true, category: true, price: true, image_url: true },
+        })
+      : [],
+  ]);
+
+  const customerById = new Map(customers.map((c) => [c.id, c]));
+  const productById = new Map(products.map((p) => [p.id, p]));
+
+  const potentialValue = followUps.reduce(
+    (sum, f) => sum + (productById.get(f.topProductId)?.price ?? 0),
+    0
+  );
+
+  if (tryOns.length === 0) {
+    return (
+      <div className="animate-fade-in-up">
+        <Header count={0} value={0} />
+        <div className="bg-white/60 backdrop-blur-xl rounded-[2rem] border border-stone-200/60 shadow-sm p-16 text-center">
+          <span className="flex items-center justify-center w-16 h-16 rounded-3xl bg-rose-50 text-rose-500 mx-auto mb-5 material-symbols-outlined text-[32px]">
+            favorite
+          </span>
+          <h3 className="text-xl font-bold text-stone-900 mb-2">No try-ons recorded yet</h3>
+          <p className="text-stone-500 mb-8 max-w-md mx-auto">
+            Every time a bride tries a gown, log how she reacted. This page then tells you exactly
+            who to call back, and which gowns get loved but never sell.
+          </p>
+          <Link
+            href="/try-ons"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-stone-900 text-white font-semibold text-sm hover:bg-rose-600 transition-all duration-300"
+          >
+            <span className="material-symbols-outlined text-[20px]">add</span>
+            Log a try-on
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="animate-fade-in-up">
+      <Header count={followUps.length} value={potentialValue} />
+
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        {/* Brides to call back */}
+        <div className="xl:col-span-2">
+          <h2 className="text-sm font-bold text-stone-500 uppercase tracking-wider mb-4">
+            Brides to call back
+          </h2>
+
+          {followUps.length === 0 ? (
+            <div className="bg-white/60 backdrop-blur-xl rounded-[2rem] border border-stone-200/60 shadow-sm p-12 text-center">
+              <span className="material-symbols-outlined text-4xl text-emerald-400 mb-3 block">task_alt</span>
+              <h3 className="text-lg font-bold text-stone-900 mb-1">Nothing outstanding</h3>
+              <p className="text-stone-500">
+                Every bride who loved a gown has since placed an order. Nice work.
+              </p>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {followUps.map((f) => {
+                const c = customerById.get(f.customer_id);
+                const p = productById.get(f.topProductId);
+                if (!c) return null;
+                return (
+                  <div
+                    key={f.customer_id}
+                    className="bg-white/70 backdrop-blur-xl rounded-2xl border border-stone-200/60 shadow-sm p-5 flex items-start gap-4"
+                  >
+                    {p?.image_url ? (
+                      /* eslint-disable-next-line @next/next/no-img-element */
+                      <img src={p.image_url} alt={p.name} className="w-14 h-14 rounded-xl object-cover border border-stone-200 flex-shrink-0" />
+                    ) : (
+                      <div className="w-14 h-14 rounded-xl bg-rose-50 flex items-center justify-center text-2xl flex-shrink-0">
+                        {f.bestReaction ? REACTION_EMOJI[f.bestReaction] : "👗"}
+                      </div>
+                    )}
+
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Link
+                          href={`/customers/${c.id}`}
+                          className="font-bold text-stone-900 hover:text-rose-600 transition-colors"
+                        >
+                          {c.name}
+                        </Link>
+                        {f.bestReaction && (
+                          <span className="text-xs font-bold uppercase tracking-wide px-2 py-0.5 rounded-full bg-rose-50 text-rose-600 border border-rose-100">
+                            {REACTION_EMOJI[f.bestReaction]} {f.bestReaction}
+                          </span>
+                        )}
+                        {f.bestRating && (
+                          <span className="text-xs text-amber-500">{"★".repeat(f.bestRating)}</span>
+                        )}
+                      </div>
+
+                      <p className="text-sm text-stone-600 mt-1">
+                        Tried <strong className="text-stone-800">{p?.name ?? "a gown"}</strong>
+                        {p?.price ? <span className="text-stone-400"> · {formatPrice(p.price)}</span> : null}
+                        {f.signalCount > 1 && (
+                          <span className="text-stone-400"> · and {f.signalCount - 1} more</span>
+                        )}
+                      </p>
+
+                      <div className="flex items-center gap-3 mt-1.5 text-xs text-stone-400">
+                        <span>
+                          {f.daysSince === 0
+                            ? "Today"
+                            : `${f.daysSince} ${f.daysSince === 1 ? "day" : "days"} ago`}
+                        </span>
+                        {c.phone && <span>{c.phone}</span>}
+                        {c.email && <span className="truncate">{c.email}</span>}
+                      </div>
+                    </div>
+
+                    <div className="flex-shrink-0">
+                      <PortalLinkButton customerId={c.id} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Gown performance */}
+        <div>
+          <h2 className="text-sm font-bold text-stone-500 uppercase tracking-wider mb-4">
+            Loved but not selling
+          </h2>
+          <div className="bg-white/70 backdrop-blur-xl rounded-[2rem] border border-stone-200/60 shadow-sm p-6">
+            <p className="text-sm text-stone-500 mb-5">
+              High interest with low conversion usually means price, sizing, or availability.
+            </p>
+            <div className="flex flex-col gap-4">
+              {gowns.map((g) => {
+                const p = productById.get(g.product_id);
+                if (!p) return null;
+                return (
+                  <div key={g.product_id} className="flex items-center gap-3">
+                    {p.image_url ? (
+                      /* eslint-disable-next-line @next/next/no-img-element */
+                      <img src={p.image_url} alt={p.name} className="w-10 h-10 rounded-lg object-cover border border-stone-200 flex-shrink-0" />
+                    ) : (
+                      <div className="w-10 h-10 rounded-lg bg-stone-100 flex items-center justify-center flex-shrink-0">
+                        <span className="material-symbols-outlined text-stone-400 text-[18px]">checkroom</span>
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-semibold text-stone-900 truncate">{p.name}</div>
+                      <div className="text-xs text-stone-400">
+                        {g.tryOnCount} {g.tryOnCount === 1 ? "try-on" : "try-ons"}
+                        {g.lovedCount > 0 && ` · ${g.lovedCount} loved`}
+                      </div>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      {g.conversionRate !== null ? (
+                        <div
+                          className={`text-sm font-bold tabular-nums ${
+                            g.conversionRate >= 50
+                              ? "text-emerald-600"
+                              : g.conversionRate >= 25
+                              ? "text-amber-600"
+                              : "text-rose-600"
+                          }`}
+                        >
+                          {g.conversionRate}%
+                        </div>
+                      ) : (
+                        <div className="text-sm text-stone-300">—</div>
+                      )}
+                      {g.missedCount > 0 && (
+                        <div className="text-[11px] text-stone-400">{g.missedCount} missed</div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Header({ count, value }: { count: number; value: number }) {
+  return (
+    <div className="mb-10">
+      <h1 className="text-3xl lg:text-4xl font-extrabold text-stone-900 tracking-tight flex items-center gap-3">
+        Follow-ups <span className="text-rose-400 font-normal">✧</span>
+      </h1>
+      <p className="text-stone-500 mt-2 font-medium">
+        {count === 0
+          ? "Brides who loved a gown but have not ordered yet"
+          : `${count} ${count === 1 ? "bride" : "brides"} loved a gown and have not ordered · ${formatPrice(Math.round(value))} in play`}
+      </p>
+    </div>
+  );
+}

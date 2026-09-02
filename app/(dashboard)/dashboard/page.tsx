@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getCurrentTenant } from "@/lib/tenant";
 import { MODULES, isModuleLive } from "@/config/modules";
+import { buildFollowUps } from "@/lib/follow-ups";
 import { RevenueChart, AppointmentChart, StatusPieChart } from "@/components/charts";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -47,7 +48,7 @@ export default async function DashboardPage() {
   // Gelir grafiği son 6 ayı kapsar.
   const revenueStart = new Date(now.getFullYear(), now.getMonth() - 5, 1);
 
-  const [customerCount, upcomingAppointments, orderCount, productCount, weekAppointments, recentOrders, statusGroups] =
+  const [customerCount, upcomingAppointments, orderCount, productCount, weekAppointments, recentOrders, statusGroups, tryOnSignals, allOrderSignals] =
     await Promise.all([
       hasCrm ? prisma.customer.count({ where: { tenant_id: tenant.id } }) : 0,
       hasAppointments
@@ -91,7 +92,24 @@ export default async function DashboardPage() {
             _count: { _all: true },
           })
         : [],
+      hasCrm
+        ? prisma.tryOn.findMany({
+            where: { tenant_id: tenant.id },
+            orderBy: { created_at: "desc" },
+            take: 500,
+            select: { customer_id: true, product_id: true, reaction: true, rating: true, created_at: true },
+          })
+        : [],
+      hasCrm
+        ? prisma.order.findMany({
+            where: { tenant_id: tenant.id, status: { not: "cancelled" } },
+            select: { customer_id: true, created_at: true },
+          })
+        : [],
     ]);
+
+  // Bayıldığı elbiseyi almamış gelinler — en yüksek dönüşümlü takip listesi.
+  const followUps = buildFollowUps(tryOnSignals, allOrderSignals);
 
   const stats = [
     { label: "Registered Brides", value: customerCount, icon: "groups", href: "/customers", module: "crm" as const },
@@ -149,6 +167,30 @@ export default async function DashboardPage() {
           </Link>
         ))}
       </div>
+
+      {followUps.length > 0 && (
+        <Link
+          href="/follow-ups"
+          className="group block mb-10 rounded-3xl border border-rose-200/70 bg-gradient-to-r from-rose-50/80 to-white p-6 hover:border-rose-300 hover:shadow-[0_10px_30px_-12px_rgba(225,29,72,0.25)] transition-all duration-300"
+        >
+          <div className="flex items-center gap-5">
+            <span className="flex items-center justify-center w-12 h-12 rounded-2xl bg-rose-500 text-white material-symbols-outlined text-[24px] flex-shrink-0">
+              notifications_active
+            </span>
+            <div className="min-w-0">
+              <div className="font-bold text-stone-900">
+                {followUps.length} {followUps.length === 1 ? "bride" : "brides"} loved a gown but have not ordered
+              </div>
+              <div className="text-sm text-stone-500 mt-0.5">
+                The longest has been waiting {followUps[followUps.length - 1].daysSince} days. Call them back.
+              </div>
+            </div>
+            <span className="material-symbols-outlined text-stone-300 ml-auto group-hover:text-rose-400 group-hover:translate-x-1 transition-all flex-shrink-0">
+              arrow_forward
+            </span>
+          </div>
+        </Link>
+      )}
 
       {/* Charts */}
       {(hasRevenue || hasWeekAppointments || orderStatusData.length > 0) && (
