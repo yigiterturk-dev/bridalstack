@@ -105,10 +105,10 @@ export const MODULES: Record<ModuleId, ModuleDefinition> = {
     pack: "finance",
     routes: ["/cash", "/installments", "/ledger", "/checks"],
     navItems: [
-      { href: "/cash", label: "Cash", icon: "account_balance", soon: true },
-      { href: "/installments", label: "Installments", icon: "receipt", soon: true },
-      { href: "/ledger", label: "Ledger", icon: "account_balance_wallet", soon: true },
-      { href: "/checks", label: "Checks", icon: "request_quote", soon: true },
+      { href: "/cash", label: "Cash", icon: "account_balance" },
+      { href: "/installments", label: "Installments", icon: "receipt" },
+      { href: "/ledger", label: "Ledger", icon: "account_balance_wallet" },
+      { href: "/checks", label: "Checks", icon: "request_quote" },
     ],
     dependencies: ["sales"],
   },
@@ -190,7 +190,7 @@ export const PACKS: Record<PackId, PackDefinition> = {
     name: "Finance",
     description: "Cash register, installments, ledger and checks",
     modules: ["finance"],
-    monthlyPrice: 29,
+    monthlyPrice: 19,
     color: "#047857",
   },
   inventory: {

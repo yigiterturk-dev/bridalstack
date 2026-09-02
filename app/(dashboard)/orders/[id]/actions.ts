@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentTenant, getCurrentMember } from "@/lib/tenant";
 import { hasPermission } from "@/lib/rbac";
 import { buildInstallmentPlan, deriveStatus } from "@/lib/installments";
+import { syncOrderBalance as recalcOrderBalance } from "@/lib/order-balance";
 
 export async function updateOrderStatus(formData: FormData) {
   const tenant = await getCurrentTenant();
@@ -144,21 +145,6 @@ export async function cancelInstallmentPlan(formData: FormData) {
 
 /** Ödenen taksitleri siparişin kalan bakiyesine yansıtır. */
 async function syncOrderBalance(tenantId: string, orderId: string) {
-  const order = await prisma.order.findFirst({
-    where: { id: orderId, tenant_id: tenantId },
-    select: { discounted_total: true, deposit_amount: true },
-  });
-  if (!order) return;
-
-  const paid = await prisma.installment.aggregate({
-    where: { order_id: orderId, tenant_id: tenantId, status: "paid" },
-    _sum: { amount: true },
-  });
-
-  const collected = order.deposit_amount + (paid._sum.amount ?? 0);
-  await prisma.order.updateMany({
-    where: { id: orderId, tenant_id: tenantId },
-    data: { remaining_balance: Math.max(0, Number((order.discounted_total - collected).toFixed(2))) },
-  });
+  await recalcOrderBalance(tenantId, orderId);
   revalidatePath("/orders");
 }

@@ -1,0 +1,212 @@
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { prisma } from "@/lib/prisma";
+import { getCurrentTenant } from "@/lib/tenant";
+import { formatPrice } from "@/config/modules";
+import ModuleGuard from "@/components/module-guard";
+import { deriveStatus, daysUntilDue } from "@/lib/installments";
+import { payInstallment, unpayInstallment } from "./actions";
+
+export const dynamic = "force-dynamic";
+
+const ERRORS: Record<string, string> = {
+  forbidden: "You do not have permission to collect payments.",
+  notfound: "That installment no longer exists.",
+};
+
+const FILTERS = [
+  { id: "open", label: "Open" },
+  { id: "overdue", label: "Overdue" },
+  { id: "paid", label: "Paid" },
+  { id: "all", label: "All" },
+];
+
+const STATUS_STYLE: Record<string, string> = {
+  overdue: "bg-rose-50 text-rose-700 border-rose-100",
+  due: "bg-amber-50 text-amber-700 border-amber-100",
+  pending: "bg-stone-100 text-stone-600 border-stone-200",
+  paid: "bg-emerald-50 text-emerald-700 border-emerald-100",
+  cancelled: "bg-stone-100 text-stone-400 border-stone-200",
+};
+
+type Props = { searchParams?: Promise<{ filter?: string; error?: string }> };
+
+export default async function InstallmentsPage({ searchParams }: Props) {
+  const params = await searchParams;
+  const tenant = await getCurrentTenant();
+  if (!tenant) redirect("/onboarding");
+
+  return (
+    <ModuleGuard moduleId="finance" enabledModules={tenant.enabled_modules}>
+      <InstallmentsContent tenantId={tenant.id} filter={params?.filter} error={params?.error} />
+    </ModuleGuard>
+  );
+}
+
+async function InstallmentsContent({
+  tenantId,
+  filter = "open",
+  error,
+}: {
+  tenantId: string;
+  filter?: string;
+  error?: string;
+}) {
+  const rows = await prisma.installment.findMany({
+    where: { tenant_id: tenantId },
+    orderBy: [{ due_date: "asc" }],
+    take: 500,
+    include: {
+      customer: { select: { id: true, name: true } },
+      order: { select: { id: true, ref_no: true } },
+    },
+  });
+
+  const withStatus = rows.map((r) => ({
+    ...r,
+    derived: deriveStatus({ due_date: r.due_date, paid_at: r.paid_at?.toISOString() ?? null, status: r.status as never }),
+    days: daysUntilDue(r.due_date),
+  }));
+
+  const visible = withStatus.filter((r) => {
+    if (filter === "all") return true;
+    if (filter === "paid") return r.derived === "paid";
+    if (filter === "overdue") return r.derived === "overdue";
+    return r.derived !== "paid" && r.derived !== "cancelled";
+  });
+
+  const openRows = withStatus.filter((r) => r.derived !== "paid" && r.derived !== "cancelled");
+  const outstanding = openRows.reduce((s, r) => s + r.amount, 0);
+  const overdue = openRows.filter((r) => r.derived === "overdue").reduce((s, r) => s + r.amount, 0);
+  const dueSoon = openRows.filter((r) => r.derived === "due").reduce((s, r) => s + r.amount, 0);
+
+  return (
+    <div className="animate-fade-in-up">
+      <div className="mb-8">
+        <h1 className="text-3xl lg:text-4xl font-extrabold text-stone-900 tracking-tight">Installments</h1>
+        <p className="text-stone-500 mt-2 font-medium">
+          {openRows.length === 0
+            ? "Every payment plan is settled"
+            : `${formatPrice(Math.round(outstanding))} still to collect across ${openRows.length} payments`}
+        </p>
+      </div>
+
+      {error && (
+        <div className="mb-6 rounded-2xl border border-rose-200 bg-rose-50 px-5 py-3 text-sm font-medium text-rose-700">
+          {ERRORS[error] ?? "Something went wrong."}
+        </div>
+      )}
+
+      <div className="grid grid-cols-3 gap-3 mb-8">
+        <Stat label="Outstanding" value={formatPrice(Math.round(outstanding))} />
+        <Stat label="Overdue" value={formatPrice(Math.round(overdue))} tone={overdue > 0 ? "rose" : undefined} />
+        <Stat label="Due within 3 days" value={formatPrice(Math.round(dueSoon))} />
+      </div>
+
+      <div className="flex items-center gap-2 mb-5 flex-wrap">
+        {FILTERS.map((f) => (
+          <Link
+            key={f.id}
+            href={`/installments?filter=${f.id}`}
+            className={`px-4 py-2 rounded-full text-sm font-semibold transition-colors ${
+              filter === f.id
+                ? "bg-stone-900 text-white"
+                : "bg-white border border-stone-200 text-stone-600 hover:border-stone-300"
+            }`}
+          >
+            {f.label}
+          </Link>
+        ))}
+      </div>
+
+      {visible.length === 0 ? (
+        <div className="bg-white/60 backdrop-blur-xl rounded-[2rem] border border-stone-200/60 shadow-sm p-16 text-center">
+          <span className="flex items-center justify-center w-16 h-16 rounded-3xl bg-emerald-50 text-emerald-600 mx-auto mb-5 material-symbols-outlined text-[32px]">
+            receipt
+          </span>
+          <h3 className="text-xl font-bold text-stone-900 mb-2">Nothing here</h3>
+          <p className="text-stone-500 max-w-md mx-auto">
+            Payment plans are created on an order. Once a bride is on a plan, every instalment shows
+            up here on its due date.
+          </p>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-2">
+          {visible.map((r) => (
+            <div key={r.id} className="bg-white/70 backdrop-blur-xl rounded-2xl border border-stone-200/60 shadow-sm p-4 flex items-center gap-4 flex-wrap">
+              <div className="flex-1 min-w-[200px]">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="font-bold text-stone-900">
+                    {r.customer ? (
+                      <Link href={`/customers/${r.customer.id}`} className="hover:text-rose-600">
+                        {r.customer.name}
+                      </Link>
+                    ) : (
+                      "Customer"
+                    )}
+                  </span>
+                  <span className={`text-[11px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full border ${STATUS_STYLE[r.derived]}`}>
+                    {r.derived}
+                  </span>
+                </div>
+                <div className="text-xs text-stone-400 mt-0.5">
+                  {r.order && (
+                    <Link href={`/orders/${r.order.id}`} className="hover:text-stone-700">
+                      {r.order.ref_no}
+                    </Link>
+                  )}
+                  {r.order && " · "}
+                  Payment {r.installment_no}/{r.total_count} · due {r.due_date}
+                  {r.derived === "overdue" && ` · ${Math.abs(r.days)} days late`}
+                </div>
+              </div>
+
+              <div className="text-right">
+                <div className="text-lg font-bold tabular-nums text-stone-900">
+                  {formatPrice(Math.round(r.amount))}
+                </div>
+                {r.paid_at && (
+                  <div className="text-[11px] text-stone-400">
+                    paid {r.paid_at.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                  </div>
+                )}
+              </div>
+
+              <div className="flex-shrink-0">
+                {r.derived === "paid" ? (
+                  <form action={unpayInstallment}>
+                    <input type="hidden" name="id" value={r.id} />
+                    <button type="submit" className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-stone-200 text-stone-500 hover:bg-stone-50">
+                      Undo
+                    </button>
+                  </form>
+                ) : r.derived === "cancelled" ? (
+                  <span className="text-xs text-stone-400 px-3">Cancelled</span>
+                ) : (
+                  <form action={payInstallment} className="flex items-center gap-1.5">
+                    <input type="hidden" name="id" value={r.id} />
+                    <input type="hidden" name="method" value="cash" />
+                    <button type="submit" className="text-xs font-semibold px-3.5 py-2 rounded-lg bg-stone-900 text-white hover:bg-rose-600">
+                      Mark collected
+                    </button>
+                  </form>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Stat({ label, value, tone }: { label: string; value: string; tone?: "rose" }) {
+  return (
+    <div className="bg-white/70 backdrop-blur-xl rounded-2xl border border-stone-200/60 shadow-sm px-5 py-4">
+      <div className="text-[11px] font-bold uppercase tracking-wide text-stone-400">{label}</div>
+      <div className={`text-2xl font-extrabold tabular-nums mt-1 ${tone === "rose" ? "text-rose-600" : "text-stone-900"}`}>
+        {value}
+      </div>
+    </div>
+  );
+}
