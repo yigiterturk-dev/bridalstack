@@ -1,8 +1,11 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getCurrentTenant } from "@/lib/tenant";
 import { formatPrice } from "@/config/modules";
 import ModuleGuard from "@/components/module-guard";
+import { todayISO } from "@/lib/finance";
+import { isLate, summarize } from "@/lib/purchasing";
 import { createSupplier, toggleSupplier, deleteSupplier } from "./actions";
 
 export const dynamic = "force-dynamic";
@@ -19,7 +22,7 @@ export default async function SuppliersPage() {
 }
 
 async function SuppliersContent({ tenantId }: { tenantId: string }) {
-  const [suppliers, products] = await Promise.all([
+  const [suppliers, products, openOrders] = await Promise.all([
     prisma.supplier.findMany({
       where: { tenant_id: tenantId },
       orderBy: [{ is_active: "desc" }, { name: "asc" }],
@@ -27,6 +30,13 @@ async function SuppliersContent({ tenantId }: { tenantId: string }) {
     prisma.product.findMany({
       where: { tenant_id: tenantId },
       select: { supplier_id: true, stock_quantity: true, cost: true },
+    }),
+    // Yola çıkmış ama henüz kapanmamış siparişler. Taslaklar sayılmaz:
+    // tedarikçi onlardan haberdar değil.
+    prisma.purchaseOrder.findMany({
+      where: { tenant_id: tenantId, status: { in: ["ordered", "partial"] } },
+      orderBy: { expected_on: "asc" },
+      select: { id: true, ref_no: true, supplier_id: true, status: true, expected_on: true, lines: true },
     }),
   ]);
 
@@ -42,6 +52,15 @@ async function SuppliersContent({ tenantId }: { tenantId: string }) {
   }
 
   const unassigned = products.filter((p) => !p.supplier_id).length;
+
+  // Tedarikçi başına açık sipariş: kaç adet yolda ve parası ne kadar.
+  const today = todayISO();
+  const ordersBySupplier = new Map<string, typeof openOrders>();
+  for (const o of openOrders) {
+    const rows = ordersBySupplier.get(o.supplier_id) ?? [];
+    rows.push(o);
+    ordersBySupplier.set(o.supplier_id, rows);
+  }
 
   return (
     <div className="animate-fade-in-up">
@@ -155,6 +174,57 @@ async function SuppliersContent({ tenantId }: { tenantId: string }) {
                             </>
                           )}
                         </p>
+
+                        {(() => {
+                          const orders = ordersBySupplier.get(s.id) ?? [];
+                          if (orders.length === 0) return null;
+                          const units = orders.reduce((sum, o) => sum + summarize(o.lines).outstandingUnits, 0);
+                          const value = orders.reduce((sum, o) => {
+                            const t = summarize(o.lines);
+                            return sum + (t.orderedCost - t.receivedCost);
+                          }, 0);
+                          const late = orders.filter((o) => isLate(o, o.lines, today));
+                          return (
+                            <div className="mt-2.5 rounded-2xl border border-stone-200/70 bg-stone-50/60 px-4 py-3">
+                              <div className="flex items-center justify-between gap-2 flex-wrap mb-1.5">
+                                <span className="text-xs font-semibold text-stone-500 uppercase tracking-wide">
+                                  On order
+                                </span>
+                                <span className="text-xs text-stone-500">
+                                  {units} {units === 1 ? "gown" : "gowns"} ·{" "}
+                                  <span className="font-semibold text-stone-800">{formatPrice(Math.round(value))}</span>
+                                  {late.length > 0 && (
+                                    <span className="text-rose-600 font-semibold"> · {late.length} late</span>
+                                  )}
+                                </span>
+                              </div>
+                              <div className="flex flex-wrap gap-1.5">
+                                {orders.slice(0, 4).map((o) => {
+                                  const t = summarize(o.lines);
+                                  return (
+                                    <Link
+                                      key={o.id}
+                                      href={`/purchase-orders/${o.id}`}
+                                      className={`text-[11px] font-semibold px-2 py-1 rounded-lg border transition-colors ${
+                                        isLate(o, o.lines, today)
+                                          ? "border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100"
+                                          : "border-stone-200 bg-white text-stone-600 hover:bg-stone-50"
+                                      }`}
+                                      title={o.expected_on ? `Expected ${o.expected_on}` : "No expected date"}
+                                    >
+                                      {o.ref_no} · {t.receivedUnits}/{t.orderedUnits}
+                                    </Link>
+                                  );
+                                })}
+                                {orders.length > 4 && (
+                                  <span className="text-[11px] text-stone-400 px-1 py-1">
+                                    +{orders.length - 4} more
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })()}
 
                         {s.notes && <p className="text-xs text-stone-400 mt-1.5">{s.notes}</p>}
                       </div>
