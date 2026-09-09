@@ -118,3 +118,66 @@ export function derivedOrderTotals(
 export function remainingBalance(discountedTotal: number, collected: number): number {
   return round(Math.max(0, discountedTotal - collected));
 }
+
+// ── Sipariş kurulurken girilen taslak kalemler ────────────────────────────────
+//
+// Form kalemleri paralel diziler hâlinde gönderir ve her zaman en az bir boş
+// satır taşır. Ayrıştırma burada saf tutulur ki sunucu eylemi test edilebilir
+// bir kuralı çağırsın, kendi içinde ayrıştırma yapmasın.
+
+export type DraftLineRow = {
+  kind?: string;
+  description?: string;
+  quantity?: string;
+  unit_price?: string;
+  discount?: string;
+  product_id?: string;
+  note?: string;
+};
+
+export type DraftLine = OrderLineInput & {
+  kind: string;
+  description: string;
+  product_id: string | null;
+  note: string | null;
+};
+
+function positiveNumber(raw: string | undefined): number {
+  const n = parseFloat(String(raw ?? "").trim());
+  return Number.isFinite(n) && n > 0 ? round(n) : 0;
+}
+
+/**
+ * Doldurulmuş satırları kaleme çevirir.
+ *
+ * Boş satır sessizce atılır — kullanıcı üç satır açıp birini doldurduğunda
+ * sipariş iki hayalet kalemle kurulmasın. Adı boş ama ürünü seçili satır
+ * KALIR: adı sunucu ürün kaydından doldurur, `addOrderLine` ile aynı kural.
+ */
+export function parseDraftLines(rows: DraftLineRow[]): DraftLine[] {
+  const out: DraftLine[] = [];
+
+  for (const raw of rows) {
+    const description = String(raw.description ?? "").trim();
+    const product_id = String(raw.product_id ?? "").trim() || null;
+    const unit_price = positiveNumber(raw.unit_price);
+
+    // Ne adı ne ürünü ne de fiyatı olan satır hiç girilmemiş sayılır.
+    if (!description && !product_id && unit_price === 0) continue;
+
+    const kind = String(raw.kind ?? "").trim();
+    const quantity = Math.max(1, Math.floor(Number(raw.quantity) || 0) || 1);
+
+    out.push({
+      kind: (LINE_KINDS as readonly { id: string }[]).some((k) => k.id === kind) ? kind : "gown",
+      description,
+      product_id,
+      quantity,
+      unit_price,
+      discount: positiveNumber(raw.discount),
+      note: String(raw.note ?? "").trim() || null,
+    });
+  }
+
+  return out;
+}

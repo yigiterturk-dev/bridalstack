@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getCurrentTenant, getCurrentMember, getCurrentUserId } from "@/lib/tenant";
 import { hasPermission, type Permission } from "@/lib/rbac";
+import { derivedOrderTotals, parseDraftLines } from "@/lib/order-lines";
 
 // Auth + tenant + (opsiyonel) izin kapısı. Fail-closed: yetkisiz reddedilir.
 async function requireAuth(permission?: Permission, denyRedirect = "/dashboard?error=forbidden") {
@@ -154,11 +155,47 @@ export async function createOrder(formData: FormData) {
   const order_date = String(formData.get("order_date") || new Date().toISOString().split("T")[0]).trim();
   const delivery_date = String(formData.get("delivery_date") || "").trim() || null;
   const sales_person = String(formData.get("sales_person") || "").trim() || null;
-  const discounted_total = parseFloat(String(formData.get("discounted_total") || "0")) || 0;
   const deposit_amount = parseFloat(String(formData.get("deposit_amount") || "0")) || 0;
   const notes = String(formData.get("notes") || "").trim() || null;
 
   if (!customer_id) redirect("/orders/new?error=required");
+
+  // Kalemler siparişle birlikte girilebilir. Girildiyse toplam ONLARDAN okunur;
+  // girilmediyse eski davranış aynen sürer (elle yazılan tek toplam).
+  const rows = formData.getAll("line_description").map((_, i) => ({
+    description: String(formData.getAll("line_description")[i] ?? ""),
+    product_id: String(formData.getAll("line_product_id")[i] ?? ""),
+    kind: String(formData.getAll("line_kind")[i] ?? ""),
+    quantity: String(formData.getAll("line_quantity")[i] ?? ""),
+    unit_price: String(formData.getAll("line_unit_price")[i] ?? ""),
+    discount: String(formData.getAll("line_discount")[i] ?? ""),
+  }));
+  const lines = parseDraftLines(rows);
+
+  // Ürün kimlikleri kiracıya ait mi? Başka kiracının ürünü siparişe geçemez.
+  const productIds = [...new Set(lines.map((l) => l.product_id).filter(Boolean) as string[])];
+  const products = productIds.length
+    ? await prisma.product.findMany({
+        where: { id: { in: productIds }, tenant_id: tenant.id },
+        select: { id: true, name: true, price: true },
+      })
+    : [];
+  const byId = new Map(products.map((p) => [p.id, p]));
+  if (productIds.some((id) => !byId.has(id))) redirect("/orders/new?error=line_invalid");
+
+  // Adı boş kalan satırın adı ürün kaydından gelir; fiyatı boşsa ürün fiyatı.
+  for (const line of lines) {
+    const product = line.product_id ? byId.get(line.product_id) : null;
+    if (!line.description) line.description = product?.name ?? "";
+    if (line.unit_price === 0 && product) line.unit_price = product.price ?? 0;
+  }
+  if (lines.some((l) => !l.description)) redirect("/orders/new?error=line_required");
+
+  const derived = derivedOrderTotals(lines);
+  const discounted_total = derived
+    ? derived.discounted_total
+    : parseFloat(String(formData.get("discounted_total") || "0")) || 0;
+  const list_total = derived ? derived.list_total : discounted_total;
 
   const y = String(new Date().getFullYear()).slice(2);
   const m = String(new Date().getMonth() + 1).padStart(2, "0");
@@ -173,7 +210,21 @@ export async function createOrder(formData: FormData) {
         delivery_date: delivery_date && /^\d{4}-\d{2}-\d{2}$/.test(delivery_date) ? delivery_date : null,
         sales_person, discounted_total, deposit_amount,
         remaining_balance: Math.max(0, discounted_total - deposit_amount),
-        list_total: discounted_total, notes, created_by: userId,
+        list_total, notes, created_by: userId,
+        // Sipariş ve kalemleri tek işlemde yazılır: yarım sipariş kalmaz.
+        lines: lines.length
+          ? {
+              create: lines.map((line, index) => ({
+                product_id: line.product_id,
+                description: line.description,
+                kind: line.kind,
+                quantity: line.quantity,
+                unit_price: line.unit_price,
+                discount: line.discount,
+                position: index + 1,
+              })),
+            }
+          : undefined,
       },
     });
   } catch {

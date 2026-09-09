@@ -10,6 +10,7 @@ import {
   remainingBalance,
   totals,
   totalsByKind,
+  parseDraftLines,
 } from "../lib/order-lines.ts";
 
 const l = (quantity: number, unit_price: number, discount = 0, kind = "gown") => ({
@@ -96,4 +97,54 @@ test("fazla tahsilat bakiyeyi eksiye indirmez", () => {
 test("bilinmeyen kalem türü ham kimliğiyle gösterilir", () => {
   assert.equal(kindLabel("veil"), "Veil");
   assert.equal(kindLabel("mystery"), "mystery");
+});
+
+// ── Sipariş kurulurken girilen taslak kalemler ────────────────────────────────
+
+const row = (r: Partial<Parameters<typeof parseDraftLines>[0][number]>) => r;
+
+test("boş satırlar atılır — form her zaman bir boş satır gönderir", () => {
+  const out = parseDraftLines([
+    row({ description: "", unit_price: "", quantity: "1" }),
+    row({ description: "   ", product_id: "" }),
+  ]);
+  assert.equal(out.length, 0);
+});
+
+test("adsız ama ürünlü satır kalır; adı sunucu ürün adından doldurur", () => {
+  const out = parseDraftLines([row({ product_id: "p1", unit_price: "100" })]);
+  assert.equal(out.length, 1);
+  assert.equal(out[0].description, "");
+  assert.equal(out[0].product_id, "p1");
+});
+
+test("adet en az 1, tutarlar eksiye inmez, çöp girdi 0 olur", () => {
+  const [line] = parseDraftLines([
+    row({ description: "Veil", quantity: "0", unit_price: "-50", discount: "abc" }),
+  ]);
+  assert.equal(line.quantity, 1);
+  assert.equal(line.unit_price, 0);
+  assert.equal(line.discount, 0);
+});
+
+test("ondalık adet aşağı yuvarlanır, tam sayıya zorlanır", () => {
+  const [line] = parseDraftLines([row({ description: "Gown", quantity: "2.9" })]);
+  assert.equal(line.quantity, 2);
+});
+
+test("bilinmeyen tür şemanın varsayılanına düşer", () => {
+  const [a] = parseDraftLines([row({ description: "X", kind: "hack" })]);
+  const [b] = parseDraftLines([row({ description: "Y", kind: "veil" })]);
+  assert.equal(a.kind, "gown");
+  assert.equal(b.kind, "veil");
+});
+
+test("sıra korunur ve toplam kalemlerden okunur", () => {
+  const out = parseDraftLines([
+    row({ description: "Gown", quantity: "1", unit_price: "1000", discount: "100" }),
+    row({ description: "", unit_price: "" }),
+    row({ description: "Veil", quantity: "2", unit_price: "150" }),
+  ]);
+  assert.deepEqual(out.map((l) => l.description), ["Gown", "Veil"]);
+  assert.deepEqual(derivedOrderTotals(out), { list_total: 1300, discounted_total: 1200 });
 });
