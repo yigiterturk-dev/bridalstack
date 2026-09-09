@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
-import { FREE_PACK_IDS } from "@/config/modules";
+import { FREE_PACK_IDS, SELLABLE_PACK_IDS } from "@/config/modules";
+import { startTrial } from "@/lib/trial";
 import { validateRegistration, slugBase, pickUniqueSlug } from "@/lib/register";
 
 // Basit IP bazlı hız sınırı — public endpoint, spam'e karşı. 10 kayıt/saat.
@@ -60,6 +61,12 @@ export async function POST(req: Request) {
         }
       });
 
+      // Kayıt yolu onboarding'den geçmiyor (paket seçimi yok): deneme burada
+      // açılmazsa yeni kullanıcı ücretli modülleri hiç görmeden kilitli
+      // ekranla karşılaşır. Deneme paketleri `packs`'e YAZILMAZ, süresi
+      // dolunca kendiliğinden kapanır (bkz. lib/trial.ts).
+      const trial = startTrial([...SELLABLE_PACK_IDS], new Date());
+
       const tenant = await tx.tenant.create({
         data: {
           name: shopName,
@@ -67,6 +74,9 @@ export async function POST(req: Request) {
           owner_id: user.id,
           // Ücretsiz paketler baştan açık: randevu sayfası ve hizmetler dahil.
           packs: FREE_PACK_IDS,
+          settings: trial ? { trial_packs: trial.trialPacks } : {},
+          trial_started_at: trial?.trialStartedAt ?? null,
+          trial_ends_at: trial?.trialEndsAt ?? null,
         }
       });
 

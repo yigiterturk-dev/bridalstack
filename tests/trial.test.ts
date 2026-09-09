@@ -9,6 +9,7 @@ import {
   canStartTrial,
   trialReminderKind,
 } from "../lib/trial.ts";
+import { SELLABLE_PACK_IDS } from "../config/modules.ts";
 
 const now = new Date("2026-09-09T12:00:00Z");
 const iso = (d: Date) => d.toISOString();
@@ -81,4 +82,10 @@ test("hatırlatma: 3 gün kala bir kez, dolunca bir kez, arada susar", () => {
   assert.equal(trialReminderKind(iso(plusDays(-0.5)), now), "expired");
   assert.equal(trialReminderKind(iso(plusDays(-10)), now), "expired");
   assert.equal(trialReminderKind(null, now), null);
+});
+
+test("yeni kayıt denemesi satılabilir tüm ücretli paketleri kapsar", () => {
+  const grant = startTrial([...SELLABLE_PACK_IDS], now);
+  assert.ok(grant, "satılabilir paket varken deneme çıkmalı");
+  assert.deepEqual(grant.trialPacks, [...SELLABLE_PACK_IDS]);
 });

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { PACKS, ALL_PACK_IDS, SELLABLE_PACK_IDS, MODULES, isPackSellable, isModuleLive, formatPrice } from "@/config/modules";
+import { TRIAL_DAYS } from "@/lib/trial";
 
 export default function LandingPage() {
   return (
@@ -54,7 +55,7 @@ export default function LandingPage() {
               Explore Features
             </a>
           </div>
-          <p className="text-sm text-stone-400 mt-8 font-medium tracking-wide">FREE PLAN · CUSTOMERS &amp; APPOINTMENTS INCLUDED · NO CREDIT CARD</p>
+          <p className="text-sm text-stone-400 mt-8 font-medium tracking-wide">{TRIAL_DAYS}-DAY TRIAL OF EVERY MODULE · FREE PLAN AFTER THAT · NO CREDIT CARD</p>
         </div>
       </section>
 
@@ -123,7 +124,8 @@ export default function LandingPage() {
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight drop-shadow-md">Simple, modular pricing.</h2>
             <p className="text-stone-400 mt-6 text-xl max-w-2xl mx-auto font-light">
-              Start free and stay free until you need more. Every price is on this page.
+              Every new account opens with a {TRIAL_DAYS}-day trial of all paid modules. When it
+              ends nothing is deleted — you drop back to the free plan and pick what you want to keep.
             </p>
             <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 mt-10 text-sm text-stone-400">
               {[
