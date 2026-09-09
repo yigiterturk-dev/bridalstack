@@ -3,13 +3,40 @@ import { Resend } from "resend";
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 const FROM = process.env.EMAIL_FROM || "BridalStack <noreply@bridalstack.com>";
 
-export async function sendEmail({ to, subject, html }: { to: string; subject: string; html: string }) {
+export type EmailResult = { sent: boolean; reason?: "unconfigured" | "failed" };
+
+/**
+ * E-posta göndermek hiçbir zaman çağıranı patlatmaz.
+ *
+ * Davet/hatırlatma gibi işlerde asıl kayıt zaten veritabanına yazılmıştır;
+ * sağlayıcı yoksa veya hata verirse işi geri almak yerine gönderilemediğini
+ * bildiririz — çağıran da kullanıcıya bağlantıyı elle verebilir.
+ */
+export async function sendEmail({
+  to,
+  subject,
+  html,
+}: {
+  to: string;
+  subject: string;
+  html: string;
+}): Promise<EmailResult> {
   if (!resend) {
     console.log(`[EMAIL SKIP] to=${to} subject=${subject}`);
-    return;
+    return { sent: false, reason: "unconfigured" };
   }
 
-  await resend.emails.send({ from: FROM, to, subject, html });
+  try {
+    const { error } = await resend.emails.send({ from: FROM, to, subject, html });
+    if (error) {
+      console.error(`[EMAIL FAIL] to=${to} subject=${subject} error=${error.message}`);
+      return { sent: false, reason: "failed" };
+    }
+    return { sent: true };
+  } catch (err) {
+    console.error(`[EMAIL FAIL] to=${to} subject=${subject} error=${String(err)}`);
+    return { sent: false, reason: "failed" };
+  }
 }
 
 export function appointmentReminderEmail(customerName: string, shopName: string, date: string, time: string) {

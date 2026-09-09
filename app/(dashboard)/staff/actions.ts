@@ -8,6 +8,7 @@ import { hasPermission, ASSIGNABLE_ROLES, ROLE_LABELS, normalizeRole, type Role 
 import { createToken, expiresIn } from "@/lib/tokens";
 import { sendEmail, teamInviteEmail } from "@/lib/email";
 import { siteUrl } from "@/lib/site-url";
+import { inviteLink, isInviteActionable } from "@/lib/invitations";
 
 // Yetki kapısı (fail-closed): staff.manage izni olmayan reddedilir.
 async function requireStaffManager() {
@@ -57,13 +58,15 @@ export async function addMember(formData: FormData) {
   const base = await siteUrl();
   const mail = teamInviteEmail(
     tenant?.name ?? "the team",
-    `${base}/invite/${token}`,
+    inviteLink(base, token),
     ROLE_LABELS[normalizeRole(role)]
   );
-  await sendEmail({ to: email, subject: mail.subject, html: mail.html });
+  const delivery = await sendEmail({ to: email, subject: mail.subject, html: mail.html });
 
   revalidatePath("/staff");
-  redirect("/staff?success=invited");
+  // Posta gitmediyse davet yine de geçerlidir; yönetici bağlantıyı bekleyen
+  // davetler listesinden elle üretip iletebilir.
+  redirect(delivery.sent ? "/staff?success=invited" : "/staff?success=invited_nomail");
 }
 
 export async function updateRole(formData: FormData) {
@@ -101,4 +104,45 @@ export async function removeMember(formData: FormData) {
 
   revalidatePath("/staff");
   redirect("/staff?success=removed");
+}
+
+/**
+ * Bekleyen davet için yeni bağlantı üretir ve HAM bağlantıyı çağırana döndürür.
+ *
+ * Bağlantı adres çubuğuna veya yönlendirme sorgusuna hiç girmez (tarayıcı
+ * geçmişine ve sunucu günlüklerine sızmasın diye) — yalnız bu çağrının
+ * yanıtında bulunur. Yeni jeton eskisini geçersiz kılar.
+ */
+export async function regenerateInvite(invitationId: string): Promise<{ link?: string; error?: string }> {
+  const { member } = await requireStaffManager();
+
+  const invitation = await prisma.invitation.findFirst({
+    // Kiracı süzgeci şart: başka mağazanın davetine bağlantı üretilemez.
+    where: { id: invitationId, tenant_id: member.tenantId },
+    select: { id: true, expires_at: true, accepted_at: true },
+  });
+  if (!invitation) return { error: "not_found" };
+  if (!isInviteActionable(invitation)) return { error: "accepted" };
+
+  const { token, hash } = createToken();
+  await prisma.invitation.update({
+    where: { id: invitation.id },
+    data: { token_hash: hash, expires_at: expiresIn(24 * 7) },
+  });
+
+  const base = await siteUrl();
+  revalidatePath("/staff");
+  return { link: inviteLink(base, token) };
+}
+
+export async function revokeInvite(formData: FormData) {
+  const { member } = await requireStaffManager();
+
+  const id = String(formData.get("id") || "");
+  if (id) {
+    await prisma.invitation.deleteMany({ where: { id, tenant_id: member.tenantId } });
+  }
+
+  revalidatePath("/staff");
+  redirect("/staff?success=invite_revoked");
 }
