@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/tenant";
 import { PACKS, FREE_PACK_IDS, type PackId } from "@/config/modules";
+import { splitOnboardingPacks } from "@/lib/billing";
 
 export type OnboardingDraft = {
   shopName?: string;
@@ -65,8 +66,10 @@ export async function finishOnboarding(
 
   const validPacks = (Array.isArray(input.packs) ? input.packs : [])
     .filter((p): p is PackId => typeof p === "string" && p in PACKS);
-  // Ücretsiz paketler her zaman açık; kullanıcı seçmeyi unutsa da verilir.
-  const packs: PackId[] = [...new Set([...FREE_PACK_IDS, ...validPacks])];
+  // Kurulumdaki seçim ödeme yerine geçmez: ücretli paketler açılmaz, yalnızca
+  // istek olarak saklanır. Aksi hâlde hazır paket seçen herkes aylık ücretli
+  // modülleri bedava açardı.
+  const { granted: packs, requestedPaid } = splitOnboardingPacks(validPacks);
 
   // Zaten bir workspace'i varsa tekrar oluşturma
   const existing = await prisma.tenantMember.findFirst({
@@ -96,8 +99,9 @@ export async function finishOnboarding(
           slug,
           owner_id: userId,
           packs,
-          plan: packs.length > 1 ? "starter" : "free",
+          plan: "free",
           signup_source: String(input.signupSource || "direct").slice(0, 60),
+          settings: requestedPaid.length > 0 ? { requested_packs: requestedPaid } : {},
           onboarding_completed_at: new Date(),
         },
       });
@@ -123,7 +127,7 @@ export async function finishOnboarding(
           tenant_id: tenant.id,
           user_id: userId,
           event: "onboarding_completed",
-          metadata: { packs, service_count: services.length },
+          metadata: { packs, requested_packs: requestedPaid, service_count: services.length },
         },
       });
 

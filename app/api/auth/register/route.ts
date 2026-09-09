@@ -40,15 +40,7 @@ export async function POST(req: Request) {
 
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    const user = await prisma.user.create({
-      data: {
-        email: email.toLowerCase(),
-        password_hash: hashedPassword,
-        name: shopName,
-      }
-    });
-
-    // Slug çakışması: aynı adda butikler numaralanır (elegance-bridal-2 ...).
+    // Slug çakışması: aynı addaki butikler numaralanır (elegance-bridal-2 ...).
     const base = slugBase(shopName);
     const taken = new Set(
       (await prisma.tenant.findMany({ where: { slug: { startsWith: base } }, select: { slug: true } }))
@@ -56,23 +48,36 @@ export async function POST(req: Request) {
     );
     const slug = pickUniqueSlug(shopName, (s) => taken.has(s));
 
-    const tenant = await prisma.tenant.create({
-      data: {
-        name: shopName,
-        slug,
-        owner_id: user.id,
-        // Ücretsiz paketler baştan açık: randevu sayfası ve hizmetler dahil.
-        packs: FREE_PACK_IDS,
-      }
-    });
+    // Üçü tek işlemde: yarıda kalırsa kullanıcı kiracısız kalıyordu. O kullanıcı
+    // giriş yapabiliyor ama her sayfa onu /onboarding'e atıyor — yani kayıt
+    // yarım kalmış bir hesap, kurulum ekranından geçmek zorunda kalıyordu.
+    await prisma.$transaction(async (tx) => {
+      const user = await tx.user.create({
+        data: {
+          email: email.toLowerCase(),
+          password_hash: hashedPassword,
+          name: shopName,
+        }
+      });
 
-    await prisma.tenantMember.create({
-      data: {
-        tenant_id: tenant.id,
-        user_id: user.id,
-        role: "owner",
-        display_name: shopName,
-      }
+      const tenant = await tx.tenant.create({
+        data: {
+          name: shopName,
+          slug,
+          owner_id: user.id,
+          // Ücretsiz paketler baştan açık: randevu sayfası ve hizmetler dahil.
+          packs: FREE_PACK_IDS,
+        }
+      });
+
+      await tx.tenantMember.create({
+        data: {
+          tenant_id: tenant.id,
+          user_id: user.id,
+          role: "owner",
+          display_name: shopName,
+        }
+      });
     });
 
     return new Response(JSON.stringify({ success: true }), { status: 201 });

@@ -46,3 +46,29 @@ test("aynı paket iki kez gönderilirse tek satır olur", () => {
   assert.equal(r.kind, "checkout");
   if (r.kind === "checkout") assert.equal(r.lineItems.length, 1);
 });
+
+// ── Onboarding: seçilen paket ödeme yerine geçmez ───────────────────────────
+import { splitOnboardingPacks } from "../lib/billing.ts";
+
+test("onboarding ücretli paketi AÇMAZ, yalnız ücretsizleri verir", () => {
+  const r = splitOnboardingPacks(["base", "salon", "sales", "finance"] as PackId[]);
+  assert.deepEqual([...r.granted].sort(), [...FREE_PACK_IDS].sort());
+  assert.deepEqual([...r.requestedPaid].sort(), ["finance", "sales"]);
+});
+
+test("hiç paket seçilmese de ücretsizler verilir", () => {
+  const r = splitOnboardingPacks([] as PackId[]);
+  assert.deepEqual([...r.granted].sort(), [...FREE_PACK_IDS].sort());
+  assert.equal(r.requestedPaid.length, 0);
+});
+
+test("bilinmeyen paket adı sessizce yok sayılır", () => {
+  const r = splitOnboardingPacks(["base", "hediye" as PackId]);
+  assert.ok(!r.granted.includes("hediye" as PackId));
+  assert.ok(!r.requestedPaid.includes("hediye" as PackId));
+});
+
+test("ücretsiz paketler istenen-ücretli listesine sızmaz", () => {
+  const r = splitOnboardingPacks([...FREE_PACK_IDS]);
+  assert.equal(r.requestedPaid.length, 0);
+});

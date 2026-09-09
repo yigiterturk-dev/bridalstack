@@ -50,3 +50,22 @@ export function resolveCheckoutPlan(
     packs: [...FREE_PACK_IDS, ...paid],
   };
 }
+
+/**
+ * Onboarding'de seçilen paketleri "şimdi açılacaklar" ve "satın alınmak
+ * istenenler" diye ayırır.
+ *
+ * Seçim bir ödeme değildir. Kurulum ekranındaki hazır paketler ücretli modülleri
+ * de içeriyordu ve doğrudan kiracıya yazılıyordu: seçen herkes aylık ücretli
+ * modülleri bedava açabilirdi. Ücretli olanlar artık yalnızca niyet olarak
+ * saklanır — hem delik kapanır hem de kullanıcının neyi istediği satış için
+ * kayda geçer.
+ */
+export function splitOnboardingPacks(requested: PackId[]): {
+  granted: PackId[];
+  requestedPaid: PackId[];
+} {
+  const known = Array.from(new Set(requested)).filter((p) => Boolean(PACKS[p]));
+  const requestedPaid = known.filter((p) => (PACKS[p]?.monthlyPrice ?? 0) > 0);
+  return { granted: [...FREE_PACK_IDS], requestedPaid };
+}

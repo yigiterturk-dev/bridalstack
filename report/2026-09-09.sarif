@@ -1,0 +1,779 @@
+{
+  "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "nocturn-audit",
+          "version": "0.1.0",
+          "informationUri": "https://github.com/yigiterturk-dev/nocturn-audit",
+          "rules": [
+            {
+              "id": "a01-api-route-auth-missing",
+              "name": "a01-api-route-auth-missing",
+              "shortDescription": {
+                "text": "API route has no authentication check"
+              },
+              "fullDescription": {
+                "text": "This API route defines a mutating handler (POST/PUT/PATCH/DELETE) that writes to the database, with no recognisable auth or session check inside it. It may allow unauthorised data changes.\n\nRemediation: Verify the session or user at the top of the handler (Clerk auth(), Supabase getUser(), getServerSession) and return 401/403 when unauthorised. If the endpoint really is public, document it explicitly."
+              },
+              "properties": {
+                "tags": [
+                  "A01:2021-Broken Access Control"
+                ],
+                "security-severity": "7.5",
+                "precision": "likely"
+              }
+            },
+            {
+              "id": "a05-missing-security-headers",
+              "name": "a05-missing-security-headers",
+              "shortDescription": {
+                "text": "Missing security header: Content-Security-Policy"
+              },
+              "fullDescription": {
+                "text": "Headers are declared somewhere, but Content-Security-Policy appears in none of them (next.config, middleware/proxy, vercel.json, _headers).\n\nRemediation: Add Content-Security-Policy inside next.config headers(). Use a strict CSP, X-Frame-Options: DENY or SAMEORIGIN, and X-Content-Type-Options: nosniff."
+              },
+              "properties": {
+                "tags": [
+                  "A05:2021-Security Misconfiguration"
+                ],
+                "security-severity": "7.5",
+                "precision": "likely"
+              }
+            },
+            {
+              "id": "a07-spoofable-client-ip",
+              "name": "a07-spoofable-client-ip",
+              "shortDescription": {
+                "text": "Security decision relies on a spoofable X-Forwarded-For"
+              },
+              "fullDescription": {
+                "text": "app/api/auth/register/route.ts reads X-Forwarded-For in a security decision (rate limit, attempt counter, allowlist). XFF is sent by the CLIENT, and reverse proxies often do not overwrite it — an attacker sends a different XFF on every request and BYPASSES the IP-based limit entirely (every attempt counts as a new IP).\n\nRemediation: In security decisions, use the header your reverse proxy sets RELIABLY okuyun (Caddy: X-Real-IP {remote_host}; nginx: $remote_addr / real_ip module; Express: app.set('trust proxy', ...) with req.ip). Never TRUST the first value of the client-controlled X-Forwarded-For."
+              },
+              "properties": {
+                "tags": [
+                  "A07:2021-Identification & Authentication Failures"
+                ],
+                "security-severity": "7.5",
+                "precision": "likely"
+              }
+            },
+            {
+              "id": "a03-redos",
+              "name": "a03-redos",
+              "shortDescription": {
+                "text": "ReDoS: regular expression built from user input"
+              },
+              "fullDescription": {
+                "text": "new RegExp() is called with a non-literal pattern. If the pattern comes from user input, an attacker can supply a catastrophic pattern and stall the event loop.\n\nRemediation: Never build a regex from user input. Use a fixed pattern and match the input against it, or escape user input before embedding."
+              },
+              "properties": {
+                "tags": [
+                  "A03:2021-Injection"
+                ],
+                "security-severity": "5.0",
+                "precision": "likely"
+              }
+            },
+            {
+              "id": "a04-tarih-utc-gun-kaymasi",
+              "name": "a04-tarih-utc-gun-kaymasi",
+              "shortDescription": {
+                "text": "Tarih/ay değeri toISOString() ile üretiliyor (saat dilimine göre gün kayar)"
+              },
+              "fullDescription": {
+                "text": "lib/booking-validation.ts:29 — \"bugün\" değeri `new Date().toISOString()` ile, yani UTC gününden üretiliyor. UTC+3'te gece 00:00–03:00 arasında bu değer DÜNÜ gösterir: o saatlerde oluşturulan kayıt yanlış güne yazılır, abonelik/deneme bitişi ve fatura tarihi bir gün kayabilir.\n\nRemediation: Tarih-only aritmetiğini saat diliminden bağımsız yapın: parçaları ayırıp `Date.UTC(y, m-1, d + n)` ile hesaplayın ve sonucu `getUTCFullYear/Month/Date` ile biçimlendirin. \"Bugün\" için işletmenin bölgesini sabitleyin: `new Intl.DateTimeFormat(\"en-CA\", { timeZone: \"Europe/Istanbul\", ... })` (en-CA zaten YYYY-MM-DD verir). Bu yardımcıları TEK bir modülde tutun ve kopyalarını arayın — düzeltilmiş bir yardımcının kopyası sessizce bozuk kalır."
+              },
+              "properties": {
+                "tags": [
+                  "A04:2021-Insecure Design"
+                ],
+                "security-severity": "5.0",
+                "precision": "likely"
+              }
+            },
+            {
+              "id": "int-permission-after-validation",
+              "name": "int-permission-after-validation",
+              "shortDescription": {
+                "text": "The authorisation check runs after input validation"
+              },
+              "fullDescription": {
+                "text": "In `app/api/upload/route.ts` the authorisation check comes after input validation. An unauthorised caller learns the schema first, and the gate itself cannot be tested without constructing a valid body.\n\nRemediation: Move the gate first: read only the field the authorisation decision needs (e.g. `resource`), run the check, then do the full validation."
+              },
+              "properties": {
+                "tags": [
+                  "A01:2021-Broken Access Control"
+                ],
+                "security-severity": "2.5",
+                "precision": "likely"
+              }
+            },
+            {
+              "id": "a01-csrf-missing",
+              "name": "a01-csrf-missing",
+              "shortDescription": {
+                "text": "State-changing route has no CSRF protection"
+              },
+              "fullDescription": {
+                "text": "This state-changing handler has no explicit CSRF token check. It does expect a JSON body, and the session library uses the SameSite=Lax cookie default: a cross-site form cannot construct this request, and a preflighted JSON request carries no cookie. So it is NOT exploitable today — but the protection rests on a cookie default rather than an explicit check. Loosening SameSite, or accepting form bodies, opens it.\n\nRemediation: Add CSRF token validation (double-submit cookie or a server-generated token). Use SameSite=Lax/Strict cookies and validate the Origin/Referer header. Where possible use an Authorization: Bearer token instead of a cookie."
+              },
+              "helpUri": "https://cwe.mitre.org/data/definitions/352.html",
+              "properties": {
+                "tags": [
+                  "A01:2021-Broken Access Control"
+                ],
+                "security-severity": "2.5",
+                "precision": "likely"
+              }
+            },
+            {
+              "id": "a04-missing-rate-limit",
+              "name": "a04-missing-rate-limit",
+              "shortDescription": {
+                "text": "No rate limiting or brute-force protection on a sensitive endpoint"
+              },
+              "fullDescription": {
+                "text": "No rate limiting is visible on this sensitive endpoint (app/(auth)/forgot-password/actions.ts). The project does have rate-limit infrastructure, but it could not be confirmed on this route.\n\nRemediation: Add IP and identity based rate limiting to login, OTP and payment endpoints (e.g. @upstash/ratelimit), cap failed attempts, and add a CAPTCHA or delay if needed."
+              },
+              "properties": {
+                "tags": [
+                  "A04:2021-Insecure Design"
+                ],
+                "security-severity": "2.5",
+                "precision": "likely"
+              }
+            },
+            {
+              "id": "a04-unguarded-json-parse",
+              "name": "a04-unguarded-json-parse",
+              "shortDescription": {
+                "text": "Persisted or external JSON parsed without a guard (one bad record kills the job)"
+              },
+              "fullDescription": {
+                "text": "app/api/stripe/webhook/route.ts:30 JSON'u try/except olmadan parse ediyor. If the argument comes from a persisted column or an external response, a single malformed record takes down the whole request or job — and it fails where the data is READ, not where it was WRITTEN, which makes it hard to diagnose.\n\nRemediation: Wrap the parse in try/except (JSONDecodeError / SyntaxError); fall back to a safe default (empty list or dict) on failure, skip the record and log it. One bad row then cannot bring down the entire run."
+              },
+              "properties": {
+                "tags": [
+                  "A04:2021-Insecure Design"
+                ],
+                "security-severity": "2.5",
+                "precision": "likely"
+              }
+            },
+            {
+              "id": "a02-env-file-committed",
+              "name": "a02-env-file-committed",
+              "shortDescription": {
+                "text": ".env yerelde mevcut (git izlemiyor)"
+              },
+              "fullDescription": {
+                "text": ".env exists in the working tree but is not tracked by git (it is gitignored). This is the expected, correct way to hold environment secrets — not a leak. Just never commit it.\n\nRemediation: No action needed. Just keep the file covered by `.gitignore`."
+              },
+              "properties": {
+                "tags": [
+                  "A02:2021-Cryptographic Failures"
+                ],
+                "security-severity": "0.0",
+                "precision": "certain"
+              }
+            },
+            {
+              "id": "a09-missing-audit-logging",
+              "name": "a09-missing-audit-logging",
+              "shortDescription": {
+                "text": "No security or audit logging on a sensitive endpoint"
+              },
+              "fullDescription": {
+                "text": "A sensitive endpoint (authentication or payment) shows no logging at all. Audit logs are what make incident response and detection possible.\n\nRemediation: Record successful and failed auth and payment events (user, IP, timestamp, outcome) with a structured logger, and alert on anomalies."
+              },
+              "properties": {
+                "tags": [
+                  "A09:2021-Security Logging & Monitoring Failures"
+                ],
+                "security-severity": "0.0",
+                "precision": "likely"
+              }
+            },
+            {
+              "id": "a09-security-txt-missing",
+              "name": "a09-security-txt-missing",
+              "shortDescription": {
+                "text": "No security.txt (RFC 9116)"
+              },
+              "fullDescription": {
+                "text": "The project has no /.well-known/security.txt. That file declares a contact channel so security researchers can disclose issues responsibly (RFC 9116).\n\nRemediation: Add public/.well-known/security.txt with Contact and Expires fields, and preferably Encryption and Policy too."
+              },
+              "helpUri": "https://cwe.mitre.org/data/definitions/200.html",
+              "properties": {
+                "tags": [
+                  "A09:2021-Security Logging & Monitoring Failures"
+                ],
+                "security-severity": "0.0",
+                "precision": "likely"
+              }
+            }
+          ]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "a01-api-route-auth-missing",
+          "level": "error",
+          "message": {
+            "text": "API route has no authentication check — export async function POST(req: Request) {"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app/api/book/route.ts"
+                },
+                "region": {
+                  "startLine": 12
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "high",
+            "confidence": "likely",
+            "project": "bridal-stack"
+          }
+        },
+        {
+          "ruleId": "a01-api-route-auth-missing",
+          "level": "error",
+          "message": {
+            "text": "API route has no authentication check — export async function POST(req: NextRequest) {"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app/api/contracts/sign/route.ts"
+                },
+                "region": {
+                  "startLine": 4
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "high",
+            "confidence": "likely",
+            "project": "bridal-stack"
+          }
+        },
+        {
+          "ruleId": "a05-missing-security-headers",
+          "level": "error",
+          "message": {
+            "text": "Missing security header: Content-Security-Policy — Content-Security-Policy not declared"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "next.config.ts"
+                },
+                "region": {
+                  "startLine": 1
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "high",
+            "confidence": "likely",
+            "project": "bridal-stack"
+          }
+        },
+        {
+          "ruleId": "a07-spoofable-client-ip",
+          "level": "error",
+          "message": {
+            "text": "Security decision relies on a spoofable X-Forwarded-For — X-Forwarded-For"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app/api/auth/register/route.ts"
+                },
+                "region": {
+                  "startLine": 21
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "high",
+            "confidence": "likely",
+            "project": "bridal-stack"
+          }
+        },
+        {
+          "ruleId": "a03-redos",
+          "level": "warning",
+          "message": {
+            "text": "ReDoS: regular expression built from user input — const regex = new RegExp(`^${pattern}(/|$)`);"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "config/modules.ts"
+                },
+                "region": {
+                  "startLine": 294
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "medium",
+            "confidence": "likely",
+            "project": "bridal-stack"
+          }
+        },
+        {
+          "ruleId": "a04-tarih-utc-gun-kaymasi",
+          "level": "warning",
+          "message": {
+            "text": "Tarih/ay değeri toISOString() ile üretiliyor (saat dilimine göre gün kayar) — today: string = new Date().toISOString().slice(0, 10)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "lib/booking-validation.ts"
+                },
+                "region": {
+                  "startLine": 29
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "medium",
+            "confidence": "likely",
+            "project": "bridal-stack"
+          }
+        },
+        {
+          "ruleId": "a04-tarih-utc-gun-kaymasi",
+          "level": "warning",
+          "message": {
+            "text": "Tarih/ay değeri toISOString() ile üretiliyor (saat dilimine göre gün kayar) — `Count ${new Date().toISOString().slice(0, 10)}`;"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app/(dashboard)/inventory-count/actions.ts"
+                },
+                "region": {
+                  "startLine": 33
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "medium",
+            "confidence": "likely",
+            "project": "bridal-stack"
+          }
+        },
+        {
+          "ruleId": "int-permission-after-validation",
+          "level": "note",
+          "message": {
+            "text": "The authorisation check runs after input validation — POST(request: Request) {"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app/api/upload/route.ts"
+                },
+                "region": {
+                  "startLine": 21
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "low",
+            "confidence": "likely",
+            "project": "bridal-stack"
+          }
+        },
+        {
+          "ruleId": "a01-csrf-missing",
+          "level": "note",
+          "message": {
+            "text": "State-changing route has no CSRF protection — export async function POST(req: NextRequest) {"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app/api/stripe/checkout/route.ts"
+                },
+                "region": {
+                  "startLine": 10
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "low",
+            "confidence": "likely",
+            "cwe": "CWE-352",
+            "project": "bridal-stack"
+          }
+        },
+        {
+          "ruleId": "a04-missing-rate-limit",
+          "level": "note",
+          "message": {
+            "text": "No rate limiting or brute-force protection on a sensitive endpoint — app/(auth)/forgot-password/actions.ts"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app/(auth)/forgot-password/actions.ts"
+                },
+                "region": {
+                  "startLine": 1
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "low",
+            "confidence": "likely",
+            "project": "bridal-stack"
+          }
+        },
+        {
+          "ruleId": "a04-missing-rate-limit",
+          "level": "note",
+          "message": {
+            "text": "No rate limiting or brute-force protection on a sensitive endpoint — app/(auth)/reset-password/[token]/actions.ts"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app/(auth)/reset-password/[token]/actions.ts"
+                },
+                "region": {
+                  "startLine": 1
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "low",
+            "confidence": "likely",
+            "project": "bridal-stack"
+          }
+        },
+        {
+          "ruleId": "a04-missing-rate-limit",
+          "level": "note",
+          "message": {
+            "text": "No rate limiting or brute-force protection on a sensitive endpoint — app/api/auth/register/route.ts"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app/api/auth/register/route.ts"
+                },
+                "region": {
+                  "startLine": 1
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "low",
+            "confidence": "likely",
+            "project": "bridal-stack"
+          }
+        },
+        {
+          "ruleId": "a04-missing-rate-limit",
+          "level": "note",
+          "message": {
+            "text": "No rate limiting or brute-force protection on a sensitive endpoint — app/api/stripe/checkout/route.ts"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app/api/stripe/checkout/route.ts"
+                },
+                "region": {
+                  "startLine": 1
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "low",
+            "confidence": "likely",
+            "project": "bridal-stack"
+          }
+        },
+        {
+          "ruleId": "a04-unguarded-json-parse",
+          "level": "note",
+          "message": {
+            "text": "Persisted or external JSON parsed without a guard (one bad record kills the job) — const packs = JSON.parse("
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app/api/stripe/webhook/route.ts"
+                },
+                "region": {
+                  "startLine": 30
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "low",
+            "confidence": "likely",
+            "project": "bridal-stack"
+          }
+        },
+        {
+          "ruleId": "a07-spoofable-client-ip",
+          "level": "note",
+          "message": {
+            "text": "Security decision relies on a spoofable X-Forwarded-For — X-Forwarded-For"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "lib/ratelimit.ts"
+                },
+                "region": {
+                  "startLine": 43
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "low",
+            "confidence": "likely",
+            "project": "bridal-stack"
+          }
+        },
+        {
+          "ruleId": "a02-env-file-committed",
+          "level": "note",
+          "message": {
+            "text": ".env yerelde mevcut (git izlemiyor) — (gitignored .env — no leak)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": ".env"
+                },
+                "region": {
+                  "startLine": 1
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "info",
+            "confidence": "certain",
+            "project": "bridal-stack"
+          }
+        },
+        {
+          "ruleId": "a02-env-file-committed",
+          "level": "note",
+          "message": {
+            "text": ".env.eu-yedek yerelde mevcut (git izlemiyor) — (gitignored .env — no leak)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": ".env.eu-yedek"
+                },
+                "region": {
+                  "startLine": 1
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "info",
+            "confidence": "certain",
+            "project": "bridal-stack"
+          }
+        },
+        {
+          "ruleId": "a02-env-file-committed",
+          "level": "note",
+          "message": {
+            "text": ".env.local yerelde mevcut (git izlemiyor) — (gitignored .env — no leak)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": ".env.local"
+                },
+                "region": {
+                  "startLine": 1
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "info",
+            "confidence": "certain",
+            "project": "bridal-stack"
+          }
+        },
+        {
+          "ruleId": "a02-env-file-committed",
+          "level": "note",
+          "message": {
+            "text": ".env.local.eu-yedek yerelde mevcut (git izlemiyor) — (gitignored .env — no leak)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": ".env.local.eu-yedek"
+                },
+                "region": {
+                  "startLine": 1
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "info",
+            "confidence": "certain",
+            "project": "bridal-stack"
+          }
+        },
+        {
+          "ruleId": "a09-missing-audit-logging",
+          "level": "note",
+          "message": {
+            "text": "No security or audit logging on a sensitive endpoint — app/api/auth/[...nextauth]/route.ts"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app/api/auth/[...nextauth]/route.ts"
+                },
+                "region": {
+                  "startLine": 1
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "info",
+            "confidence": "likely",
+            "project": "bridal-stack"
+          }
+        },
+        {
+          "ruleId": "a09-missing-audit-logging",
+          "level": "note",
+          "message": {
+            "text": "No security or audit logging on a sensitive endpoint — app/api/stripe/webhook/route.ts"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app/api/stripe/webhook/route.ts"
+                },
+                "region": {
+                  "startLine": 1
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "info",
+            "confidence": "likely",
+            "project": "bridal-stack"
+          }
+        },
+        {
+          "ruleId": "a09-missing-audit-logging",
+          "level": "note",
+          "message": {
+            "text": "No security or audit logging on a sensitive endpoint — app/api/stripe/checkout/route.ts"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app/api/stripe/checkout/route.ts"
+                },
+                "region": {
+                  "startLine": 1
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "info",
+            "confidence": "likely",
+            "project": "bridal-stack"
+          }
+        },
+        {
+          "ruleId": "a09-security-txt-missing",
+          "level": "note",
+          "message": {
+            "text": "No security.txt (RFC 9116) — (dosya yok)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "public/.well-known/security.txt"
+                },
+                "region": {
+                  "startLine": 1
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "info",
+            "confidence": "likely",
+            "cwe": "CWE-200",
+            "project": "bridal-stack"
+          }
+        }
+      ]
+    }
+  ]
+}
