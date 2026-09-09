@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentTenant, getCurrentUserId } from "@/lib/tenant";
+import { createPublicToken } from "@/lib/tokens";
 
 export async function POST(req: NextRequest) {
   const userId = await getCurrentUserId();
@@ -19,7 +20,7 @@ export async function POST(req: NextRequest) {
   });
   if (!customer) return NextResponse.json({ error: "Customer not found" }, { status: 404 });
 
-  const token = crypto.randomUUID().replace(/-/g, "").slice(0, 16);
+  const token = createPublicToken();
 
   try {
     await prisma.portalToken.create({

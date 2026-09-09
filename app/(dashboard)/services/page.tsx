@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentTenant } from "@/lib/tenant";
 import { createService, deleteService, toggleService } from "./actions";
 import SelectField from "@/components/select-field";
+import ModuleGuard from "@/components/module-guard";
 
 const CATEGORIES = ["Hair", "Nails", "Skin", "Massage", "Makeup", "Tattoo", "Barber", "Lashes", "Waxing", "Other"];
 const DURATIONS = [15, 30, 45, 60, 90, 120, 150, 180];
@@ -10,6 +11,11 @@ const DURATIONS = [15, 30, 45, 60, 90, 120, 150, 180];
 export default async function ServicesPage() {
   const tenant = await getCurrentTenant();
   if (!tenant) redirect("/onboarding");
+  // Modül kapısı: bu sayfa ücretsiz "salon" paketine ait, ama kapı yine de
+  // uygulanmalı — paketi olmayan kiracı sayfayı doğrudan URL ile açabiliyordu.
+  if (!tenant.enabled_modules.includes("services")) {
+    return <ModuleGuard moduleId="services" enabledModules={tenant.enabled_modules}>{null}</ModuleGuard>;
+  }
 
   const list = await prisma.service.findMany({
     where: { tenant_id: tenant.id },

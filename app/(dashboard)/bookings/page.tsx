@@ -2,12 +2,18 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getCurrentTenant } from "@/lib/tenant";
 import BookingsTable from "./bookings-table";
+import ModuleGuard from "@/components/module-guard";
 
 export const dynamic = "force-dynamic";
 
 export default async function BookingsPage() {
   const tenant = await getCurrentTenant();
   if (!tenant) redirect("/onboarding");
+  // Modül kapısı: bu sayfa ücretsiz "salon" paketine ait, ama kapı yine de
+  // uygulanmalı — paketi olmayan kiracı sayfayı doğrudan URL ile açabiliyordu.
+  if (!tenant.enabled_modules.includes("booking")) {
+    return <ModuleGuard moduleId="booking" enabledModules={tenant.enabled_modules}>{null}</ModuleGuard>;
+  }
 
   const rows = await prisma.booking.findMany({
     where: { tenant_id: tenant.id },

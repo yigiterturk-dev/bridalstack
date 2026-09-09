@@ -19,3 +19,15 @@ export function hashToken(token: string): string {
 export function expiresIn(hours: number): Date {
   return new Date(Date.now() + hours * 60 * 60 * 1000);
 }
+
+/**
+ * Paylaşılabilir genel bağlantı jetonu (müşteri portalı, sözleşme, takip formu).
+ *
+ * Bu jetonlar davet/sıfırlama jetonlarından farklı olarak özetlenmez: bağlantı
+ * daha sonra tekrar gösterilebilmeli. Bu yüzden tek savunma jetonun tahmin
+ * edilemezliğidir — eskiden UUID'nin ilk 16 hanesi kullanılıyordu (64 bit) ve
+ * kaba kuvvet denemesine karşı hız sınırı da yoktu.
+ */
+export function createPublicToken(): string {
+  return randomBytes(24).toString("base64url");
+}

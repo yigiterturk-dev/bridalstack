@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getCurrentTenant, getCurrentUserId } from "@/lib/tenant";
+import { createPublicToken } from "@/lib/tokens";
 
 export async function createContract(formData: FormData) {
   const userId = await getCurrentUserId();
@@ -19,7 +20,7 @@ export async function createContract(formData: FormData) {
 
   if (!customer_id || !title || !content) redirect("/contracts?error=required");
 
-  const token = crypto.randomUUID().replace(/-/g, "").slice(0, 20);
+  const token = createPublicToken();
 
   await prisma.contract.create({
     data: {

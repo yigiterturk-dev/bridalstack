@@ -8,6 +8,7 @@ import { rateLimit } from "@/lib/ratelimit";
 import { sendEmail, followUpEmail } from "@/lib/email";
 import { siteUrl } from "@/lib/site-url";
 import { FOLLOW_UP_COOLDOWN_DAYS, followUpCooldownCutoff } from "@/lib/follow-ups";
+import { createPublicToken } from "@/lib/tokens";
 
 export type SendFollowUpResult = { ok: true; sentAt: string } | { ok: false; error: string };
 
@@ -66,7 +67,7 @@ export async function sendFollowUpEmail(
   // Portal bağlantısı bonus; üretilemezse e-posta yine de gitsin.
   let portalUrl: string | null = null;
   try {
-    const token = crypto.randomUUID().replace(/-/g, "").slice(0, 16);
+    const token = createPublicToken();
     await prisma.portalToken.create({
       data: { tenant_id: member.tenantId, customer_id: customer.id, token },
     });
