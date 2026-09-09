@@ -138,3 +138,38 @@ export function isLate(
   if (!canReceive(po.status) || !po.expected_on) return false;
   return po.expected_on < today && !summarize(lines).complete;
 }
+
+/**
+ * Mal kabulünde ürünün yeni maliyeti — ağırlıklı ortalama.
+ *
+ * Neden ortalama: raftaki 2 elbise 100'e, yeni gelen 2 tanesi 200'e alındıysa
+ * ürünün maliyeti ne 100 ne 200'dür. Son faturayı yazmak (son alış maliyeti)
+ * eski stoğun gerçek bedelini siler ve kâr raporunu bozar.
+ *
+ * `null` = maliyete DOKUNMA:
+ * - Kalemin birim maliyeti girilmemişse (0) bu "bedava geldi" değil "bilinmiyor"
+ *   demektir; ortalamaya karışırsa maliyeti aşağı çeker.
+ * - Fiilen mal gelmediyse (adet ≤ 0) ortalanacak bir şey yoktur.
+ *
+ * Stok eksiye kaymış bozuk bir kayıtta ağırlık sıfır sayılır: gelen malın
+ * maliyeti doğrudan yazılır, eksi ağırlık tutarı saçmalaştırmaz.
+ */
+export function weightedCost(
+  current: { cost: number; stock: number },
+  incomingQty: number,
+  incomingCost: number
+): number | null {
+  if (!(incomingQty > 0)) return null;
+  if (!(incomingCost > 0)) return null;
+
+  const heldQty = Math.max(0, current.stock);
+  const heldCost = Math.max(0, current.cost);
+  if (heldQty === 0) return round2(incomingCost);
+
+  const total = heldQty * heldCost + incomingQty * incomingCost;
+  return round2(total / (heldQty + incomingQty));
+}
+
+function round2(n: number): number {
+  return Math.round(n * 100) / 100;
+}

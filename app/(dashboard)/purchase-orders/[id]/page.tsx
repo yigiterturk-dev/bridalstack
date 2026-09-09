@@ -303,6 +303,8 @@ async function PurchaseOrderDetail({
                     Type the running total you have received, not what arrived today. The rail only
                     moves by the difference, so submitting twice never doubles your stock. The order
                     closes on its own once every gown is in, and only then does the cost hit the drawer.
+                    Each product&rsquo;s cost is re-averaged over the stock you already hold; lines with no
+                    unit cost leave it untouched.
                   </p>
                   <button
                     type="submit"

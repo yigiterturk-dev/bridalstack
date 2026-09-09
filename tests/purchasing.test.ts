@@ -10,6 +10,7 @@ import {
   isLate,
   receiveDelta,
   shouldPostCost,
+  weightedCost,
   statusAfterReceipt,
   summarize,
 } from "../lib/purchasing.ts";
@@ -117,4 +118,40 @@ test("yalnız açık ve eksik sipariş gecikmiş sayılır", () => {
   assert.equal(isLate({ status: "partial", expected_on: "2026-01-01" }, [line(3, 3)], "2026-09-02"), false);
   assert.equal(isLate({ status: "received", expected_on: "2026-01-01" }, [line(3, 3)], "2026-09-02"), false);
   assert.equal(isLate({ status: "ordered", expected_on: null }, [line(3, 0)], "2026-09-02"), false);
+});
+
+
+// ── Mal kabulünde ürün maliyeti (ağırlıklı ortalama) ─────────────────────────
+
+test("stok sıfırken gelen mal maliyeti doğrudan yazar", () => {
+  assert.equal(weightedCost({ cost: 0, stock: 0 }, 4, 250), 250);
+  assert.equal(weightedCost({ cost: 900, stock: 0 }, 2, 250), 250);
+});
+
+test("stok varken maliyet adetle ağırlıklanır", () => {
+  // 2 adet x 100 + 2 adet x 200 = 400 / 4 = 150
+  assert.equal(weightedCost({ cost: 100, stock: 2 }, 2, 200), 150);
+});
+
+test("iki ondalığa yuvarlanır", () => {
+  assert.equal(weightedCost({ cost: 100, stock: 2 }, 1, 175), 125);
+  assert.equal(weightedCost({ cost: 10, stock: 3 }, 1, 15), 11.25);
+});
+
+test("maliyeti girilmemiş kalem mevcut maliyeti bozmaz", () => {
+  // unit_cost 0 = "bilinmiyor"; ortalamaya karışırsa maliyeti sıfıra çeker.
+  assert.equal(weightedCost({ cost: 400, stock: 3 }, 2, 0), null);
+});
+
+test("stoğu sıfır olan ürüne maliyetsiz mal gelirse yine yazılmaz", () => {
+  assert.equal(weightedCost({ cost: 0, stock: 0 }, 2, 0), null);
+});
+
+test("adet sıfır veya eksiyse maliyet güncellenmez", () => {
+  assert.equal(weightedCost({ cost: 100, stock: 2 }, 0, 300), null);
+  assert.equal(weightedCost({ cost: 100, stock: 2 }, -5, 300), null);
+});
+
+test("bozuk stok değeri sıfır sayılır, gelen maliyet yazılır", () => {
+  assert.equal(weightedCost({ cost: 100, stock: -3 }, 2, 300), 300);
 });

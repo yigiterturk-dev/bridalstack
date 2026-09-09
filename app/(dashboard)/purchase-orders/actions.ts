@@ -16,6 +16,7 @@ import {
   shouldPostCost,
   statusAfterReceipt,
   summarize,
+  weightedCost,
 } from "@/lib/purchasing";
 
 async function requirePurchasingManager() {
@@ -191,9 +192,23 @@ export async function receiveLines(formData: FormData) {
       });
       if (moved.count === 0) continue;
 
+      // Maliyet, stok artmadan ÖNCEKİ hâle göre ağırlıklanır; yoksa yeni mal
+      // hem paydaya hem paya iki kez girer.
+      const product = await tx.product.findFirst({
+        where: { id: line.product_id, tenant_id: member.tenantId },
+        select: { cost: true, stock_quantity: true },
+      });
+      const nextCost = product
+        ? weightedCost({ cost: product.cost, stock: product.stock_quantity }, delta, line.unit_cost)
+        : null;
+
       await tx.product.updateMany({
         where: { id: line.product_id, tenant_id: member.tenantId },
-        data: { stock_quantity: { increment: delta } },
+        data: {
+          stock_quantity: { increment: delta },
+          // Birim maliyeti girilmemiş kalem ürünün maliyetini bozmaz.
+          ...(nextCost === null ? {} : { cost: nextCost }),
+        },
       });
     }
 
