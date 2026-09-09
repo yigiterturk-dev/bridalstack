@@ -26,7 +26,13 @@ export async function POST(request: Request) {
     );
   }
 
-  const body = (await request.json()) as HandleUploadBody;
+  // Bozuk/boş gövde 500 değil 400 dönmeli: bu uç girişsiz de çağrılabiliyor.
+  let body: HandleUploadBody;
+  try {
+    body = (await request.json()) as HandleUploadBody;
+  } catch {
+    return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
+  }
 
   try {
     const result = await handleUpload({
