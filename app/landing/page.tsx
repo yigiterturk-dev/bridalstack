@@ -24,8 +24,8 @@ export default function LandingPage() {
             <a href="#features" className="text-[14px] font-semibold text-stone-600 hover:text-rose-500 tracking-wide uppercase transition-colors">Features</a>
             <a href="#pricing" className="text-[14px] font-semibold text-stone-600 hover:text-rose-500 tracking-wide uppercase transition-colors">Pricing</a>
             <Link href="/dashboard" className="text-[15px] font-medium text-stone-900 hover:text-rose-600 transition-colors">Sign In</Link>
-            <Link href="/dashboard" className="px-6 py-2.5 bg-stone-900 text-white rounded-full text-[14px] font-semibold hover:bg-stone-800 hover:shadow-xl hover:shadow-stone-900/20 transition-all duration-300">
-              Start Free Trial
+            <Link href="/signup" className="px-6 py-2.5 bg-stone-900 text-white rounded-full text-[14px] font-semibold hover:bg-stone-800 hover:shadow-xl hover:shadow-stone-900/20 transition-all duration-300">
+              Start Free
             </Link>
           </div>
         </div>
@@ -47,14 +47,14 @@ export default function LandingPage() {
             Manage brides, fittings, inventory, contracts, and payments from one breathtaking interface. Leave the spreadsheets behind.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-5 mt-14">
-            <Link href="/dashboard" className="w-full sm:w-auto px-10 py-4 bg-stone-900 text-white rounded-full text-lg font-medium hover:bg-stone-800 shadow-[0_8px_30px_rgba(0,0,0,0.12)] hover:shadow-[0_8px_30px_rgba(28,25,23,0.3)] hover:-translate-y-0.5 transition-all duration-300">
-              Start Free Trial →
+            <Link href="/signup" className="w-full sm:w-auto px-10 py-4 bg-stone-900 text-white rounded-full text-lg font-medium hover:bg-stone-800 shadow-[0_8px_30px_rgba(0,0,0,0.12)] hover:shadow-[0_8px_30px_rgba(28,25,23,0.3)] hover:-translate-y-0.5 transition-all duration-300">
+              Start Free →
             </Link>
             <a href="#features" className="w-full sm:w-auto px-10 py-4 bg-white/50 backdrop-blur-sm border border-stone-200 rounded-full text-lg font-medium text-stone-700 hover:bg-white hover:border-stone-300 hover:shadow-sm transition-all duration-300">
               Explore Features
             </a>
           </div>
-          <p className="text-sm text-stone-400 mt-8 font-medium tracking-wide">NO CREDIT CARD REQUIRED · 14-DAY FREE TRIAL</p>
+          <p className="text-sm text-stone-400 mt-8 font-medium tracking-wide">FREE PLAN · CUSTOMERS &amp; APPOINTMENTS INCLUDED · NO CREDIT CARD</p>
         </div>
       </section>
 
@@ -210,8 +210,8 @@ export default function LandingPage() {
         <div className="max-w-4xl mx-auto text-center relative z-10">
           <h2 className="text-5xl font-extrabold text-stone-900 tracking-tight leading-tight">Ready to modernize your boutique?</h2>
           <p className="text-stone-500 mt-6 text-2xl font-light">Join hundreds of elite bridal boutiques using BridalStack.</p>
-          <Link href="/dashboard" className="inline-block mt-12 px-12 py-5 bg-stone-900 text-white rounded-full text-lg font-bold hover:bg-rose-600 hover:scale-105 transition-all duration-300 shadow-[0_10px_40px_rgba(0,0,0,0.15)] hover:shadow-[0_10px_40px_rgba(225,29,72,0.3)]">
-            Start Your Free Trial →
+          <Link href="/signup" className="inline-block mt-12 px-12 py-5 bg-stone-900 text-white rounded-full text-lg font-bold hover:bg-rose-600 hover:scale-105 transition-all duration-300 shadow-[0_10px_40px_rgba(0,0,0,0.15)] hover:shadow-[0_10px_40px_rgba(225,29,72,0.3)]">
+            Start Free →
           </Link>
         </div>
       </section>
