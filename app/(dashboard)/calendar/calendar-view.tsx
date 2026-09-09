@@ -54,7 +54,16 @@ export default function CalendarView({
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-semibold text-gray-900">{MONTHS[month - 1]} {year}</h1>
-        <div className="flex gap-2">
+        <div className="flex gap-2 items-center">
+          <div className="flex rounded-xl border border-gray-200 overflow-hidden mr-1">
+            <button className="px-3 h-9 text-sm font-semibold bg-gray-900 text-white">Month</button>
+            <button
+              onClick={() => router.push("/calendar?view=week")}
+              className="px-3 h-9 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+            >
+              Week
+            </button>
+          </div>
           <button onClick={() => router.push(`/calendar?month=${prevMonth}`)} className="w-9 h-9 inline-flex items-center justify-center rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors" aria-label="Previous month"><span className="material-symbols-outlined text-lg">chevron_left</span></button>
           <button onClick={() => router.push(`/calendar?month=${today.getFullYear()}-${today.getMonth() + 1}`)} className="px-3.5 h-9 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">Today</button>
           <button onClick={() => router.push(`/calendar?month=${nextMonth}`)} className="w-9 h-9 inline-flex items-center justify-center rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors" aria-label="Next month"><span className="material-symbols-outlined text-lg">chevron_right</span></button>

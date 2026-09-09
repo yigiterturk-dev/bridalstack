@@ -7,6 +7,10 @@ import {
   occupiesCalendar,
   rentalDaysInMonth,
   sortDayEvents,
+  weekStart,
+  weekDates,
+  shiftWeek,
+  rentalDaysInRange,
 } from "../lib/calendar-events.ts";
 
 const span = (start: string, due: string, status = "reserved") => ({ id: "r1", start_date: start, due_date: due, status });
@@ -89,4 +93,55 @@ test("eyleme geçilecek günler başa, sadece dışarıdakiler sona", () => {
 
 test("sadece dışarıdakiler sayılır", () => {
   assert.equal(countOut([ev("rental", "out"), ev("rental", "out"), ev("rental", "due"), ev("appointment")]), 2);
+});
+
+
+// ── Haftalık görünüm ─────────────────────────────────────────────────────────
+
+test("hafta pazartesi başlar; pazar bir önceki haftaya aittir", () => {
+  // 2026-09-09 çarşamba
+  assert.equal(weekStart("2026-09-09"), "2026-09-07");
+  assert.equal(weekStart("2026-09-07"), "2026-09-07"); // pazartesinin kendisi
+  assert.equal(weekStart("2026-09-13"), "2026-09-07"); // pazar
+  assert.equal(weekStart("2026-09-14"), "2026-09-14"); // sonraki pazartesi
+});
+
+test("hafta ay ve yıl sınırını aşabilir", () => {
+  assert.equal(weekStart("2027-01-01"), "2026-12-28");
+  assert.deepEqual(weekDates("2026-12-28").slice(4), ["2027-01-01", "2027-01-02", "2027-01-03"]);
+});
+
+test("hafta yedi ardışık gün verir", () => {
+  assert.deepEqual(weekDates("2026-09-07"), [
+    "2026-09-07", "2026-09-08", "2026-09-09", "2026-09-10",
+    "2026-09-11", "2026-09-12", "2026-09-13",
+  ]);
+});
+
+test("ileri geri gezinme artık yıl şubatında da doğru", () => {
+  assert.equal(shiftWeek("2028-02-28", 1), "2028-03-06"); // 2028 artık yıl, 29 Şubat var
+  assert.equal(shiftWeek("2028-03-06", -1), "2028-02-28");
+});
+
+test("kiralama haftaya düşen günleri ve rolleriyle döner", () => {
+  const days = rentalDaysInRange(span("2026-09-08", "2026-09-10"), "2026-09-07", "2026-09-13");
+  assert.deepEqual(days, [
+    { date: "2026-09-08", role: "pickup" },
+    { date: "2026-09-09", role: "out" },
+    { date: "2026-09-10", role: "due" },
+  ]);
+});
+
+test("haftaya sarkan kiralamada yalnız aradaki günler görünür", () => {
+  const days = rentalDaysInRange(span("2026-09-01", "2026-09-30"), "2026-09-07", "2026-09-13");
+  assert.equal(days.length, 7);
+  assert.ok(days.every((d) => d.role === "out"));
+});
+
+test("iptal ve dönmüş kiralama haftada da yer kaplamaz", () => {
+  assert.deepEqual(rentalDaysInRange(span("2026-09-08", "2026-09-10", "returned"), "2026-09-07", "2026-09-13"), []);
+});
+
+test("haftaya hiç değmeyen kiralama boş döner", () => {
+  assert.deepEqual(rentalDaysInRange(span("2026-10-01", "2026-10-05"), "2026-09-07", "2026-09-13"), []);
 });
