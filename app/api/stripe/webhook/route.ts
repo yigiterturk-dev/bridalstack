@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
-import { PackId } from "@/config/modules";
+import { PackId, PACKS, FREE_PACK_IDS } from "@/config/modules";
 
 async function findTenantByStripeCustomer(customerId: string) {
   return prisma.tenant.findFirst({
@@ -27,10 +27,14 @@ export async function POST(req: NextRequest) {
   if (event.type === "checkout.session.completed") {
     const session = event.data.object;
     const tenantId = session.metadata?.tenant_id;
-    const packs = JSON.parse(session.metadata?.packs || '["base"]') as PackId[];
+    const packs = JSON.parse(
+      session.metadata?.packs || JSON.stringify(FREE_PACK_IDS)
+    ) as PackId[];
 
     if (tenantId) {
-      const paidPacks = packs.filter((p) => p !== "base");
+      // Ücretsiz paketler artık plana dahil geldiği için "base dışı" ölçüsü
+      // yanıltıcıydı: ücretsiz salon paketi kiracıyı ödeyen gibi gösterirdi.
+      const paidPacks = packs.filter((p) => (PACKS[p]?.monthlyPrice ?? 0) > 0);
       const existing = await prisma.tenant.findUnique({ where: { id: tenantId }, select: { settings: true } });
       const prevSettings = (existing?.settings ?? {}) as Record<string, unknown>;
 
@@ -38,7 +42,7 @@ export async function POST(req: NextRequest) {
         where: { id: tenantId },
         data: {
           packs,
-          plan: packs.length > 1 ? "starter" : "free",
+          plan: paidPacks.length > 0 ? "starter" : "free",
           // Trial → paid funnel: dönüşüm zamanını cohort analitiği için işaretle
           converted_at: paidPacks.length > 0 ? new Date() : null,
           // Mevcut ayarları ezmeden Stripe alanlarını ekle
@@ -62,7 +66,12 @@ export async function POST(req: NextRequest) {
     const subscription = event.data.object;
     const tenant = await findTenantByStripeCustomer(subscription.customer as string);
     if (tenant) {
-      await prisma.tenant.update({ where: { id: tenant.id }, data: { packs: ["base"], plan: "free" } });
+      // İptal ücretsiz katmana döndürür — kiracı online booking/hizmetleri
+      // kaybetmez, tanıtım sayfası bunları ücretsiz vaat ediyor.
+      await prisma.tenant.update({
+        where: { id: tenant.id },
+        data: { packs: [...FREE_PACK_IDS], plan: "free" },
+      });
     }
   }
 

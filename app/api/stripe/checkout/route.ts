@@ -5,6 +5,7 @@ import { authOptions } from "@/lib/auth";
 import { stripe, STRIPE_PRICE_IDS } from "@/lib/stripe";
 import { getCurrentTenant } from "@/lib/tenant";
 import { PackId, PACKS, calculateMonthlyPrice, isPackSellable } from "@/config/modules";
+import { resolveCheckoutPlan } from "@/lib/billing";
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -38,29 +39,42 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const newPacks = packs.filter((p) => p !== "base" && PACKS[p] && isPackSellable(p));
-  const lineItems = newPacks
-    .map((packId) => {
-      const priceId = STRIPE_PRICE_IDS[packId];
-      if (!priceId) return null;
-      return { price: priceId, quantity: 1 };
-    })
-    .filter(Boolean) as { price: string; quantity: number }[];
+  const plan = resolveCheckoutPlan(packs, STRIPE_PRICE_IDS);
 
-  if (lineItems.length === 0) {
-    await prisma.tenant.update({ where: { id: tenant.id }, data: { packs: ["base"], plan: "free" } });
+  // Fiyat yapılandırması eksikse plana DOKUNMAYIZ. Eskiden bu durum boş bir
+  // satır listesine düşüyor ve iptal sanılıyordu: yükseltmeye çalışan kiracı
+  // "başarılı" mesajıyla ücretsize indiriliyordu.
+  if (plan.kind === "misconfigured") {
+    return NextResponse.json(
+      { error: "Billing is not configured for this plan yet. Please contact support." },
+      { status: 503 }
+    );
+  }
+
+  if (plan.kind === "downgrade") {
+    await prisma.tenant.update({
+      where: { id: tenant.id },
+      data: { packs: plan.packs, plan: "free" },
+    });
     return NextResponse.json({ url: "/settings?success=updated" });
+  }
+
+  if (!stripe) {
+    return NextResponse.json(
+      { error: "Billing is not configured yet. Please contact support." },
+      { status: 503 }
+    );
   }
 
   const checkout = await stripe.checkout.sessions.create({
     customer_email: user.email,
     mode: "subscription",
-    line_items: lineItems,
+    line_items: plan.lineItems,
     success_url: `${req.nextUrl.origin}/settings?success=subscribed`,
     cancel_url: `${req.nextUrl.origin}/settings?cancelled=1`,
     metadata: {
       tenant_id: tenant.id,
-      packs: JSON.stringify(["base", ...newPacks]),
+      packs: JSON.stringify(plan.packs),
     },
   });
 
