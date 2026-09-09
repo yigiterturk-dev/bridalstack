@@ -7,7 +7,8 @@ import { hasPermission, ROLE_LABELS, normalizeRole } from "@/lib/rbac";
 import { UpgradeButton, ManageBillingButton } from "@/components/billing-buttons";
 import SignOutButton from "@/components/sign-out-button";
 import CopyField from "@/components/copy-field";
-import { updateShopProfile } from "./actions";
+import { updateShopProfile, startPackTrial, seedDemoData, clearDemoData } from "./actions";
+import { canStartTrial, TRIAL_DAYS } from "@/lib/trial";
 
 type Props = { searchParams?: Promise<{ success?: string; error?: string }> };
 
@@ -19,6 +20,7 @@ const ERRORS: Record<string, string> = {
   logo_invalid: "The logo address must start with http:// or https://.",
   color_invalid: "Colors must be six-digit hex values, for example #B4496A.",
   update_failed: "Could not save your changes. Please try again.",
+  trial_unavailable: "That free trial is not available for this workspace.",
 };
 
 /** Herkese açık randevu adresini oluşturmak için isteğin kendi kökeni. */
@@ -53,6 +55,8 @@ export default async function SettingsPage({ searchParams }: Props) {
   ]);
 
   const currentPrice = calculateMonthlyPrice(tenant.packs);
+  const trialEligible = canEdit && canStartTrial(tenant);
+  const hasDemoData = tenant.settings?.demo_data === true;
   const bookingUrl = `${origin}/book/${tenant.slug}`;
   const stripeCustomerId = (tenant.settings as Record<string, unknown>)?.stripe_customer_id;
 
@@ -66,6 +70,21 @@ export default async function SettingsPage({ searchParams }: Props) {
       {params?.success === "saved" && (
         <div className="mb-6 rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-800">
           Your shop details have been saved.
+        </div>
+      )}
+      {params?.success === "trial_started" && (
+        <div className="mb-6 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-800">
+          Your {TRIAL_DAYS}-day free trial has started. The modules are unlocked right away — no card needed.
+        </div>
+      )}
+      {params?.success === "demo_loaded" && (
+        <div className="mb-6 rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-800">
+          Sample data added. Remove it any time from this page — your own records are never touched.
+        </div>
+      )}
+      {params?.success === "demo_cleared" && (
+        <div className="mb-6 rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-800">
+          Sample data removed.
         </div>
       )}
       {params?.error && (
@@ -262,7 +281,8 @@ export default async function SettingsPage({ searchParams }: Props) {
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
             {ALL_PACK_IDS.map((packId) => {
               const pack = PACKS[packId];
-              const isActive = tenant.packs.includes(packId);
+              const onTrial = tenant.trial_packs.includes(packId);
+              const isActive = tenant.packs.includes(packId) || onTrial;
               const sellable = packId === "base" || isPackSellable(packId);
               return (
                 <div
@@ -273,7 +293,11 @@ export default async function SettingsPage({ searchParams }: Props) {
                 >
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="font-semibold text-gray-900">{pack.name}</h3>
-                    {isActive ? (
+                    {onTrial ? (
+                      <span className="text-xs font-medium text-rose-700 bg-rose-100 px-2 py-0.5 rounded-full">
+                        Trial · {tenant.trial_days_left}d left
+                      </span>
+                    ) : isActive ? (
                       <span className="text-xs font-medium text-green-700 bg-green-100 px-2 py-0.5 rounded-full">Active</span>
                     ) : !sellable ? (
                       <span className="text-xs font-medium text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">In development</span>
@@ -298,11 +322,56 @@ export default async function SettingsPage({ searchParams }: Props) {
                       );
                     })}
                   </div>
+                  {trialEligible && sellable && !isActive && (
+                    <form action={startPackTrial} className="mt-3">
+                      <input type="hidden" name="pack" value={packId} />
+                      <button
+                        type="submit"
+                        className="w-full text-xs font-medium text-white bg-gray-900 hover:bg-gray-800 rounded-lg px-3 py-2 transition-colors"
+                      >
+                        Start {TRIAL_DAYS}-day free trial
+                      </button>
+                    </form>
+                  )}
                 </div>
               );
             })}
           </div>
         </div>
+
+        {/* Sample data */}
+        {canEdit && (
+          <div className="bg-white rounded-2xl border border-gray-200 p-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-1">Sample data</h2>
+            <p className="text-sm text-gray-500 mb-4 max-w-2xl">
+              Fill the workspace with an example boutique — brides, gowns, orders and
+              fittings — so you can see how everything fits together before entering your
+              own records. Sample records are tagged and removed in one click; your own
+              data is never touched.
+            </p>
+            {hasDemoData ? (
+              <form action={clearDemoData}>
+                <button
+                  type="submit"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  <span className="material-symbols-outlined text-lg">delete_sweep</span>
+                  Remove sample data
+                </button>
+              </form>
+            ) : (
+              <form action={seedDemoData}>
+                <button
+                  type="submit"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gray-900 text-white text-sm font-medium hover:bg-gray-800 transition-colors"
+                >
+                  <span className="material-symbols-outlined text-lg">auto_awesome</span>
+                  Load sample data
+                </button>
+              </form>
+            )}
+          </div>
+        )}
 
         {/* Account */}
         <div className="bg-white rounded-2xl border border-gray-200 p-6">

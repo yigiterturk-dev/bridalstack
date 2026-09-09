@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/tenant";
 import { PACKS, FREE_PACK_IDS, type PackId } from "@/config/modules";
 import { splitOnboardingPacks } from "@/lib/billing";
+import { startTrial } from "@/lib/trial";
 
 export type OnboardingDraft = {
   shopName?: string;
@@ -71,6 +72,11 @@ export async function finishOnboarding(
   // modülleri bedava açardı.
   const { granted: packs, requestedPaid } = splitOnboardingPacks(validPacks);
 
+  // Seçilen ücretli paketler ödeme yerine geçmez ama boş da bırakılmaz: süreli
+  // bir deneme açılır. Deneme paketleri `packs`'e YAZILMAZ — süresi dolduğunda
+  // kendiliğinden kapanmaları için yalnızca ayarlarda durur (bkz. lib/trial.ts).
+  const trial = startTrial(requestedPaid, new Date());
+
   // Zaten bir workspace'i varsa tekrar oluşturma
   const existing = await prisma.tenantMember.findFirst({
     where: { user_id: userId },
@@ -101,7 +107,13 @@ export async function finishOnboarding(
           packs,
           plan: "free",
           signup_source: String(input.signupSource || "direct").slice(0, 60),
-          settings: requestedPaid.length > 0 ? { requested_packs: requestedPaid } : {},
+          settings: trial
+            ? { requested_packs: requestedPaid, trial_packs: trial.trialPacks }
+            : requestedPaid.length > 0
+              ? { requested_packs: requestedPaid }
+              : {},
+          trial_started_at: trial?.trialStartedAt ?? null,
+          trial_ends_at: trial?.trialEndsAt ?? null,
           onboarding_completed_at: new Date(),
         },
       });
@@ -127,7 +139,12 @@ export async function finishOnboarding(
           tenant_id: tenant.id,
           user_id: userId,
           event: "onboarding_completed",
-          metadata: { packs, requested_packs: requestedPaid, service_count: services.length },
+          metadata: {
+            packs,
+            requested_packs: requestedPaid,
+            trial_packs: trial?.trialPacks ?? [],
+            service_count: services.length,
+          },
         },
       });
 

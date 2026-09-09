@@ -3,6 +3,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { ModuleId, PackId, getModulesForPacks } from "@/config/modules";
 import { normalizeRole, type Role } from "@/lib/rbac";
+import { activeTrialPacks, trialDaysLeft } from "@/lib/trial";
 
 export type Tenant = {
   id: string;
@@ -14,6 +15,9 @@ export type Tenant = {
   accent_color?: string | null;
   briefing_emails?: boolean;
   packs: PackId[];
+  /** Deneme süresi boyunca ödünç açılan paketler — sahip olunan paketler değil. */
+  trial_packs: PackId[];
+  trial_days_left: number | null;
   enabled_modules: ModuleId[];
   settings: Record<string, unknown>;
   plan: "free" | "starter" | "growth" | "enterprise";
@@ -44,12 +48,19 @@ export async function getCurrentTenant(): Promise<Tenant | null> {
   if (!tenant) return null;
 
   const packs = (tenant.packs?.length ? tenant.packs : ["base"]) as PackId[];
+  const settings = (tenant.settings ?? {}) as Record<string, unknown>;
+
+  // Deneme paketleri kiracıya YAZILMAZ; süresi geçmemişse okuma anında eklenir.
+  // Böylece süre dolduğunda modüller kendiliğinden kapanır (bkz. lib/trial.ts).
+  const trial_packs = activeTrialPacks(settings, tenant.trial_ends_at, new Date());
 
   return {
     ...tenant,
     packs,
-    enabled_modules: getModulesForPacks(packs),
-    settings: (tenant.settings ?? {}) as Record<string, unknown>,
+    trial_packs,
+    trial_days_left: trial_packs.length > 0 ? trialDaysLeft(tenant.trial_ends_at, new Date()) : null,
+    enabled_modules: getModulesForPacks([...packs, ...trial_packs]),
+    settings,
     plan: tenant.plan as Tenant["plan"],
     created_at: tenant.created_at.toISOString(),
     trial_started_at: tenant.trial_started_at?.toISOString() ?? null,

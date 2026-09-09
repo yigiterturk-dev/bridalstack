@@ -268,3 +268,42 @@ export function followUpEmail(
     `,
   };
 }
+
+export function trialEndingEmail(shopName: string, packNames: string, daysLeft: number, settingsUrl: string) {
+  return {
+    subject: `Your BridalStack trial ends in ${daysLeft} day${daysLeft === 1 ? "" : "s"}`,
+    html: `
+      <div style="font-family: system-ui, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px;">
+        <h2 style="color: #111; margin-bottom: 8px;">Hi ${shopName} 👋</h2>
+        <p style="color: #555; line-height: 1.6;">
+          Your free trial of <strong>${packNames}</strong> ends in
+          <strong>${daysLeft} day${daysLeft === 1 ? "" : "s"}</strong>.
+        </p>
+        <p style="color: #555; line-height: 1.6;">
+          Nothing is deleted when it ends — your data stays exactly where it is.
+          These modules simply go back to being locked until you subscribe.
+        </p>
+        <a href="${settingsUrl}" style="display: inline-block; background: #111; color: #fff; text-decoration: none; padding: 12px 24px; border-radius: 12px; margin: 20px 0; font-weight: 600;">Keep these modules</a>
+        <p style="color: #999; font-size: 12px; margin-top: 32px;">Sent via BridalStack</p>
+      </div>
+    `,
+  };
+}
+
+export function trialExpiredEmail(shopName: string, packNames: string, settingsUrl: string) {
+  return {
+    subject: "Your BridalStack trial has ended",
+    html: `
+      <div style="font-family: system-ui, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px;">
+        <h2 style="color: #111; margin-bottom: 8px;">Hi ${shopName} 👋</h2>
+        <p style="color: #555; line-height: 1.6;">
+          Your free trial of <strong>${packNames}</strong> has ended.
+          Your customers, orders and appointments are untouched — the free plan
+          keeps running as before.
+        </p>
+        <a href="${settingsUrl}" style="display: inline-block; background: #111; color: #fff; text-decoration: none; padding: 12px 24px; border-radius: 12px; margin: 20px 0; font-weight: 600;">Turn these modules back on</a>
+        <p style="color: #999; font-size: 12px; margin-top: 32px;">Sent via BridalStack</p>
+      </div>
+    `,
+  };
+}
