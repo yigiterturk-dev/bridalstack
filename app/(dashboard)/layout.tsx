@@ -4,6 +4,11 @@ import { getCurrentTenant } from "@/lib/tenant";
 import Sidebar from "@/components/sidebar";
 import UpgradeCta from "@/components/upgrade-cta";
 import { trialDaysLeft } from "@/lib/trial";
+import { NO_INDEX } from "@/lib/seo";
+import type { Metadata } from "next";
+
+// Oturum arkasındaki hiçbir ekran indekslenmez.
+export const metadata: Metadata = NO_INDEX;
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const tenant = await getCurrentTenant();

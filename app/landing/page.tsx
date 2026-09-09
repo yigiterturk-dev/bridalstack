@@ -1,6 +1,16 @@
 import Link from "next/link";
 import { PACKS, ALL_PACK_IDS, SELLABLE_PACK_IDS, MODULES, isPackSellable, isModuleLive, formatPrice } from "@/config/modules";
 import { TRIAL_DAYS } from "@/lib/trial";
+import type { Metadata } from "next";
+import { siteBase, siteMetadata } from "@/lib/seo";
+
+export const metadata: Metadata = siteMetadata({
+  base: siteBase(),
+  path: "/landing",
+  title: "Bridal Stack",
+  description:
+    "CRM for bridal boutiques: brides, fittings, orders, payments and stock in one place. Free plan, no card, every price on the page.",
+});
 
 export default function LandingPage() {
   return (
@@ -24,6 +34,7 @@ export default function LandingPage() {
           <div className="hidden md:flex items-center gap-8">
             <a href="#features" className="text-[14px] font-semibold text-stone-600 hover:text-rose-500 tracking-wide uppercase transition-colors">Features</a>
             <a href="#pricing" className="text-[14px] font-semibold text-stone-600 hover:text-rose-500 tracking-wide uppercase transition-colors">Pricing</a>
+            <Link href="/guides" className="text-[14px] font-semibold text-stone-600 hover:text-rose-500 tracking-wide uppercase transition-colors">Guides</Link>
             <Link href="/dashboard" className="text-[15px] font-medium text-stone-900 hover:text-rose-600 transition-colors">Sign In</Link>
             <Link href="/signup" className="px-6 py-2.5 bg-stone-900 text-white rounded-full text-[14px] font-semibold hover:bg-stone-800 hover:shadow-xl hover:shadow-stone-900/20 transition-all duration-300">
               Start Free
@@ -227,8 +238,9 @@ export default function LandingPage() {
             <span className="text-sm font-medium text-stone-400">© {new Date().getFullYear()} All rights reserved.</span>
           </div>
           <div className="flex items-center gap-10">
-            <a href="#" className="text-[14px] font-semibold text-stone-400 hover:text-stone-900 uppercase tracking-wider transition-colors">Privacy</a>
-            <a href="#" className="text-[14px] font-semibold text-stone-400 hover:text-stone-900 uppercase tracking-wider transition-colors">Terms</a>
+            <Link href="/guides" className="text-[14px] font-semibold text-stone-400 hover:text-stone-900 uppercase tracking-wider transition-colors">Guides</Link>
+            <Link href="/privacy" className="text-[14px] font-semibold text-stone-400 hover:text-stone-900 uppercase tracking-wider transition-colors">Privacy</Link>
+            <Link href="/terms" className="text-[14px] font-semibold text-stone-400 hover:text-stone-900 uppercase tracking-wider transition-colors">Terms</Link>
             <a href="mailto:hello@bridalstack.com" className="text-[14px] font-semibold text-stone-400 hover:text-stone-900 uppercase tracking-wider transition-colors">Contact</a>
           </div>
         </div>
