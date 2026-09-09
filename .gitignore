@@ -40,3 +40,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# nocturn-audit ciktilari (yerel denetim, depoya girmez)
+report/
+targets.json
