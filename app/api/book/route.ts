@@ -13,7 +13,7 @@ export async function POST(req: Request) {
   try {
     // 1. Hız sınırı: IP başına 60 sn'de en fazla 5 rezervasyon denemesi.
     const ip = clientIp(req);
-    const rl = rateLimit(`book:${ip}`, 5, 60_000);
+    const rl = await rateLimit(`book:${ip}`, 5, 60_000);
     if (!rl.allowed) {
       return NextResponse.json(
         { error: "Too many attempts. Please try again shortly." },

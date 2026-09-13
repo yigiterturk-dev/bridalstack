@@ -31,8 +31,7 @@ const H={cookie:j.hdr()};
   check("Plan yokken oluşturma formu gösteriliyor", html.includes("Create payment plan"));
 }
 
-// 2 — plan oluştur (server action yerine mantığı doğrudan sınıyoruz)
-const { buildInstallmentPlan, deriveStatus } = await import("./lib/installments.ts").catch(()=>({}));
+// 2 — plan mantığı doğrudan lib'den geliyor; burada ayrıca import gerekmiyor
 {
   // Eylem HTTP üzerinden çağrılamadığı için aynı mantıkla plan kur ve sayfayı doğrula.
   const first=new Date(Date.now()+30*864e5).toISOString().split("T")[0];

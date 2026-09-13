@@ -74,7 +74,7 @@ export async function saveSchedules(
       )
     );
     return { ok: true };
-  } catch (e) {
+  } catch {
     return { ok: false, error: "Could not save schedule" };
   }
 }

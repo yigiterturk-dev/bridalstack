@@ -4,7 +4,7 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { stripe, STRIPE_PRICE_IDS } from "@/lib/stripe";
 import { getCurrentTenant } from "@/lib/tenant";
-import { PackId, PACKS, calculateMonthlyPrice, isPackSellable } from "@/config/modules";
+import { PackId, PACKS, isPackSellable } from "@/config/modules";
 import { resolveCheckoutPlan } from "@/lib/billing";
 
 export async function POST(req: NextRequest) {

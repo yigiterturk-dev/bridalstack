@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/tenant";
-import { PACKS, FREE_PACK_IDS, type PackId } from "@/config/modules";
+import { PACKS, type PackId } from "@/config/modules";
 import { splitOnboardingPacks } from "@/lib/billing";
 import { startTrial } from "@/lib/trial";
 
@@ -150,7 +150,7 @@ export async function finishOnboarding(
 
       await tx.onboardingDraft.deleteMany({ where: { user_id: userId } });
     });
-  } catch (e) {
+  } catch {
     return { ok: false, error: "Could not create the shop" };
   }
 

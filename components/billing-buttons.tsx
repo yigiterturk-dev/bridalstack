@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { PACKS, ALL_PACK_IDS, calculateMonthlyPrice, isPackSellable, packUpcomingModules, MODULES, formatPrice, type PackId } from "@/config/modules";
+import { PACKS, ALL_PACK_IDS, calculateMonthlyPrice, isPackSellable, formatPrice, type PackId } from "@/config/modules";
 
 export function UpgradeButton({ currentPacks }: { currentPacks: PackId[] }) {
   const [selectedPacks, setSelectedPacks] = useState<PackId[]>(currentPacks);

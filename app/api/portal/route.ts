@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
     await prisma.portalToken.create({
       data: { tenant_id: tenant.id, customer_id, token },
     });
-  } catch (e) {
+  } catch {
     return NextResponse.json({ error: "Could not create portal link" }, { status: 500 });
   }
 

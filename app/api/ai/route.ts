@@ -9,6 +9,16 @@ export async function POST(req: NextRequest) {
   const tenant = await getCurrentTenant();
   if (!tenant) return NextResponse.json({ error: "No tenant" }, { status: 400 });
 
+  // AI Stylist Pro paketinde satılır: arayüzde nav commissions modülüne
+  // bağlıdır; API de aynı kaynağı (enabled_modules) doğrular — istemciye
+  // güvenilmez, aksi halde ücretsiz hesap ücretli özelliği kullanır.
+  if (!tenant.enabled_modules.includes("commissions")) {
+    return NextResponse.json(
+      { error: "AI Stylist is part of the Pro pack. Upgrade in Settings to unlock it." },
+      { status: 403 }
+    );
+  }
+
   const { query } = await req.json();
   if (!query) return NextResponse.json({ error: "No query" }, { status: 400 });
 

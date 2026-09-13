@@ -3,25 +3,19 @@ import bcrypt from "bcryptjs";
 import { FREE_PACK_IDS, SELLABLE_PACK_IDS } from "@/config/modules";
 import { startTrial } from "@/lib/trial";
 import { validateRegistration, slugBase, pickUniqueSlug } from "@/lib/register";
-
-// Basit IP bazlı hız sınırı — public endpoint, spam'e karşı. 10 kayıt/saat.
-const WINDOW_MS = 60 * 60 * 1000;
-const MAX_PER_WINDOW = 10;
-const hits = new Map<string, number[]>();
-
-function tooManyRequests(ip: string, now: number): boolean {
-  const list = (hits.get(ip) ?? []).filter((t) => now - t < WINDOW_MS);
-  if (list.length >= MAX_PER_WINDOW) return true;
-  list.push(now);
-  hits.set(ip, list);
-  return false;
-}
+import { clientIp, rateLimit } from "@/lib/ratelimit";
 
 export async function POST(req: Request) {
   try {
-    const ip = (req.headers.get("x-forwarded-for") ?? "local").split(",")[0].trim();
-    if (tooManyRequests(ip, Date.now())) {
-      return new Response(JSON.stringify({ error: "Too many attempts, try again later" }), { status: 429 });
+    // IP bazlı hız sınırı — public endpoint, spam'e karşı. 10 kayıt/saat.
+    // Upstash yapılandırıldıysa sınır instance'lar arasında paylaşılır.
+    const ip = clientIp(req);
+    const rl = await rateLimit(`register:${ip}`, 10, 60 * 60 * 1000);
+    if (!rl.allowed) {
+      return new Response(JSON.stringify({ error: "Too many attempts, try again later" }), {
+        status: 429,
+        headers: { "Retry-After": String(rl.retryAfter) },
+      });
     }
 
     const body = await req.json();

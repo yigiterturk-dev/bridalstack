@@ -29,7 +29,7 @@ export async function sendFollowUpEmail(
   }
 
   // Toplu gönderim kazasına karşı fren: dakikada en fazla 10 takip e-postası.
-  const limit = rateLimit(`follow-up:${member.tenantId}`, 10, 60_000);
+  const limit = await rateLimit(`follow-up:${member.tenantId}`, 10, 60_000);
   if (!limit.allowed) {
     return { ok: false, error: `Too many emails at once. Try again in ${limit.retryAfter}s.` };
   }
