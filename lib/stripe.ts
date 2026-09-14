@@ -10,3 +10,13 @@ export const STRIPE_PRICE_IDS: Record<string, string> = {
   inventory: process.env.STRIPE_PRICE_INVENTORY || "",
   pro: process.env.STRIPE_PRICE_PRO || "",
 };
+
+// Ödeme hattı yalnızca hem anahtar hem dört fiyat da tanımlıysa AÇIK sayılır.
+// Kısmi yapılandırma, müşteriyi yarım checkout'a sokar — o yüzden tek bayrak.
+export const BILLING_CONFIGURED = Boolean(
+  process.env.STRIPE_SECRET_KEY &&
+    STRIPE_PRICE_IDS.sales &&
+    STRIPE_PRICE_IDS.finance &&
+    STRIPE_PRICE_IDS.inventory &&
+    STRIPE_PRICE_IDS.pro
+);

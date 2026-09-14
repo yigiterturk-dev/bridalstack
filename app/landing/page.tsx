@@ -197,7 +197,7 @@ export default function LandingPage() {
                   </ul>
                   {sellable ? (
                     <Link
-                      href="/dashboard"
+                      href="/signup"
                       className={`block text-center py-4 rounded-full text-[15px] font-bold transition-all duration-300 ${
                         packId === "sales"
                           ? "bg-white text-stone-900 hover:bg-stone-200 hover:shadow-xl"

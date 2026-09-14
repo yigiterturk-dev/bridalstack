@@ -3,7 +3,13 @@
 import { useState } from "react";
 import { PACKS, ALL_PACK_IDS, calculateMonthlyPrice, isPackSellable, formatPrice, type PackId } from "@/config/modules";
 
-export function UpgradeButton({ currentPacks }: { currentPacks: PackId[] }) {
+export function UpgradeButton({
+  currentPacks,
+  billingConfigured,
+}: {
+  currentPacks: PackId[];
+  billingConfigured: boolean;
+}) {
   const [selectedPacks, setSelectedPacks] = useState<PackId[]>(currentPacks);
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
@@ -29,11 +35,27 @@ export function UpgradeButton({ currentPacks }: { currentPacks: PackId[] }) {
       });
       const data = await res.json();
       if (data.url) window.location.href = data.url;
+      else alert(data.error || "Something went wrong");
     } catch {
       alert("Something went wrong");
     } finally {
       setLoading(false);
     }
+  }
+
+  // Ödeme hattı yapılandırılmamışsa kullanıcıyı ölü bir 503'e göndermek yerine
+  // durumu baştan söylüyoruz: deneme süreci yine çalışır, satın alma sonradan.
+  if (!billingConfigured) {
+    return (
+      <button
+        disabled
+        title="Paid checkout launches soon. Your current plan keeps working, and active trials run their full course."
+        className="inline-flex items-center gap-2 px-4 py-2.5 bg-gray-100 text-gray-400 rounded-xl text-sm font-medium cursor-not-allowed"
+      >
+        <span className="material-symbols-outlined text-lg">hourglass_top</span>
+        Paid plans coming soon
+      </button>
+    );
   }
 
   if (!open) {
@@ -116,6 +138,7 @@ export function ManageBillingButton() {
       const res = await fetch("/api/stripe/portal", { method: "POST" });
       const data = await res.json();
       if (data.url) window.location.href = data.url;
+      else alert(data.error || "Something went wrong");
     } catch {
       alert("Something went wrong");
     } finally {

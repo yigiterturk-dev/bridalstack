@@ -5,6 +5,7 @@ import { getCurrentTenant, getCurrentMember } from "@/lib/tenant";
 import { PACKS, MODULES, ALL_PACK_IDS, calculateMonthlyPrice, isPackSellable, isModuleLive, formatPrice } from "@/config/modules";
 import { hasPermission, ROLE_LABELS, normalizeRole } from "@/lib/rbac";
 import { UpgradeButton, ManageBillingButton } from "@/components/billing-buttons";
+import { BILLING_CONFIGURED } from "@/lib/stripe";
 import SignOutButton from "@/components/sign-out-button";
 import CopyField from "@/components/copy-field";
 import { updateShopProfile, startPackTrial, seedDemoData, clearDemoData } from "./actions";
@@ -267,7 +268,7 @@ export default async function SettingsPage({ searchParams }: Props) {
             <div className="text-sm font-medium text-gray-500">{formatPrice(currentPrice)}/mo</div>
           </div>
           <div className="flex gap-3">
-            <UpgradeButton currentPacks={tenant.packs} />
+            <UpgradeButton currentPacks={tenant.packs} billingConfigured={BILLING_CONFIGURED} />
             {Boolean(stripeCustomerId) && <ManageBillingButton />}
           </div>
         </div>
