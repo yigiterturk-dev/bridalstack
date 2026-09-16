@@ -14,13 +14,13 @@ const tooltipStyle = { borderRadius: 12, border: "1px solid #ececef", boxShadow:
 export function RevenueChart({ data }: { data: RevenueData }) {
   return (
     <div>
-      <h3 className="text-sm font-semibold text-gray-900 mb-4">Gelir (6 ay)</h3>
+      <h3 className="text-sm font-semibold text-gray-900 mb-4">Revenue (6 months)</h3>
       <ResponsiveContainer width="100%" height={240}>
         <BarChart data={data}>
           <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" vertical={false} />
           <XAxis dataKey="month" tick={axisTick} axisLine={false} tickLine={false} />
           <YAxis tick={axisTick} axisLine={false} tickLine={false} tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} />
-          <Tooltip cursor={{ fill: "#f9fafb" }} contentStyle={tooltipStyle} formatter={(v) => [`$${Number(v).toLocaleString()}`, "Gelir"]} />
+          <Tooltip cursor={{ fill: "#f9fafb" }} contentStyle={tooltipStyle} formatter={(v) => [`$${Number(v).toLocaleString()}`, "Revenue"]} />
           <Bar dataKey="revenue" fill={ACCENT} radius={[6, 6, 0, 0]} maxBarSize={48} />
         </BarChart>
       </ResponsiveContainer>

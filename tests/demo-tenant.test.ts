@@ -86,3 +86,30 @@ test("ziyaretçinin rolü hiçbir yazma iznine sahip değil", () => {
   assert.equal(hasPermission("viewer", "customers.view"), true);
   assert.equal(hasPermission("viewer", "orders.view"), true);
 });
+
+// ── Tanıtım turu ──
+
+import { STEPS } from "../lib/demo-tour-steps.ts";
+import { MODULES } from "../config/modules.ts";
+
+test("tur adımları var olan ekranları gösterir — rota adı değişirse burası patlar", () => {
+  const known = new Set<string>(["/dashboard"]);
+  for (const mod of Object.values(MODULES)) {
+    for (const item of mod.navItems) known.add(item.href);
+  }
+  for (const s of STEPS) {
+    assert.ok(known.has(s.href), `tur adımının rotası yok: ${s.href}`);
+  }
+});
+
+test("tur aynı ekranı iki kez göstermez", () => {
+  const hrefs = STEPS.map((s) => s.href);
+  assert.equal(new Set(hrefs).size, hrefs.length);
+});
+
+test("tur elbisenin yolculuğunu anlatır: kiralama → temizleme → tadilat", () => {
+  const order = STEPS.map((s) => s.href);
+  assert.ok(order.indexOf("/rentals") < order.indexOf("/cleaning"), "elbise dönmeden temizlemeye gitmez");
+  assert.ok(order.indexOf("/cleaning") < order.indexOf("/alterations"));
+  assert.ok(order.length >= 4, "tur en az dört durak göstermeli");
+});

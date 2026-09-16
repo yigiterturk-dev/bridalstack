@@ -19,12 +19,17 @@ export const metadata: Metadata = {
  * verisi burada, isteğin içinde hazırlanır — kurulum adımı yok, bayatlarsa
  * kendi kendini tazeler (bkz. lib/demo-tenant.ts).
  */
-export default async function DemoPage() {
+export default async function DemoPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ switch?: string }>;
+}) {
   const userId = await getCurrentUserId();
+  const wantsSwitch = (await searchParams).switch === "1";
 
   // Kendi hesabıyla gezen birini sessizce demo hesabına düşürmek, oturumunu
   // kapatmak demek olurdu. Kararı ona bırakıyoruz.
-  if (userId) {
+  if (userId && !wantsSwitch) {
     return (
       <main className="mx-auto flex min-h-screen max-w-lg flex-col justify-center gap-6 px-6 text-center">
         <h1 className="text-2xl font-semibold text-neutral-900">You&rsquo;re already signed in</h1>
@@ -39,7 +44,7 @@ export default async function DemoPage() {
           >
             Back to my shop
           </Link>
-          <Link href="/api/auth/signout?callbackUrl=/demo" className="text-sm text-neutral-500 underline">
+          <Link href="/demo?switch=1" className="text-sm text-neutral-500 underline">
             Sign out and open the demo
           </Link>
         </div>
@@ -49,5 +54,5 @@ export default async function DemoPage() {
 
   await ensureDemoTenant();
 
-  return <DemoSignIn email={DEMO_EMAIL} password={DEMO_PASSWORD} />;
+  return <DemoSignIn email={DEMO_EMAIL} password={DEMO_PASSWORD} signOutFirst={wantsSwitch} />;
 }

@@ -5,6 +5,8 @@ import { isDemoTenant } from "@/lib/demo-identity";
 import Sidebar from "@/components/sidebar";
 import UpgradeCta from "@/components/upgrade-cta";
 import DemoBanner from "@/components/demo-banner";
+import DemoTour from "@/components/demo-tour";
+import DemoReadOnly from "@/components/demo-readonly";
 import { trialDaysLeft } from "@/lib/trial";
 import { NO_INDEX } from "@/lib/seo";
 import type { Metadata } from "next";
@@ -42,6 +44,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
           {children}
         </div>
       </main>
+      {demo && <DemoTour />}
+      {demo && <DemoReadOnly />}
     </div>
   );
 }

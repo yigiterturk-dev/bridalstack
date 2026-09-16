@@ -40,7 +40,7 @@ export function RevenueBars({ data }: { data: { label: string; value: number }[]
 
 // ── Randevu doluluk (gün bazında) ──────────────────────────────────────────
 export function FillLine({ data }: { data: { label: string; booked: number; capacity: number }[] }) {
-  if (!data.some((d) => d.capacity > 0 || d.booked > 0)) return <Empty label="Randevu verisi yok." />;
+  if (!data.some((d) => d.capacity > 0 || d.booked > 0)) return <Empty label="No appointment data in this range." />;
   return (
     <ResponsiveContainer width="100%" height={240}>
       <LineChart data={data}>
@@ -49,8 +49,8 @@ export function FillLine({ data }: { data: { label: string; booked: number; capa
         <YAxis tick={axisTick} axisLine={false} tickLine={false} allowDecimals={false} width={32} />
         <Tooltip contentStyle={tooltipStyle} />
         <Legend wrapperStyle={{ fontSize: 12 }} />
-        <Line type="monotone" dataKey="booked" name="Dolu" stroke={ACCENT} strokeWidth={2.5} dot={{ r: 3 }} activeDot={{ r: 5 }} />
-        <Line type="monotone" dataKey="capacity" name="Kapasite" stroke="#c7c5cc" strokeWidth={2} strokeDasharray="4 4" dot={false} />
+        <Line type="monotone" dataKey="booked" name="Booked" stroke={ACCENT} strokeWidth={2.5} dot={{ r: 3 }} activeDot={{ r: 5 }} />
+        <Line type="monotone" dataKey="capacity" name="Capacity" stroke="#c7c5cc" strokeWidth={2} strokeDasharray="4 4" dot={false} />
       </LineChart>
     </ResponsiveContainer>
   );
@@ -58,7 +58,7 @@ export function FillLine({ data }: { data: { label: string; booked: number; capa
 
 // ── Personel performansı ───────────────────────────────────────────────────
 export function StaffBars({ data, valueLabel = "Revenue", money = true }: { data: { label: string; value: number }[]; valueLabel?: string; money?: boolean }) {
-  if (!data.some((d) => d.value > 0)) return <Empty label="Personel verisi yok." />;
+  if (!data.some((d) => d.value > 0)) return <Empty label="No staff data in this range." />;
   return (
     <ResponsiveContainer width="100%" height={Math.max(240, data.length * 40)}>
       <BarChart data={data} layout="vertical" margin={{ left: 8 }}>
@@ -74,7 +74,7 @@ export function StaffBars({ data, valueLabel = "Revenue", money = true }: { data
 
 // ── Pasta (durum/kategori dağılımı) ────────────────────────────────────────
 export function DistributionPie({ data }: { data: { name: string; value: number }[] }) {
-  if (!data.some((d) => d.value > 0)) return <Empty label="Veri yok." />;
+  if (!data.some((d) => d.value > 0)) return <Empty label="Nothing to show yet." />;
   return (
     <ResponsiveContainer width="100%" height={240}>
       <PieChart>
