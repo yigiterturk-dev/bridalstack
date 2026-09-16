@@ -144,6 +144,138 @@ export const GUIDES: Guide[] = [
       },
     ],
   },
+  {
+    slug: "bridal-rental-tracking",
+    title: "How to run a bridal rental line without losing a gown",
+    description:
+      "Double bookings, late returns and deposits counted as profit are the three ways a rental line leaks. Here is how to close each one.",
+    publishedAt: "2026-09-17",
+    readMinutes: 7,
+    summary:
+      "Renting gowns is a different business from selling them: the same dress earns money many times, and every one of those times is a chance to lose it. Four rules keep a rental rail honest.",
+    sections: [
+      {
+        heading: "A rental is a calendar problem before it is a stock problem",
+        body: [
+          "When you sell a gown, it leaves once and the question is closed. When you rent it, the same gown has to be in two places in a season and in none of them at the same time. That makes the first failure mode a diary failure, not a warehouse failure: two brides promised the same dress on overlapping dates.",
+          "The fix is to treat dates as inclusive on both ends. A dress out from the 10th to the 12th is not available from the 12th to the 14th, because on the 12th two brides are both expecting it. Half a day of laundry and inspection is not slack you can lend out. Most double bookings we have seen came from a booking sheet where the return date and the next collection date were allowed to touch.",
+          "Block the dates at the moment you take the reservation, not when the bride pays the balance. The reservation is the promise; the payment only settles it.",
+        ],
+      },
+      {
+        heading: "Reserved is not gone",
+        body: [
+          "The second leak is quieter. A shop that blocks the calendar correctly often also removes the gown from stock the moment it is reserved, weeks before anyone collects it. Now the stock figure answers a question nobody asked. The dress is still hanging on the rail, still needs counting, still needs insuring, and is still available for a fitting.",
+          "Keep the two ideas apart. The calendar says who has claimed the dress on which dates. Stock says whether the dress is physically in your possession. A reservation touches the first and not the second. The gown only comes off the shelf when it actually walks out of the door with the bride, and it goes back on exactly once when it comes home.",
+          "A cancelled reservation should also release the dates immediately, and a returned rental should stop blocking the calendar the day it is back. If cancelled and returned bookings keep holding dates, your availability shrinks a little every month until the rail looks fully booked while half of it hangs untouched.",
+        ],
+      },
+      {
+        heading: "The deposit is not income",
+        body: [
+          "Rental money arrives in two shapes that behave completely differently. The rental fee is yours: it is earned when the gown goes out. The security deposit is not yours at all — you are holding someone else's money against damage, and in most cases you will hand it straight back.",
+          "Mixing them makes a good month look great and a bad month look survivable. Worse, it makes refunds feel like losses, which is exactly when a shop starts inventing reasons to keep part of a deposit and loses a customer who would have come back with three friends.",
+          "Record the fee as revenue on the day the dress leaves. Record the deposit as money held, and clear it on return. If you keep part of it for real damage, that part becomes revenue on the day you decide, with a note about what happened — not a silent adjustment months later that nobody can explain to the bride who calls about it.",
+        ],
+      },
+      {
+        heading: "Late returns cost more than the late fee",
+        body: [
+          "A gown that comes back three days late is not a three-day problem. It is a missed cleaning window, a rushed inspection, and a next bride who collects a dress nobody had time to check. The financial penalty you charge is almost never the real cost.",
+          "So make lateness visible before it happens rather than after. A list of what is due back this week, sorted by how soon, read once every morning, prevents more losses than any fee schedule. One phone call the day before a return is due is worth more than an argument the week after.",
+          "And when a rented gown does come back, do not put it straight on the rail. Send it to cleaning and let it return to the rail from there. It is the same rule that governs sold gowns after a fitting, and for the same reason: the fastest way to destroy a rental business is to hand one bride a dress that still carries the last one's evening.",
+        ],
+      },
+    ],
+  },
+  {
+    slug: "tracking-alterations-in-a-bridal-shop",
+    title: "How to track alterations without promising the same week twice",
+    description:
+      "Alterations are where bridal shops overpromise. A short status list, one promised date per job and one charge rule fix most of it.",
+    publishedAt: "2026-09-17",
+    readMinutes: 6,
+    summary:
+      "Fittings are booked months ahead but alterations are agreed in a corridor conversation. Writing down four things at that moment is what keeps the seamstress's week from being sold twice.",
+    sections: [
+      {
+        heading: "The job is agreed in the worst possible place",
+        body: [
+          "A sale gets an order form. A fitting gets a calendar slot. Alterations get agreed standing next to a mirror, with a bride in a gown and pins in someone's hand, and the whole record is a sentence: we'll take the hem up and add a bustle, ready in two weeks.",
+          "Everything that goes wrong later is already contained in that sentence. Nobody wrote down which gown, who agreed the price, or what two weeks means as a date. The seamstress finds out on the day she opens her list, and by then three other brides have been told the same fortnight.",
+          "You do not need a form with twenty fields. You need four things captured before the bride has her coat on: which dress, what work, what it costs, and the date you promised.",
+        ],
+      },
+      {
+        heading: "Keep the status list short enough to be true",
+        body: [
+          "Four working states cover nearly every alteration: requested, on the table, ready for pickup, delivered. Add cancelled for the jobs that evaporate and stop there.",
+          "The temptation is to add more — awaiting fabric, first fitting done, second fitting booked, pressed. Every extra state is a state somebody will forget to move a job out of, and a job parked in a stage nobody updates looks handled while it rots. Short lists get filled in; long lists get abandoned, and an abandoned list is more dangerous than no list because people trust it.",
+          "Make the transitions one-directional in practice. A job that is ready can be delivered or cancelled; it does not quietly slide back to requested because someone changed their mind about the hem. If the bride asks for more work, that is a new job on the same dress, with its own price and its own promised date. That is not bureaucracy — it is the only way the second piece of work gets paid for.",
+        ],
+      },
+      {
+        heading: "One promised date, and read the overdue list first",
+        body: [
+          "Every job carries exactly one promised date: the date you told the bride. Not the date the seamstress hopes for, not the wedding date. Those are useful but they are not the promise, and the promise is what you will be judged on.",
+          "Then sort the open work by that date and read the overdue ones before anything else each morning. This is the entire discipline. A shop that looks at its late jobs daily is calling brides before they call in; a shop that looks weekly is apologising.",
+          "Delivered and cancelled jobs should drop off that list entirely. A working list that shows finished work is a list people stop reading, and the day they stop reading it is the day a dress misses a wedding.",
+        ],
+      },
+      {
+        heading: "Charge on delivery, not on agreement",
+        body: [
+          "The cleanest money rule for alterations is that the fee is earned when the gown is handed back, not when the work is agreed and not when it comes off the table.",
+          "It matches what the bride believes — she is paying for a finished dress — and it keeps your books honest about work in progress. Charging on agreement books income for a hem that has not been sewn; charging when the work is finished books income for a dress still hanging in your back room. Delivery is the one moment both sides agree the job is done.",
+          "Whatever rule you pick, apply it once per job. The most common bookkeeping mess in a bridal shop is not a missing charge, it is the same alteration charged twice because two people both tried to be helpful on the same afternoon. Tie the charge to the job moving into delivered, and the second attempt has nothing left to do.",
+        ],
+      },
+    ],
+  },
+  {
+    slug: "bridal-consultant-commission",
+    title: "How to pay bridal consultants commission without arguments",
+    description:
+      "Commission fights come from three unwritten answers: discounts, accessories, and cancelled orders. Decide those once and pay from one figure.",
+    publishedAt: "2026-09-17",
+    readMinutes: 7,
+    summary:
+      "Most bridal commission schemes are one line long and generate arguments for years. The disputes are always about the same three edges, and each has an answer you can write down in a sentence.",
+    sections: [
+      {
+        heading: "Gross or net decides everything downstream",
+        body: [
+          "Ten percent of the sale is not a commission scheme. It is the start of one, because it does not say what the sale is.",
+          "If a gown lists at 2,000 and the consultant agrees 1,600 to close it, commission on the list price pays her for money the shop never received — and quietly makes discounting free for the person doing it. Commission on what the customer actually pays makes the consultant feel the discount she gave, which is usually what you want, because she is the only person in the room who can protect the price.",
+          "Pay on the net figure after discount, and say so in writing on the day someone is hired. The shop that leaves this unstated is not avoiding an argument, it is scheduling one for the first big discount of the season.",
+        ],
+      },
+      {
+        heading: "Not every line deserves the same rate",
+        body: [
+          "The second argument is about what counts. A veil, a pair of shoes, an alteration fee and a rental all arrive on the same order, and they are nothing like each other in effort or margin.",
+          "It is entirely reasonable to pay one rate on gowns, a different one on accessories, and nothing at all on alterations you subcontract to a seamstress you also pay. What is not reasonable is deciding that after the order is written. Set a rate per kind of line, publish it, and let anyone check their own order against it.",
+          "The same goes for flat bonuses and thresholds. If there is a bonus for orders over a certain size, say whether that size is measured before or after discount — it is the same gross-versus-net question wearing a different hat, and it produces the same fight.",
+        ],
+      },
+      {
+        heading: "Say when it is earned, and what happens when it unwinds",
+        body: [
+          "Commission that is calculated when an order is written and paid before the money arrives turns your consultants into your creditors. Commission that waits until the final balance clears can mean a six-month gap between the sale and the reward, which kills the incentive it was designed to create.",
+          "Most bridal shops land somewhere sensible: commission is earned when the order is written, and it becomes payable when the order is complete. Pick your point and hold it.",
+          "Then answer the question nobody wants to answer: what happens when a bride cancels, or when half an order is refunded. If commission has already been paid, it comes off the next payout — and that has to be understood before it happens, not explained afterwards. A cancelled order that silently keeps its commission is a hole that grows every season, and the first person to notice it will be the consultant who did not cancel anything.",
+        ],
+      },
+      {
+        heading: "One figure, visible to both sides",
+        body: [
+          "The practical test of a commission scheme is not whether it is generous. It is whether the consultant and the owner, working separately, arrive at the same number.",
+          "That only happens when the rules and the orders live in the same place. A rate sheet on a noticeboard and sales in a spreadsheet will diverge within a month, because someone will apply a rule from memory. When the rule is attached to the order, the payout is a readout rather than a negotiation, and the monthly commission conversation stops being a conversation at all.",
+          "Keep the history too. When you change a rate, change it going forward and leave last season's orders calculated the way they were sold. Retroactive rates are how a shop loses the consultant it spent two years training.",
+        ],
+      },
+    ],
+  },
 ];
 
 export function guideBySlug(slug: string): Guide | null {
