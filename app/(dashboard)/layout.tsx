@@ -1,8 +1,10 @@
 import { redirect } from "next/navigation";
 import { getNavForModules } from "@/config/modules";
 import { getCurrentTenant } from "@/lib/tenant";
+import { isDemoTenant } from "@/lib/demo-identity";
 import Sidebar from "@/components/sidebar";
 import UpgradeCta from "@/components/upgrade-cta";
+import DemoBanner from "@/components/demo-banner";
 import { trialDaysLeft } from "@/lib/trial";
 import { NO_INDEX } from "@/lib/seo";
 import type { Metadata } from "next";
@@ -22,13 +24,17 @@ export default async function DashboardLayout({ children }: { children: React.Re
   // göstermezse kullanıcı "gün var ama modül kapalı" ile karşılaşır.
   const daysLeft = trialDaysLeft(tenant.trial_ends_at, new Date());
   const showCta = !isPaid && daysLeft !== null;
+  // Tanıtım kiracısında yükseltme CTA'sının anlamı yok: ziyaretçinin hesabı
+  // değil. Onun yerine "kendi butiğini kur" şeridi çıkar.
+  const demo = isDemoTenant(tenant);
 
   return (
     <div className="min-h-screen bg-[#FDFCFB] selection:bg-rose-200 selection:text-rose-900 font-sans">
       <Sidebar groups={navGroups} tenantName={tenant.name} />
       <main className="lg:ml-[280px] min-h-screen pt-16 lg:pt-0 transition-all duration-300">
         <div className="max-w-7xl mx-auto px-5 lg:px-10 py-8 lg:py-10 bs-animate-in">
-          {showCta && (
+          {demo && <DemoBanner />}
+          {!demo && showCta && (
             <div className="mb-8">
               <UpgradeCta daysLeft={daysLeft} expired={daysLeft === 0} />
             </div>

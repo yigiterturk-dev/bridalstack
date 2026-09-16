@@ -3,13 +3,16 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { getCurrentTenant, getCurrentUserId } from "@/lib/tenant";
+import { getCurrentTenant, getCurrentUserId, getCurrentMember } from "@/lib/tenant";
+import { hasPermission } from "@/lib/rbac";
 
 export async function createWorkflow(formData: FormData) {
   const userId = await getCurrentUserId();
   if (!userId) redirect("/login");
   const tenant = await getCurrentTenant();
   if (!tenant) redirect("/onboarding");
+  const member = await getCurrentMember();
+  if (!hasPermission(member?.role, "settings.manage")) redirect("/workflows?error=forbidden");
 
   const name = String(formData.get("name") || "").trim();
   const trigger_type = String(formData.get("trigger_type") || "").trim();
@@ -28,6 +31,8 @@ export async function createWorkflow(formData: FormData) {
 export async function toggleWorkflow(formData: FormData) {
   const tenant = await getCurrentTenant();
   if (!tenant) redirect("/onboarding");
+  const member = await getCurrentMember();
+  if (!hasPermission(member?.role, "settings.manage")) redirect("/workflows?error=forbidden");
   const id = String(formData.get("id") || "").trim();
   const is_active = String(formData.get("is_active")) === "true";
   if (!id) return;
@@ -38,6 +43,8 @@ export async function toggleWorkflow(formData: FormData) {
 export async function deleteWorkflow(formData: FormData) {
   const tenant = await getCurrentTenant();
   if (!tenant) redirect("/onboarding");
+  const member = await getCurrentMember();
+  if (!hasPermission(member?.role, "settings.manage")) redirect("/workflows?error=forbidden");
   const id = String(formData.get("id") || "").trim();
   if (!id) return;
   await prisma.workflow.deleteMany({ where: { id, tenant_id: tenant.id } });

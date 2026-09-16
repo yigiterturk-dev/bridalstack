@@ -3,13 +3,16 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { getCurrentTenant, getCurrentUserId } from "@/lib/tenant";
+import { getCurrentTenant, getCurrentUserId, getCurrentMember } from "@/lib/tenant";
+import { hasPermission } from "@/lib/rbac";
 
 export async function createTrunkShow(formData: FormData) {
   const userId = await getCurrentUserId();
   if (!userId) redirect("/login");
   const tenant = await getCurrentTenant();
   if (!tenant) redirect("/onboarding");
+  const member = await getCurrentMember();
+  if (!hasPermission(member?.role, "appointments.manage")) redirect("/trunk-shows?error=forbidden");
 
   const name = String(formData.get("name") || "").trim();
   const vendor = String(formData.get("vendor") || "").trim() || null;

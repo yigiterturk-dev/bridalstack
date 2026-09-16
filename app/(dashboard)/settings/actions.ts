@@ -7,7 +7,7 @@ import { getCurrentTenant, getCurrentMember } from "@/lib/tenant";
 import { hasPermission } from "@/lib/rbac";
 import { canStartTrial, startTrial, TRIAL_DAYS } from "@/lib/trial";
 import type { PackId } from "@/config/modules";
-import { buildDemoData } from "@/lib/demo-data";
+import { clearDemoRecords, insertDemoRecords } from "@/lib/demo-seed";
 
 const HEX = /^#[0-9a-fA-F]{6}$/;
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -106,79 +106,28 @@ export async function startPackTrial(formData: FormData) {
   redirect("/settings?success=trial_started");
 }
 
-/** Tanıtım kayıtlarının işareti — silme yolu yalnız buna bakar. */
-const DEMO_FILTER = { path: ["demo"], equals: true } as const;
-
 /**
  * Örnek veriyi yükler.
  *
- * Gerçek tablolara yazar (ayrı bir "demo modu" yok: kullanıcı ürünü olduğu
- * gibi görsün) ama her kayıt `metadata.demo` ile işaretlenir. Aynı işaret
- * silme yolunun tek ölçütüdür; işaretsiz hiçbir kayıt silinmez.
+ * Yazma ve silme yolu `lib/demo-seed.ts`'te — aynı yol herkese açık /demo
+ * kiracısını kuran betik tarafından da kullanılıyor, iki kopya olmasın.
  */
 export async function seedDemoData() {
   const tenant = await requireSettingsAccess();
-  const data = buildDemoData(new Date());
 
   await prisma.$transaction(async (tx) => {
     // İkinci kez basılırsa kopya yığılmasın: önce eskisi temizlenir.
     await clearDemoRecords(tx, tenant.id);
-
-    const customerIds = new Map<string, string>();
-    for (const c of data.customers) {
-      const row = await tx.customer.create({
-        data: { tenant_id: tenant.id, ...c, metadata: { ...c.metadata } },
-        select: { id: true },
-      });
-      customerIds.set(c.name, row.id);
-    }
-
-    const productIds = new Map<string, string>();
-    for (const p of data.products) {
-      const { sku, ...rest } = p;
-      const row = await tx.product.create({
-        data: { tenant_id: tenant.id, sku, ...rest, metadata: { ...p.metadata } },
-        select: { id: true },
-      });
-      productIds.set(sku, row.id);
-    }
-
-    for (const o of data.orders) {
-      const customer_id = customerIds.get(o.customerName);
-      if (!customer_id) continue;
-      const lines = data.orderLines.filter((l) => l.orderRef === o.ref_no);
-      const { customerName: _customerName, ...orderFields } = o;
-      await tx.order.create({
-        data: {
-          tenant_id: tenant.id,
-          customer_id,
-          ...orderFields,
-          metadata: { ...o.metadata },
-          lines: {
-            create: lines.map((l, i) => ({
-              product_id: productIds.get(l.productSku) ?? null,
-              description: l.name,
-              kind: l.kind,
-              quantity: l.quantity,
-              unit_price: l.unit_price,
-              position: i,
-            })),
-          },
-        },
-      });
-    }
-
-    for (const a of data.appointments) {
-      const customer_id = customerIds.get(a.customerName);
-      if (!customer_id) continue;
-      const { customerName: _customerName, ...fields } = a;
-      await tx.appointment.create({ data: { tenant_id: tenant.id, customer_id, ...fields } });
-    }
-
+    await insertDemoRecords(tx, tenant.id, new Date());
     await tx.tenant.update({
       where: { id: tenant.id },
       data: { settings: { ...tenant.settings, demo_data: true } },
     });
+  }, {
+    // Kayıtlar uzak veritabanına sıralı yazılıyor; Prisma'nın 5 sn'lik
+    // varsayılanı yetmiyor (P2028 "Transaction already closed").
+    maxWait: 10_000,
+    timeout: 60_000,
   });
 
   revalidatePath("/dashboard");
@@ -196,45 +145,14 @@ export async function clearDemoData() {
       where: { id: tenant.id },
       data: { settings: { ...tenant.settings, demo_data: false } },
     });
+  }, {
+    // Kayıtlar uzak veritabanına sıralı yazılıyor; Prisma'nın 5 sn'lik
+    // varsayılanı yetmiyor (P2028 "Transaction already closed").
+    maxWait: 10_000,
+    timeout: 60_000,
   });
 
   revalidatePath("/dashboard");
   revalidatePath("/settings");
   redirect("/settings?success=demo_cleared");
-}
-
-type Tx = Parameters<Parameters<typeof prisma.$transaction>[0]>[0];
-
-/**
- * İşaretli kayıtları siler. Her sorgu hem `tenant_id` hem de demo işaretiyle
- * daraltılır — iki kapı birden, çünkü buradaki hata başkasının verisini siler.
- */
-async function clearDemoRecords(tx: Tx, tenantId: string) {
-  const demoCustomers = await tx.customer.findMany({
-    where: { tenant_id: tenantId, metadata: { ...DEMO_FILTER } },
-    select: { id: true },
-  });
-  const customerIds = demoCustomers.map((c) => c.id);
-
-  // Siparişler ve randevular müşteriye bağlı; müşteri silinince zaten
-  // düşerler ama işaretli olanları önce açıkça siliyoruz ki işaretsiz bir
-  // sipariş demo müşteriye bağlıysa kaybolmasın diye önce kontrol edelim.
-  const strayOrders = customerIds.length
-    ? await tx.order.count({
-        where: { tenant_id: tenantId, customer_id: { in: customerIds }, NOT: { metadata: { ...DEMO_FILTER } } },
-      })
-    : 0;
-
-  await tx.order.deleteMany({ where: { tenant_id: tenantId, metadata: { ...DEMO_FILTER } } });
-
-  // Randevunun kendi işareti yok (tabloda metadata alanı yok), o yüzden yalnız
-  // silinecek müşterilerle birlikte giderler. Demo müşterisine gerçek bir
-  // sipariş bağlanmışsa müşteri de randevuları da bırakılır — silmek
-  // kullanıcının kendi kaydını götürürdü.
-  if (customerIds.length > 0 && strayOrders === 0) {
-    await tx.appointment.deleteMany({ where: { tenant_id: tenantId, customer_id: { in: customerIds } } });
-    await tx.customer.deleteMany({ where: { tenant_id: tenantId, metadata: { ...DEMO_FILTER } } });
-  }
-
-  await tx.product.deleteMany({ where: { tenant_id: tenantId, metadata: { ...DEMO_FILTER } } });
 }

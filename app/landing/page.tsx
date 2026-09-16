@@ -62,11 +62,13 @@ export default function LandingPage() {
             <Link href="/signup" className="w-full sm:w-auto px-10 py-4 bg-stone-900 text-white rounded-full text-lg font-medium hover:bg-stone-800 shadow-[0_8px_30px_rgba(0,0,0,0.12)] hover:shadow-[0_8px_30px_rgba(28,25,23,0.3)] hover:-translate-y-0.5 transition-all duration-300">
               Start Free →
             </Link>
-            <a href="#features" className="w-full sm:w-auto px-10 py-4 bg-white/50 backdrop-blur-sm border border-stone-200 rounded-full text-lg font-medium text-stone-700 hover:bg-white hover:border-stone-300 hover:shadow-sm transition-all duration-300">
-              Explore Features
-            </a>
+            {/* Kayıt duvarına çarpmadan ürünü gören kişi geri dönüyor —
+                ikincil CTA bu yüzden özellik listesi değil, canlı demo. */}
+            <Link href="/demo" className="w-full sm:w-auto px-10 py-4 bg-white/50 backdrop-blur-sm border border-stone-200 rounded-full text-lg font-medium text-stone-700 hover:bg-white hover:border-stone-300 hover:shadow-sm transition-all duration-300">
+              See a Live Shop
+            </Link>
           </div>
-          <p className="text-sm text-stone-400 mt-8 font-medium tracking-wide">{TRIAL_DAYS}-DAY TRIAL OF EVERY MODULE · FREE PLAN AFTER THAT · NO CREDIT CARD</p>
+          <p className="text-sm text-stone-400 mt-8 font-medium tracking-wide">{TRIAL_DAYS}-DAY TRIAL OF EVERY MODULE · FREE PLAN AFTER THAT · NO CREDIT CARD · DEMO NEEDS NO SIGN-UP</p>
         </div>
       </section>
 

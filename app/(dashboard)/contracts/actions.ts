@@ -3,7 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { getCurrentTenant, getCurrentUserId } from "@/lib/tenant";
+import { getCurrentTenant, getCurrentUserId, getCurrentMember } from "@/lib/tenant";
+import { hasPermission } from "@/lib/rbac";
 import { createPublicToken } from "@/lib/tokens";
 
 export async function createContract(formData: FormData) {
@@ -11,6 +12,8 @@ export async function createContract(formData: FormData) {
   if (!userId) redirect("/login");
   const tenant = await getCurrentTenant();
   if (!tenant) redirect("/onboarding");
+  const member = await getCurrentMember();
+  if (!hasPermission(member?.role, "orders.manage")) redirect("/contracts?error=forbidden");
 
   const customer_id = String(formData.get("customer_id") || "").trim();
   const order_id = String(formData.get("order_id") || "").trim() || null;

@@ -11,6 +11,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: absoluteUrl(base, "/landing"), lastModified: now, changeFrequency: "weekly", priority: 1 },
     { url: absoluteUrl(base, "/guides"), lastModified: now, changeFrequency: "weekly", priority: 0.8 },
     { url: absoluteUrl(base, "/signup"), lastModified: now, changeFrequency: "monthly", priority: 0.7 },
+    // Kayıtsız girilen canlı tanıtım — outreach mesajlarının gittiği adres.
+    { url: absoluteUrl(base, "/demo"), lastModified: now, changeFrequency: "weekly", priority: 0.9 },
     { url: absoluteUrl(base, "/privacy"), lastModified: now, changeFrequency: "yearly", priority: 0.3 },
     { url: absoluteUrl(base, "/terms"), lastModified: now, changeFrequency: "yearly", priority: 0.3 },
     ...GUIDES.map((g) => ({

@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { getCurrentMember } from "@/lib/tenant";
+import { hasPermission } from "@/lib/rbac";
 
 const STATUSES = ["pending", "confirmed", "completed", "cancelled", "no_show"] as const;
 
@@ -25,6 +26,7 @@ export async function listBookings() {
 export async function updateBookingStatus(id: string, status: string): Promise<{ ok: boolean; error?: string }> {
   const member = await getCurrentMember();
   if (!member) return { ok: false, error: "Unauthorized" };
+  if (!hasPermission(member.role, "appointments.manage")) return { ok: false, error: "Forbidden" };
   if (!(STATUSES as readonly string[]).includes(status)) return { ok: false, error: "Invalid status" };
   // tenant_id filtresi: başka butiğin rezervasyonu değiştirilemez.
   const res = await prisma.booking.updateMany({ where: { id, tenant_id: member.tenantId }, data: { status } });

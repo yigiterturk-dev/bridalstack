@@ -153,3 +153,137 @@ export function buildDemoData(now: Date) {
 
   return { customers, products, orders, orderLines, appointments };
 }
+
+// ─────────────────────────────────────────────────────────────
+// Kiralama · tadilat · temizleme
+//
+// Satış tarafı tek başına ürünü anlatmıyor: butik yazılımını diğerlerinden
+// ayıran şey elbisenin raf → gelin → temizleme → raf yolculuğu. Tanıtım
+// verisinin bu yolun HER durağından bir örnek göstermesi gerekiyor.
+// ─────────────────────────────────────────────────────────────
+
+export type DemoRental = {
+  key: string;
+  customerName: string;
+  productSku: string;
+  status: string;
+  start_date: string;
+  due_date: string;
+  picked_up_on: string | null;
+  returned_on: string | null;
+  rental_fee: number;
+  deposit: number;
+  late_fee_per_day: number;
+  notes: string;
+};
+
+export type DemoAlteration = {
+  customerName: string;
+  productSku: string;
+  orderRef: string | null;
+  kind: string;
+  status: string;
+  fitting_date: string | null;
+  promised_date: string | null;
+  seamstress: string;
+  price: number;
+  notes: string;
+};
+
+export type DemoCleaningJob = {
+  productSku: string;
+  customerName: string | null;
+  /** Hangi kiralamadan doğduğu; `null` ise raftan çekilmiş demektir. */
+  fromRentalKey: string | null;
+  source: string;
+  status: string;
+  vendor: string;
+  sent_on: string | null;
+  expected_on: string | null;
+  cost: number;
+  notes: string;
+};
+
+/**
+ * Yolun dört durağı, dördü de aynı anda ekranda görünsün diye seçildi:
+ * rafta duran (kiralanmamış), gelinin elinde (out), temizlemede (kiradan
+ * döndü), tadilatta. Kiradan dönen elbise rafa YAZILMAZ — temizleme işi
+ * kapanınca döner; veri de bu değişmezi ihlal etmeyecek şekilde kuruldu.
+ */
+export function buildDemoOperations(now: Date) {
+  const rentals: DemoRental[] = [
+    {
+      key: "RNT-1",
+      customerName: "Elena Rossi",
+      productSku: "GWN-102",
+      status: "out",
+      start_date: dateOnly(new Date(now.getTime() - 2 * DAY)),
+      due_date: dateOnly(new Date(now.getTime() + 5 * DAY)),
+      picked_up_on: dateOnly(new Date(now.getTime() - 2 * DAY)),
+      returned_on: null,
+      rental_fee: 450,
+      deposit: 200,
+      late_fee_per_day: 25,
+      notes: "Destination wedding — flying out Friday.",
+    },
+    {
+      key: "RNT-2",
+      customerName: "Hannah Cole",
+      productSku: "GWN-101",
+      status: "returned",
+      start_date: dateOnly(new Date(now.getTime() - 12 * DAY)),
+      due_date: dateOnly(new Date(now.getTime() - 4 * DAY)),
+      picked_up_on: dateOnly(new Date(now.getTime() - 12 * DAY)),
+      returned_on: dateOnly(new Date(now.getTime() - 4 * DAY)),
+      rental_fee: 380,
+      deposit: 200,
+      late_fee_per_day: 25,
+      notes: "Returned on time, deposit refunded.",
+    },
+  ];
+
+  const alterations: DemoAlteration[] = [
+    {
+      customerName: "Ava Bennett",
+      productSku: "GWN-101",
+      orderRef: "SO-1001",
+      kind: "hem",
+      status: "in_progress",
+      fitting_date: dateOnly(new Date(now.getTime() - 3 * DAY)),
+      promised_date: dateOnly(new Date(now.getTime() + 6 * DAY)),
+      seamstress: "Rosa",
+      price: 180,
+      notes: "Hem and bustle, shoes already fitted.",
+    },
+    {
+      customerName: "Sofia Ramirez",
+      productSku: "GWN-102",
+      orderRef: "SO-1002",
+      kind: "bust",
+      status: "ready",
+      fitting_date: dateOnly(new Date(now.getTime() - 8 * DAY)),
+      promised_date: dateOnly(new Date(now.getTime() + 2 * DAY)),
+      seamstress: "Rosa",
+      price: 240,
+      notes: "Taken in two sizes at the bust — ready for pickup.",
+    },
+  ];
+
+  // Kiradan dönen elbise doğrudan rafa girmez: önce temizleme.
+  const cleaning: DemoCleaningJob[] = [
+    {
+      productSku: "GWN-101",
+      customerName: "Hannah Cole",
+      fromRentalKey: "RNT-2",
+      source: "rental",
+      status: "sent",
+      vendor: "Madison Bridal Cleaners",
+      sent_on: dateOnly(new Date(now.getTime() - 3 * DAY)),
+      expected_on: dateOnly(new Date(now.getTime() + 2 * DAY)),
+      cost: 85,
+      notes: "Standard press and steam after rental.",
+    },
+  ];
+
+  return { rentals, alterations, cleaning };
+}
