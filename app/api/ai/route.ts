@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentTenant, getCurrentUserId } from "@/lib/tenant";
+import { rateLimit } from "@/lib/ratelimit";
 
 export async function POST(req: NextRequest) {
   const userId = await getCurrentUserId();
@@ -8,6 +9,10 @@ export async function POST(req: NextRequest) {
 
   const tenant = await getCurrentTenant();
   if (!tenant) return NextResponse.json({ error: "No tenant" }, { status: 400 });
+
+  // LLM çağrısı maliyetlidir: kiracı başına dakikalık limit.
+  const limit = await rateLimit(`ai:${tenant.id}`, 10, 60_000);
+  if (!limit.allowed) return NextResponse.json({ error: "Too many AI requests. Try again shortly." }, { status: 429 });
 
   // AI Stylist Pro paketinde satılır: arayüzde nav commissions modülüne
   // bağlıdır; API de aynı kaynağı (enabled_modules) doğrular — istemciye
@@ -20,7 +25,9 @@ export async function POST(req: NextRequest) {
   }
 
   const { query } = await req.json();
-  if (!query) return NextResponse.json({ error: "No query" }, { status: 400 });
+  if (typeof query !== "string" || !query.trim()) return NextResponse.json({ error: "No query" }, { status: 400 });
+  // Uzun sorgu = pahalı istem: makul bir tavan.
+  const temizQuery = query.trim().slice(0, 2000);
 
   const scope = { tenant_id: tenant.id };
   const [products, customers, tryOnRows, orders] = await Promise.all([
@@ -77,7 +84,7 @@ ${(customers ?? []).map(c => `- ${c.name} | ${c.status}`).join("\n")}
           // Dükkan verisi üzerinde kısa soru-cevap; düşük çaba yeterli ve daha ucuz.
           output_config: { effort: "low" },
           system: context,
-          messages: [{ role: "user", content: query }],
+          messages: [{ role: "user", content: temizQuery }],
         }),
       });
       const data = await res.json();
@@ -97,7 +104,7 @@ ${(customers ?? []).map(c => `- ${c.name} | ${c.status}`).join("\n")}
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${process.env.OPENAI_API_KEY}` },
         body: JSON.stringify({
           model: "gpt-4o-mini",
-          messages: [{ role: "system", content: context }, { role: "user", content: query }],
+          messages: [{ role: "system", content: context }, { role: "user", content: temizQuery }],
           max_tokens: 1024,
         }),
       });
