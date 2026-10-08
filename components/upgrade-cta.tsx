@@ -31,11 +31,11 @@ export default function UpgradeCta({ daysLeft, expired }: Props) {
             {expired
               ? "Your trial has ended"
               : daysLeft !== null
-                ? `Deneme sürenizde ${daysLeft} gün kaldı`
+              ? `${daysLeft} ${daysLeft === 1 ? "day" : "days"} left in your trial`
                 : "Unlock more modules"}
           </p>
           <p className="text-xs text-gray-600">
-            Satış, finans ve envanter modüllerini etkinleştirmek için planınızı yükseltin.
+            Upgrade your plan to unlock sales, finance, and inventory modules.
           </p>
         </div>
       </div>
@@ -48,13 +48,13 @@ export default function UpgradeCta({ daysLeft, expired }: Props) {
           className="inline-flex items-center gap-1.5 px-4 py-2 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors"
         >
           <span className="material-symbols-outlined text-base">upgrade</span>
-          Planı Yükselt
+          Upgrade plan
         </Link>
         {!expired && (
           <button
             onClick={() => setDismissed(true)}
             className="text-gray-400 hover:text-gray-600"
-            aria-label="Kapat"
+            aria-label="Dismiss trial banner"
           >
             <span className="material-symbols-outlined text-lg">close</span>
           </button>
