@@ -18,6 +18,7 @@ function Wordmark({ className = "" }: { className?: string }) {
 export default function Sidebar({ groups, tenantName }: { groups: NavGroup[]; tenantName: string }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [collapsedGroups, setCollapsedGroups] = useState<Record<number, boolean>>({});
 
   const nav = (
     <>
@@ -34,14 +35,23 @@ export default function Sidebar({ groups, tenantName }: { groups: NavGroup[]; te
       </div>
 
       <nav className="flex-1 overflow-y-auto py-6 px-4">
-        {groups.map((group, gi) => (
+        {groups.map((group, gi) => {
+          const groupHasActive = group.items.some((item) => pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href)));
+          const groupCollapsed = Boolean(group.section && collapsedGroups[gi] && !groupHasActive);
+          return (
           <div key={gi} className={gi > 0 ? "mt-8" : ""}>
             {group.section && (
-              <p className="px-4 mb-3 text-[11px] font-bold uppercase tracking-[0.15em] text-stone-400">
+              <button
+                type="button"
+                onClick={() => setCollapsedGroups((current) => ({ ...current, [gi]: !current[gi] }))}
+                aria-expanded={!groupCollapsed}
+                className="w-full flex items-center justify-between px-4 mb-3 text-[11px] font-bold uppercase tracking-[0.15em] text-stone-400 hover:text-stone-700 transition-colors"
+              >
                 {group.section}
-              </p>
+                <span className="material-symbols-outlined text-[16px]">{groupCollapsed ? "chevron_right" : "expand_more"}</span>
+              </button>
             )}
-            <div className="flex flex-col gap-1">
+            <div className={`flex flex-col gap-1 ${groupCollapsed ? "hidden" : ""}`}>
               {group.items.map((item) => {
                 const active = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
                 return (
@@ -66,7 +76,8 @@ export default function Sidebar({ groups, tenantName }: { groups: NavGroup[]; te
               })}
             </div>
           </div>
-        ))}
+          );
+        })}
       </nav>
 
       <div className="px-4 py-4 border-t border-stone-100 bg-stone-50/50">
