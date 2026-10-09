@@ -105,6 +105,7 @@ export async function POST(req: Request) {
 
     // 6. ONAY BEKLEYEN (pending) rezervasyon yaz — salon kabul edince confirmed olur.
     let booking: { id: string; status: string; booking_date: string; start_time: string };
+    let effectiveMemberId = member_id;
     try {
       booking = await prisma.$transaction(async (tx) => {
         if (member_id) {
@@ -124,13 +125,58 @@ export async function POST(req: Request) {
           });
 
           if (clash) throw new BookingConflictError();
+        } else {
+          // "No preference" still needs a concrete owner. Otherwise an
+          // unassigned booking would bypass overlap protection entirely.
+          const candidates = await tx.tenantMember.findMany({
+            where: { tenant_id, is_bookable: true },
+            select: { id: true },
+            orderBy: { created_at: "asc" },
+          });
+          const serviceLinks = candidates.length
+            ? await tx.staffService.findMany({
+                where: { member_id: { in: candidates.map((candidate) => candidate.id) } },
+                select: { member_id: true, service_id: true },
+              })
+            : [];
+          const linkedServices = new Map<string, string[]>();
+          for (const link of serviceLinks) {
+            const services = linkedServices.get(link.member_id) ?? [];
+            services.push(link.service_id);
+            linkedServices.set(link.member_id, services);
+          }
+
+          for (const candidate of candidates) {
+            const services = linkedServices.get(candidate.id) ?? [];
+            if (services.length > 0 && !services.includes(service_id)) continue;
+
+            const lockKey = `${tenant_id}:${candidate.id}:${booking_date}`;
+            await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtextextended(${lockKey}, 0))`;
+            const clash = await tx.booking.findFirst({
+              where: {
+                tenant_id,
+                member_id: candidate.id,
+                booking_date,
+                start_time: { lt: end_time },
+                end_time: { gt: start_time },
+                status: { notIn: ["cancelled", "no_show"] },
+              },
+              select: { id: true },
+            });
+            if (!clash) {
+              effectiveMemberId = candidate.id;
+              break;
+            }
+          }
+
+          if (!effectiveMemberId) throw new BookingConflictError();
         }
 
         return tx.booking.create({
           data: {
             tenant_id,
             customer_id: customerId,
-            member_id,
+            member_id: effectiveMemberId,
             service_id,
             customer_name,
             customer_phone: customer_phone || null,
