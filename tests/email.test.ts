@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { bookingRequestEmail, sanitizeEmailSubject } from "../lib/email.ts";
+import { appointmentReminderEmail, bookingRequestEmail, dailyBriefingEmail, sanitizeEmailSubject } from "../lib/email.ts";
 
 test("email subjects cannot inject newlines and stay bounded", () => {
   assert.equal(
@@ -26,6 +26,28 @@ test("booking request email includes the booking details", () => {
   assert.match(email.html, /2026-10-21/);
   assert.match(email.html, /14:00–15:00/);
   assert.match(email.html, /ada@example.com · \+1 555 0100/);
+});
+
+test("other customer-facing email templates escape HTML and URL values", () => {
+  const reminder = appointmentReminderEmail(
+    '<script>alert("x")</script>',
+    "Lace & Co.",
+    "2026-10-21 & next",
+    "10:00 < 11:00"
+  );
+  const briefing = dailyBriefingEmail(
+    "Lace & Co.",
+    [{ tone: "watch", title: "<Needs review>", detail: "A & B", href: '/customers?id="1"' }],
+    "https://example.com/?shop=lace&mode=live"
+  );
+
+  assert.doesNotMatch(reminder.html, /<script>alert/);
+  assert.match(reminder.html, /Lace &amp; Co\./);
+  assert.match(reminder.html, /10:00 &lt; 11:00/);
+  assert.doesNotMatch(briefing.html, /<Needs review>/);
+  assert.match(briefing.html, /A &amp; B/);
+  assert.match(briefing.html, /shop=lace&amp;mode=live/);
+  assert.match(briefing.html, /customers\?id=&quot;1&quot;/);
 });
 
 test("booking request email escapes user-controlled HTML", () => {
