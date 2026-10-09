@@ -5,6 +5,8 @@ import { UUID_RE, validateBookingInput } from "@/lib/booking-validation";
 
 export const dynamic = "force-dynamic";
 
+class BookingConflictError extends Error {}
+
 function clean(v: unknown, max = 200): string {
   return String(v ?? "").trim().slice(0, max);
 }
@@ -68,28 +70,14 @@ export async function POST(req: Request) {
     // Fiyat istemciden DEĞİL, sunucudaki servis kaydından alınır.
     const amount = Number(svc.price ?? 0);
 
-    // 4. Çakışma kontrolü: aynı personel + tarih + saatte zaten kayıt var mı?
+    // 4. Personel doğrulaması. Çakışma kontrolü ve yazım aşağıdaki transaction'da
+    // aynı kilit altında yapılır; aksi halde iki eşzamanlı istek aynı boş slotu
+    // görüp ikisi de kaydolabilir.
     if (member_id) {
       // Personel bu butiğe ait mi? (başka kiracının personeline rezervasyon yazılmasın)
       const staff = await prisma.tenantMember.findFirst({ where: { id: member_id, tenant_id }, select: { id: true } });
       if (!staff) {
         return NextResponse.json({ error: "Staff member not found." }, { status: 404 });
-      }
-      const clash = await prisma.booking.findFirst({
-        where: {
-          tenant_id, member_id, booking_date,
-          start_time: { lt: end_time },
-          end_time: { gt: start_time },
-          status: { notIn: ["cancelled", "no_show"] },
-        },
-        select: { id: true },
-      });
-
-      if (clash) {
-        return NextResponse.json(
-          { error: "That time is no longer available. Please pick another slot." },
-          { status: 409 }
-        );
       }
     }
 
@@ -118,26 +106,53 @@ export async function POST(req: Request) {
     // 6. ONAY BEKLEYEN (pending) rezervasyon yaz — salon kabul edince confirmed olur.
     let booking: { id: string; status: string; booking_date: string; start_time: string };
     try {
-      booking = await prisma.booking.create({
-        data: {
-          tenant_id,
-          customer_id: customerId,
-          member_id,
-          service_id,
-          customer_name,
-          customer_phone: customer_phone || null,
-          customer_email: customer_email || null,
-          booking_date,
-          start_time,
-          end_time,
-          notes,
-          amount,
-          status: "pending",
-          source: "online",
-        },
-        select: { id: true, status: true, booking_date: true, start_time: true },
+      booking = await prisma.$transaction(async (tx) => {
+        if (member_id) {
+          // Transaction-scoped lock: same tenant/stylist/day requests cannot
+          // pass the overlap check concurrently. The lock is released on commit.
+          const lockKey = `${tenant_id}:${member_id}:${booking_date}`;
+          await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtextextended(${lockKey}, 0))`;
+
+          const clash = await tx.booking.findFirst({
+            where: {
+              tenant_id, member_id, booking_date,
+              start_time: { lt: end_time },
+              end_time: { gt: start_time },
+              status: { notIn: ["cancelled", "no_show"] },
+            },
+            select: { id: true },
+          });
+
+          if (clash) throw new BookingConflictError();
+        }
+
+        return tx.booking.create({
+          data: {
+            tenant_id,
+            customer_id: customerId,
+            member_id,
+            service_id,
+            customer_name,
+            customer_phone: customer_phone || null,
+            customer_email: customer_email || null,
+            booking_date,
+            start_time,
+            end_time,
+            notes,
+            amount,
+            status: "pending",
+            source: "online",
+          },
+          select: { id: true, status: true, booking_date: true, start_time: true },
+        });
       });
     } catch (e) {
+      if (e instanceof BookingConflictError) {
+        return NextResponse.json(
+          { error: "That time is no longer available. Please pick another slot." },
+          { status: 409 }
+        );
+      }
       console.error("Could not write booking:", e);
       return NextResponse.json({ error: "Could not create the booking." }, { status: 500 });
     }
