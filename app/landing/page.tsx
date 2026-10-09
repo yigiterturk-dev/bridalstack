@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { PACKS, ALL_PACK_IDS, SELLABLE_PACK_IDS, MODULES, isPackSellable, isModuleLive, formatPrice } from "@/config/modules";
 import { TRIAL_DAYS } from "@/lib/trial";
+import { BILLING_CONFIGURED } from "@/lib/stripe";
 import type { Metadata } from "next";
 import { siteBase, siteMetadata } from "@/lib/seo";
 
@@ -153,16 +154,23 @@ export default function LandingPage() {
                 </span>
               ))}
             </div>
-            <p className="text-stone-500 mt-8 text-sm">
-              Everything we sell today comes to{" "}
-              <strong className="text-white">{formatPrice(SELLABLE_PACK_IDS.reduce((sum, id) => sum + PACKS[id].monthlyPrice, 0))}/mo</strong>{" "}
-              for your whole shop.
-            </p>
+            {BILLING_CONFIGURED ? (
+              <p className="text-stone-500 mt-8 text-sm">
+                Everything we sell today comes to{" "}
+                <strong className="text-white">{formatPrice(SELLABLE_PACK_IDS.reduce((sum, id) => sum + PACKS[id].monthlyPrice, 0))}/mo</strong>{" "}
+                for your whole shop.
+              </p>
+            ) : (
+              <p className="text-stone-500 mt-8 text-sm">
+                Every paid module starts with your {TRIAL_DAYS}-day trial. <strong className="text-white">No card required.</strong>
+              </p>
+            )}
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {ALL_PACK_IDS.map((packId) => {
               const pack = PACKS[packId];
               const sellable = pack.monthlyPrice === 0 || isPackSellable(packId);
+              const trialOnly = pack.monthlyPrice > 0 && !BILLING_CONFIGURED;
               return (
                 <div key={packId} className={`bg-stone-800/50 backdrop-blur-xl rounded-[2.5rem] p-10 transition-all duration-500 hover:-translate-y-2 ${packId === "sales" ? "border border-rose-500/50 shadow-[0_0_50px_-12px_rgba(225,29,72,0.3)] relative" : "border border-stone-700/50"}`}>
                   {packId === "sales" && (
@@ -181,6 +189,7 @@ export default function LandingPage() {
                     <span className="text-6xl font-extrabold tracking-tighter">{formatPrice(pack.monthlyPrice)}</span>
                     <span className="text-stone-400 font-medium">/mo</span>
                   </div>
+                  {trialOnly && <p className="-mt-8 mb-8 text-xs font-medium text-amber-300">{TRIAL_DAYS}-day trial included · no card required</p>}
                   <ul className="space-y-5 mb-12">
                     {pack.modules.map((moduleId) => {
                       const live = isModuleLive(moduleId);
@@ -206,7 +215,7 @@ export default function LandingPage() {
                           : "bg-stone-700/50 text-white hover:bg-stone-700 border border-stone-600/50"
                       }`}
                     >
-                      {pack.monthlyPrice === 0 ? "Start For Free" : "Choose Plan"}
+                      {pack.monthlyPrice === 0 ? "Start For Free" : trialOnly ? "Start Free Trial" : "Choose Plan"}
                     </Link>
                   ) : (
                     <div className="block text-center py-4 rounded-full text-[15px] font-bold bg-stone-800/60 text-stone-500 border border-stone-700/50 cursor-not-allowed">

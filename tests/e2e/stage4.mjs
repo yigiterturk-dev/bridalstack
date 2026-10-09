@@ -98,7 +98,7 @@ await fetch(`${BASE}/api/auth/register`, { method: "POST", headers: { "content-t
   check("Süresi dolmuş davet reddediliyor", expHtml.includes("Invitation not valid"));
 }
 
-// ── Satılamayan paketler ──
+// ── Billing ve pricing durumu ──
 {
   const j = await login(OWNER, PW);
   for (const pack of ["finance"]) {
@@ -106,16 +106,18 @@ await fetch(`${BASE}/api/auth/register`, { method: "POST", headers: { "content-t
       headers: { "content-type": "application/json", cookie: j.hdr() },
       body: JSON.stringify({ packs: ["base", pack] }) });
     const body = await res.json().catch(() => ({}));
-    check(`'${pack}' paketi sunucuda satın alınamıyor`,
-      res.status === 400 && String(body.error || "").includes("not available"),
+    check(`'${pack}' paketi için checkout durumu açıkça dönüyor`,
+      (res.status === 400 && String(body.error || "").toLowerCase().includes("stripe")) ||
+      (res.status < 300 && typeof body.url === "string"),
       `status ${res.status} ${JSON.stringify(body).slice(0,90)}`);
   }
   const html = strip(await (await fetch(`${BASE}/settings`, { headers: { cookie: j.hdr() } })).text());
-  check("Ayarlar geliştirme aşamasındaki paketleri işaretliyor", html.includes("In development"));
+  check("Ayarlar billing durumunu açıkça gösteriyor",
+    html.includes("Paid plans coming soon") || html.includes("Change Plan"));
 
   const landing = strip(await (await fetch(`${BASE}/landing`)).text());
-  check("Tanıtım sayfası hazır olmayan paketi satmıyor", landing.includes("Not available yet"));
-  check("Tanıtım sayfası hazır olmayan özellikleri işaretliyor", landing.includes("Coming soon"));
+  check("Tanıtım sayfası canlı paketleri ve trial bilgisini gösteriyor",
+    landing.includes("Finance") && (landing.includes("Start Free Trial") || landing.includes("Choose Plan")));
 }
 
 // ── Menüde ölü bağlantı kalmadı ──

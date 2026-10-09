@@ -17,6 +17,15 @@ node tests/e2e/stage9.mjs      # yazdırılabilir fatura ve sözleşme, erişim 
 node tests/e2e/stage10.mjs     # günlük brifing e-postası, cron zamanlaması
 node tests/e2e/stage11.mjs     # faturalar (alacak yaşlandırma), raporlar, CSV dışa aktarma
 node tests/e2e/stage12.mjs     # kaldırılan modüller, ücretsiz katman paketleri
+node tests/e2e/stage13.mjs     # tenant izolasyonu ve rol erişimleri
+node tests/e2e/stage14-db.mjs  # kiralama, temizlik ve tadilat veritabanı değişmezleri (izole DB)
+node tests/e2e/stage15-purchasing.mjs # satın alma, stok ve kasa değişmezleri (izole DB)
+node tests/e2e/stage16-order-lines.mjs # sipariş kalemleri ve toplamlar (izole DB)
+node tests/e2e/stage17-commission-kinds.mjs # kalem bazlı prim kuralları (izole DB)
+node tests/e2e/stage18-cash-sessions.mjs # kasa oturumları ve farklar (izole DB)
+node tests/e2e/stage19-calendar-suppliers.mjs # takvim ve tedarikçi akışları (izole DB)
+node tests/e2e/stage20-trial-demo.mjs # trial kapısı ve demo verisi (izole DB)
+node tests/e2e/stage21-ai-gate.mjs # AI Stylist paket kapısı
 ```
 
 Betikler `@prisma/client`'ı çözebilmek için proje kökünden çalıştırılmalı.
