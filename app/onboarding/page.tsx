@@ -125,11 +125,11 @@ export default function OnboardingPage() {
             Bridal<span className="text-[var(--accent)]">Stack</span>
           </h1>
           <p className="text-gray-500 mt-2">Let us set up your boutique</p>
-          <div className="flex items-center justify-center gap-2 mt-5">
+          <nav aria-label="Setup progress" className="flex items-center justify-center gap-2 mt-5">
             {STEPS.map((label, idx) => {
               const s = idx + 1;
               return (
-                <div key={label} className="flex items-center gap-2">
+                <div key={label} className="flex items-center gap-2" aria-current={s === step ? "step" : undefined}>
                   <div className="flex flex-col items-center">
                     <div
                       className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold transition-all ${
@@ -150,9 +150,9 @@ export default function OnboardingPage() {
                 </div>
               );
             })}
-          </div>
+          </nav>
           {hydrated && (
-            <p className="text-[11px] text-gray-400 mt-3">
+            <p className="text-[11px] text-gray-400 mt-3" aria-live="polite">
               {saving ? "Saving draft…" : "Your progress saves automatically"}
             </p>
           )}
@@ -169,10 +169,12 @@ export default function OnboardingPage() {
           {step === 1 && (
             <div>
               <h2 className="text-xl font-semibold text-gray-900 mb-6">What is your boutique called?</h2>
+              <label htmlFor="shop-name" className="block text-sm font-medium text-gray-700 mb-2">Boutique name</label>
               <input
+                id="shop-name"
                 type="text"
                 value={shopName}
-                onChange={(e) => setShopName(e.target.value)}
+                onChange={(e) => { setShopName(e.target.value); setError(""); }}
                 maxLength={120}
                 className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[var(--accent-ring)] focus:border-[var(--accent)] outline-none text-lg"
                 placeholder="e.g. Grace Bridal Boutique"
@@ -183,6 +185,7 @@ export default function OnboardingPage() {
               <div className="grid grid-cols-2 gap-3">
                 {PRESETS.map((preset) => (
                   <button
+                    type="button"
                     key={preset.id}
                     onClick={() => selectPreset(preset.id)}
                     className={`text-left p-3 rounded-xl border-2 transition-all ${
@@ -204,6 +207,7 @@ export default function OnboardingPage() {
               </div>
 
               <button
+                type="button"
                 onClick={() =>
                   shopName.trim() ? setStep(2) : setError("Please enter a name")
                 }
@@ -252,6 +256,7 @@ export default function OnboardingPage() {
                     />
                     {services.length > 1 && (
                       <button
+                        type="button"
                         onClick={() => removeServiceRow(i)}
                         className="text-gray-400 hover:text-red-500"
                         aria-label={`Remove service ${i + 1}`}
@@ -263,6 +268,7 @@ export default function OnboardingPage() {
                 ))}
               </div>
               <button
+                type="button"
                 onClick={addServiceRow}
                 className="mt-3 text-sm text-[var(--accent)] hover:text-[var(--accent-hover)] font-medium"
               >
@@ -271,12 +277,14 @@ export default function OnboardingPage() {
 
               <div className="flex gap-3 mt-6">
                 <button
+                  type="button"
                   onClick={() => setStep(1)}
                   className="flex-1 py-3 border border-gray-300 rounded-xl font-medium text-gray-700 hover:bg-gray-50"
                 >
                   Back
                 </button>
                 <button
+                  type="button"
                   onClick={() => setStep(3)}
                   className="flex-1 py-3 bg-gray-900 text-white rounded-xl font-medium hover:bg-gray-800"
                 >
@@ -293,6 +301,11 @@ export default function OnboardingPage() {
               <p className="text-sm text-gray-500 mb-6">
                 Turn on the plans you need. Monthly total: <strong>{formatPrice(monthly)}/mo</strong>
               </p>
+              {monthly > 0 && (
+                <p className="mb-6 rounded-xl border border-blue-200 bg-blue-50 p-3 text-xs text-blue-700">
+                  Paid modules start with your free trial. You won&apos;t be charged during setup.
+                </p>
+              )}
               <div className="grid gap-3">
                 {ALL_PACK_IDS.map((packId) => {
                   const pack = PACKS[packId];
@@ -300,6 +313,7 @@ export default function OnboardingPage() {
                   const sellable = isPackSellable(packId);
                   return (
                     <button
+                      type="button"
                       key={packId}
                       onClick={() => togglePack(packId)}
                       disabled={packId === "base" || pack.monthlyPrice === 0 || !sellable}
@@ -329,16 +343,18 @@ export default function OnboardingPage() {
 
               <div className="flex gap-3 mt-6">
                 <button
+                  type="button"
                   onClick={() => setStep(2)}
                   className="flex-1 py-3 border border-gray-300 rounded-xl font-medium text-gray-700 hover:bg-gray-50"
                 >
-                  Geri
+                  Back
                 </button>
                 <button
+                  type="button"
                   onClick={() => setStep(4)}
                   className="flex-1 py-3 bg-gray-900 text-white rounded-xl font-medium hover:bg-gray-800"
                 >
-                  Devam
+                  Continue
                 </button>
               </div>
             </div>
@@ -374,12 +390,14 @@ export default function OnboardingPage() {
 
               <div className="flex gap-3 mt-8">
                 <button
+                  type="button"
                   onClick={() => setStep(3)}
                   className="flex-1 py-3 border border-gray-300 rounded-xl font-medium text-gray-700 hover:bg-gray-50"
                 >
                   Back
                 </button>
                 <button
+                  type="button"
                   onClick={handleFinish}
                   disabled={loading}
                   className="flex-1 py-3 bg-gray-900 text-white rounded-xl font-medium hover:bg-gray-800 disabled:opacity-50"
