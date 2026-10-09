@@ -34,6 +34,7 @@ export default function SelectField({
   const [value, setValue] = useState(defaultValue);
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const [highlightedIndex, setHighlightedIndex] = useState(0);
   const boxRef = useRef<HTMLDivElement>(null);
   const selectId = `${name.replace(/[^a-zA-Z0-9_-]/g, "-")}-select`;
 
@@ -73,6 +74,41 @@ export default function SelectField({
     onChange?.(next);
   }
 
+  function openMenu() {
+    const selectedIndex = visible.findIndex((option) => option.value === value);
+    setHighlightedIndex(selectedIndex >= 0 ? selectedIndex : 0);
+    setOpen(true);
+  }
+
+  function handleNavigationKeyDown(e: React.KeyboardEvent<HTMLElement>) {
+    if (!open && (e.key === "ArrowDown" || e.key === "ArrowUp")) {
+      e.preventDefault();
+      openMenu();
+      return;
+    }
+    if (!open || visible.length === 0) return;
+
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+      e.preventDefault();
+      setHighlightedIndex((current) => {
+        const delta = e.key === "ArrowDown" ? 1 : -1;
+        return (current + delta + visible.length) % visible.length;
+      });
+      return;
+    }
+
+    if (e.key === "Home" || e.key === "End") {
+      e.preventDefault();
+      setHighlightedIndex(e.key === "Home" ? 0 : visible.length - 1);
+      return;
+    }
+
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      choose(visible[highlightedIndex]?.value ?? visible[0].value);
+    }
+  }
+
   return (
     <div ref={boxRef} className={`relative ${className}`}>
       {/* Sunucu eylemi bu input'u okur. type="hidden" tarayıcı doğrulamasının
@@ -92,7 +128,8 @@ export default function SelectField({
       <button
         id={selectId}
         type="button"
-        onClick={() => setOpen((o) => !o)}
+        onClick={() => (open ? setOpen(false) : openMenu())}
+        onKeyDown={handleNavigationKeyDown}
         aria-label={selected ? `${placeholder}: ${selected.label}` : placeholder}
         aria-haspopup="listbox"
         aria-expanded={open}
@@ -114,7 +151,11 @@ export default function SelectField({
               <input
                 autoFocus
                 value={query}
-                onChange={(e) => setQuery(e.target.value)}
+                onChange={(e) => {
+                  setQuery(e.target.value);
+                  setHighlightedIndex(0);
+                }}
+                onKeyDown={handleNavigationKeyDown}
                 placeholder="Search…"
                 aria-label={`${placeholder} search`}
                 className="w-full px-3 py-2 rounded-lg border border-stone-200 text-sm outline-none focus:border-stone-400"
@@ -126,16 +167,20 @@ export default function SelectField({
             {visible.length === 0 ? (
               <div className="px-4 py-3 text-sm text-stone-400">No matches</div>
             ) : (
-              visible.map((o) => {
+              visible.map((o, index) => {
                 const isSelected = o.value === value;
                 return (
                   <button
                     key={o.value}
+                    id={`${selectId}-option-${index}`}
                     type="button"
                     role="option"
                     aria-selected={isSelected}
+                    aria-current={index === highlightedIndex ? "true" : undefined}
                     onClick={() => choose(o.value)}
                     className={`w-full flex items-center justify-between gap-3 px-4 py-2.5 text-left text-sm hover:bg-stone-50 ${
+                      index === highlightedIndex ? "bg-stone-50" : ""
+                    } ${
                       isSelected ? "text-stone-900 font-semibold" : "text-stone-700"
                     }`}
                   >
