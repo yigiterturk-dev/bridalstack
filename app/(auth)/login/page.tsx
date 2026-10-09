@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
   const [shopName, setShopName] = useState("");
   const [error, setError] = useState("");
@@ -71,7 +72,7 @@ export default function LoginPage() {
           </h2>
 
           {error && (
-            <div className="mb-6 p-4 rounded-2xl bg-rose-50/80 text-rose-700 text-sm font-medium border border-rose-100 flex items-center gap-2">
+            <div role="alert" className="mb-6 p-4 rounded-2xl bg-rose-50/80 text-rose-700 text-sm font-medium border border-rose-100 flex items-center gap-2">
               <span className="material-symbols-outlined text-[20px]">error</span>
               {error}
             </div>
@@ -80,46 +81,62 @@ export default function LoginPage() {
           <form onSubmit={handleSubmit} className="flex flex-col gap-5">
             {isSignUp && (
               <div>
-                <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">Boutique Name</label>
+                <label htmlFor="shop-name" className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">Boutique Name</label>
                 <input
+                  id="shop-name"
                   type="text"
                   value={shopName}
                   onChange={(e) => setShopName(e.target.value)}
                   required={isSignUp}
+                  autoComplete="organization"
                   className="w-full px-5 py-4 rounded-2xl border border-stone-200 bg-white/50 text-stone-900 text-sm font-medium outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-50 transition-all placeholder:text-stone-300"
                   placeholder="e.g. Elegance Bridal"
                 />
               </div>
             )}
             <div>
-              <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">Email Address</label>
+              <label htmlFor="email" className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">Email Address</label>
               <input
+                id="email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                autoComplete="email"
                 className="w-full px-5 py-4 rounded-2xl border border-stone-200 bg-white/50 text-stone-900 text-sm font-medium outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-50 transition-all placeholder:text-stone-300"
                 placeholder="you@boutique.com"
               />
             </div>
             <div>
               <div className="flex items-baseline justify-between mb-2">
-                <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider">Password</label>
+                <label htmlFor="password" className="block text-xs font-bold text-stone-500 uppercase tracking-wider">Password</label>
                 {!isSignUp && (
                   <Link href="/forgot-password" className="text-xs font-semibold text-stone-400 hover:text-rose-600 transition-colors">
                     Forgot password?
                   </Link>
                 )}
               </div>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                minLength={6}
-                className="w-full px-5 py-4 rounded-2xl border border-stone-200 bg-white/50 text-stone-900 text-sm font-medium outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-50 transition-all placeholder:text-stone-300"
-                placeholder="••••••••"
-              />
+              <div className="relative">
+                <input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  minLength={isSignUp ? 8 : undefined}
+                  autoComplete={isSignUp ? "new-password" : "current-password"}
+                  className="w-full px-5 py-4 pr-14 rounded-2xl border border-stone-200 bg-white/50 text-stone-900 text-sm font-medium outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-50 transition-all placeholder:text-stone-300"
+                  placeholder="••••••••"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((visible) => !visible)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  className="absolute inset-y-0 right-3 px-2 text-stone-400 hover:text-stone-700 transition-colors"
+                >
+                  <span className="material-symbols-outlined text-[20px]" aria-hidden="true">{showPassword ? "visibility_off" : "visibility"}</span>
+                </button>
+              </div>
             </div>
             <button
               type="submit"
