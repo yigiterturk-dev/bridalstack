@@ -10,6 +10,8 @@ This guide covers the Vercel production deployment for `bridalstack.com`. It is 
 4. Vercel deploys `main` to the `stackcrm` project. The production aliases are `bridalstack.com`, `www.bridalstack.com`, and `stackcrm.vercel.app`.
 5. After deployment, verify the deployment state and test the public landing page, sign-up page, demo, and one authenticated dashboard journey.
 
+The public liveness probe is `GET /api/health`. It returns only service health and does not reveal secrets or database details. Use it for uptime checks; use the authenticated smoke journey for dependency readiness.
+
 Useful commands from the repository root:
 
 ```bash
