@@ -45,13 +45,14 @@ export default function Sidebar({ groups, tenantName }: { groups: NavGroup[]; te
                 type="button"
                 onClick={() => setCollapsedGroups((current) => ({ ...current, [gi]: !current[gi] }))}
                 aria-expanded={!groupCollapsed}
+                aria-controls={`nav-group-${gi}`}
                 className="w-full flex items-center justify-between px-4 mb-3 text-[11px] font-bold uppercase tracking-[0.15em] text-stone-400 hover:text-stone-700 transition-colors"
               >
                 {group.section}
                 <span className="material-symbols-outlined text-[16px]">{groupCollapsed ? "chevron_right" : "expand_more"}</span>
               </button>
             )}
-            <div className={`flex flex-col gap-1 ${groupCollapsed ? "hidden" : ""}`}>
+            <div id={`nav-group-${gi}`} className={`flex flex-col gap-1 ${groupCollapsed ? "hidden" : ""}`}>
               {group.items.map((item) => {
                 const active = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
                 return (
@@ -105,7 +106,14 @@ export default function Sidebar({ groups, tenantName }: { groups: NavGroup[]; te
       </div>
 
       {/* Mobile overlay */}
-      {open && <div className="lg:hidden fixed inset-0 bg-stone-900/20 backdrop-blur-sm z-40 transition-opacity" onClick={() => setOpen(false)} />}
+      {open && (
+        <button
+          type="button"
+          className="lg:hidden fixed inset-0 bg-stone-900/20 backdrop-blur-sm z-40 transition-opacity cursor-default"
+          onClick={() => setOpen(false)}
+          aria-label="Close menu"
+        />
+      )}
 
       {/* Sidebar */}
       <aside
