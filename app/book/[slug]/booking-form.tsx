@@ -170,14 +170,14 @@ export default function BookingForm({ tenantId, accent, services, staff, schedul
 
   if (step === "done") {
     return (
-      <div className="bg-white rounded-2xl border border-gray-200/80 shadow-sm p-12 text-center bs-animate-in">
+      <div role="status" aria-live="polite" className="bg-white rounded-2xl border border-gray-200/80 shadow-sm p-12 text-center bs-animate-in">
         <div className="w-16 h-16 rounded-full mx-auto mb-5 flex items-center justify-center" style={{ backgroundColor: accent + "18" }}>
           <span className="material-symbols-outlined text-3xl" style={{ color: accent }}>check_circle</span>
         </div>
         <h2 className="text-xl font-semibold text-gray-900 mb-2">Request received</h2>
         <p className="text-gray-600 mb-1">{selectedService?.name} — {new Date(date + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", day: "numeric", month: "long" })}</p>
         <p className="text-gray-600">at {time}{selectedStaff ? ` · ${selectedStaff.name}` : ""}</p>
-        <p className="text-sm text-gray-500 mt-6 max-w-sm mx-auto">Your appointment is <strong className="text-gray-700">awaiting confirmation</strong>. We will let you know as soon as it is confirmed.</p>
+        <p className="text-sm text-gray-500 mt-6 max-w-sm mx-auto">Your appointment is <strong className="text-gray-700">awaiting confirmation</strong>. The boutique will contact you when it is confirmed.</p>
       </div>
     );
   }
