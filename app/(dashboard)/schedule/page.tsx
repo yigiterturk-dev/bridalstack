@@ -36,6 +36,7 @@ export default function SchedulePage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
 
   useEffect(() => {
     fetchStaff();
@@ -59,6 +60,7 @@ export default function SchedulePage() {
       }
     } catch (err) {
       console.error("Error fetching staff:", err);
+      setError("Could not load staff schedules. Please refresh and try again.");
       setLoading(false);
     }
   }
@@ -86,6 +88,7 @@ export default function SchedulePage() {
       setSchedules(finalScheds);
     } catch (err) {
       console.error("Error fetching schedules:", err);
+      setError("Could not load this staff member's hours. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -94,6 +97,7 @@ export default function SchedulePage() {
   async function saveSchedule() {
     setSaving(true);
     setMessage("");
+    setError("");
     try {
       const res = await saveSchedules(selectedMemberId, schedules);
       if (!res.ok) throw new Error(res.error || "Save failed");
@@ -103,7 +107,7 @@ export default function SchedulePage() {
       fetchSchedules(selectedMemberId);
     } catch (err) {
       console.error("Error saving schedule:", err);
-      setMessage(`Error: ${err instanceof Error ? err.message : "could not save"}`);
+      setError(err instanceof Error ? err.message : "Could not save the schedule. Please try again.");
     } finally {
       setSaving(false);
     }
@@ -131,12 +135,18 @@ export default function SchedulePage() {
           <button
             onClick={saveSchedule}
             disabled={saving}
-            className="px-5 py-2.5 bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white text-sm font-semibold rounded-xl transition-all shadow-sm flex justify-center items-center"
+            className="px-5 py-2.5 bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white text-sm font-semibold rounded-xl transition-all shadow-sm flex justify-center items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2"
           >
             {saving ? "Saving..." : "Save Schedule"}
           </button>
         )}
       </div>
+
+      {error && (
+        <div role="alert" aria-live="assertive" className="p-4 rounded-xl border border-red-200 bg-red-50 text-sm font-semibold text-red-700">
+          {error}
+        </div>
+      )}
 
       {message && (
         <div
@@ -163,11 +173,12 @@ export default function SchedulePage() {
               <button
                 key={m.id}
                 onClick={() => setSelectedMemberId(m.id)}
+                aria-pressed={selectedMemberId === m.id}
                 className={`w-full text-left px-4 py-3 rounded-xl text-sm font-semibold transition-all border ${
                   selectedMemberId === m.id
                     ? "bg-rose-50 border-rose-200 text-rose-700"
                     : "bg-white border-transparent text-gray-700 hover:bg-gray-50"
-                }`}
+                } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2`}
               >
                 <div>{m.display_name || "Staff Member"}</div>
                 {m.title && <div className="text-xs text-gray-400 font-normal mt-0.5">{m.title}</div>}
@@ -195,6 +206,7 @@ export default function SchedulePage() {
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input
                         type="checkbox"
+                        aria-label={`${day.label} working day`}
                         checked={!sched.is_off}
                         onChange={(e) => handleScheduleChange(day.value, "is_off", !e.target.checked)}
                         className="sr-only peer"
@@ -213,16 +225,18 @@ export default function SchedulePage() {
                         <span className="text-xs text-gray-400">Hours:</span>
                         <input
                           type="time"
+                          aria-label={`${day.label} opening time`}
                           value={sched.start_time.slice(0, 5)}
                           onChange={(e) => handleScheduleChange(day.value, "start_time", e.target.value)}
-                          className="px-2.5 py-1.5 border border-gray-200 rounded-lg text-sm bg-gray-50 outline-none focus:border-rose-500 focus:bg-white transition-all font-mono"
+                          className="px-2.5 py-1.5 border border-gray-200 rounded-lg text-sm bg-gray-50 outline-none focus:border-rose-500 focus:bg-white transition-all font-mono focus-visible:ring-2 focus-visible:ring-rose-500"
                         />
                         <span className="text-xs text-gray-400">–</span>
                         <input
                           type="time"
+                          aria-label={`${day.label} closing time`}
                           value={sched.end_time.slice(0, 5)}
                           onChange={(e) => handleScheduleChange(day.value, "end_time", e.target.value)}
-                          className="px-2.5 py-1.5 border border-gray-200 rounded-lg text-sm bg-gray-50 outline-none focus:border-rose-500 focus:bg-white transition-all font-mono"
+                          className="px-2.5 py-1.5 border border-gray-200 rounded-lg text-sm bg-gray-50 outline-none focus:border-rose-500 focus:bg-white transition-all font-mono focus-visible:ring-2 focus-visible:ring-rose-500"
                         />
                       </div>
 
@@ -230,16 +244,18 @@ export default function SchedulePage() {
                         <span className="text-xs text-gray-400">Break:</span>
                         <input
                           type="time"
+                          aria-label={`${day.label} break start`}
                           value={sched.break_start ? sched.break_start.slice(0, 5) : ""}
                           onChange={(e) => handleScheduleChange(day.value, "break_start", e.target.value || null)}
-                          className="px-2.5 py-1.5 border border-gray-200 rounded-lg text-sm bg-gray-50 outline-none focus:border-rose-500 focus:bg-white transition-all font-mono"
+                          className="px-2.5 py-1.5 border border-gray-200 rounded-lg text-sm bg-gray-50 outline-none focus:border-rose-500 focus:bg-white transition-all font-mono focus-visible:ring-2 focus-visible:ring-rose-500"
                         />
                         <span className="text-xs text-gray-400">–</span>
                         <input
                           type="time"
+                          aria-label={`${day.label} break end`}
                           value={sched.break_end ? sched.break_end.slice(0, 5) : ""}
                           onChange={(e) => handleScheduleChange(day.value, "break_end", e.target.value || null)}
-                          className="px-2.5 py-1.5 border border-gray-200 rounded-lg text-sm bg-gray-50 outline-none focus:border-rose-500 focus:bg-white transition-all font-mono"
+                          className="px-2.5 py-1.5 border border-gray-200 rounded-lg text-sm bg-gray-50 outline-none focus:border-rose-500 focus:bg-white transition-all font-mono focus-visible:ring-2 focus-visible:ring-rose-500"
                         />
                       </div>
                     </div>
