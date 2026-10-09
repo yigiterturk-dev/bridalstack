@@ -196,7 +196,7 @@ export default function BookingForm({ tenantId, accent, services, staff, schedul
                     <button
                       key={s.id}
                       onClick={() => { setServiceId(s.id); setStep("staff"); }}
-                      className={`group text-left p-4 rounded-xl border transition-all hover:shadow-sm ${sel ? "ring-2" : "border-gray-200 hover:border-gray-300"}`}
+                      className={`group text-left p-4 rounded-xl border transition-all hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${sel ? "ring-2" : "border-gray-200 hover:border-gray-300"}`}
                       style={sel ? { borderColor: accent, boxShadow: `0 0 0 2px ${accent}` } : undefined}
                     >
                       <div className="flex justify-between items-start gap-4">
@@ -227,7 +227,7 @@ export default function BookingForm({ tenantId, accent, services, staff, schedul
           <div className="flex flex-col gap-2">
             <button
               onClick={() => { setStaffId(null); setStep("datetime"); }}
-              className="text-left p-4 rounded-xl border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all flex items-center gap-3"
+              className="text-left p-4 rounded-xl border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all flex items-center gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
             >
               <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: accent + "15" }}>
                 <span className="material-symbols-outlined text-[20px]" style={{ color: accent }}>groups</span>
@@ -241,7 +241,7 @@ export default function BookingForm({ tenantId, accent, services, staff, schedul
               <button
                 key={s.id}
                 onClick={() => { setStaffId(s.id); setStep("datetime"); }}
-                className="text-left p-4 rounded-xl border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all flex items-center gap-3"
+                className="text-left p-4 rounded-xl border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all flex items-center gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
               >
                 {s.photo ? (
                   <Image unoptimized src={s.photo} alt={s.name} width={40} height={40} className="w-10 h-10 rounded-full object-cover shrink-0" />
@@ -257,7 +257,7 @@ export default function BookingForm({ tenantId, accent, services, staff, schedul
               </button>
             ))}
           </div>
-          <button onClick={() => setStep("service")} className="mt-4 inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 transition-colors"><span aria-hidden="true" className="material-symbols-outlined text-base">arrow_back</span>Back</button>
+          <button onClick={() => setStep("service")} className="mt-4 inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2 rounded"><span aria-hidden="true" className="material-symbols-outlined text-base">arrow_back</span>Back</button>
         </div>
       )}
 
@@ -289,7 +289,7 @@ export default function BookingForm({ tenantId, accent, services, staff, schedul
                       <button
                         key={slot}
                         onClick={() => setTime(slot)}
-                        className={`py-2 rounded-lg text-sm font-medium transition-all tabular-nums ${sel ? "text-white shadow-sm" : "bg-gray-50 text-gray-700 border border-gray-100 hover:border-gray-300 hover:bg-gray-100"}`}
+                        className={`py-2 rounded-lg text-sm font-medium transition-all tabular-nums focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${sel ? "text-white shadow-sm" : "bg-gray-50 text-gray-700 border border-gray-100 hover:border-gray-300 hover:bg-gray-100"}`}
                         style={sel ? { backgroundColor: accent } : undefined}
                       >
                         {slot}
@@ -305,11 +305,11 @@ export default function BookingForm({ tenantId, accent, services, staff, schedul
             </div>
           )}
           <div className="flex items-center gap-3 mt-5">
-            <button onClick={() => setStep("staff")} className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 transition-colors"><span aria-hidden="true" className="material-symbols-outlined text-base">arrow_back</span>Back</button>
+            <button onClick={() => setStep("staff")} className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2 rounded"><span aria-hidden="true" className="material-symbols-outlined text-base">arrow_back</span>Back</button>
             {time && (
               <button
                 onClick={() => setStep("info")}
-                className="ml-auto py-2.5 px-6 text-white rounded-xl text-sm font-medium shadow-sm transition-opacity hover:opacity-90"
+                className="ml-auto py-2.5 px-6 text-white rounded-xl text-sm font-medium shadow-sm transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-500 focus-visible:ring-offset-2"
                 style={{ backgroundColor: accent }}
               >
                 Continue
@@ -358,11 +358,11 @@ export default function BookingForm({ tenantId, accent, services, staff, schedul
           {error && <p role="alert" className="text-sm text-red-500 mt-2 flex items-center gap-1"><span aria-hidden="true" className="material-symbols-outlined text-base">error</span>{error}</p>}
 
           <div className="flex items-center gap-3 mt-5">
-            <button onClick={() => setStep("datetime")} className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 transition-colors"><span aria-hidden="true" className="material-symbols-outlined text-base">arrow_back</span>Back</button>
+            <button onClick={() => setStep("datetime")} className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2 rounded"><span aria-hidden="true" className="material-symbols-outlined text-base">arrow_back</span>Back</button>
             <button
               onClick={handleSubmit}
               disabled={!name.trim() || (!phone.trim() && !email.trim()) || submitting}
-              className="ml-auto py-2.5 px-6 text-white rounded-xl text-sm font-medium shadow-sm transition-opacity hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="ml-auto py-2.5 px-6 text-white rounded-xl text-sm font-medium shadow-sm transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-500 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ backgroundColor: accent }}
             >
               {submitting ? "Sending..." : "Request appointment"}

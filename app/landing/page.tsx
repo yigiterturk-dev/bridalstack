@@ -51,7 +51,10 @@ export default function LandingPage() {
               Start Free
             </Link>
           </div>
-          <div className="flex md:hidden items-center">
+          <div className="flex md:hidden items-center gap-3">
+            <Link href="/login" className="text-xs font-semibold text-stone-700 hover:text-rose-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-4 rounded">
+              Sign In
+            </Link>
             <Link href="/signup" className="px-4 py-2 bg-stone-900 text-white rounded-full text-xs font-bold hover:bg-stone-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-4">
               Start Free
             </Link>
