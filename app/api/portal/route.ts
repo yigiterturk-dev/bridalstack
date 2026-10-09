@@ -10,12 +10,22 @@ export async function POST(req: NextRequest) {
   const tenant = await getCurrentTenant();
   if (!tenant) return NextResponse.json({ error: "No tenant" }, { status: 400 });
 
-  const { customer_id } = await req.json();
-  if (!customer_id) return NextResponse.json({ error: "customer_id required" }, { status: 400 });
+  let body: unknown;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Request body must be valid JSON" }, { status: 400 });
+  }
+  const customer_id = body && typeof body === "object" && typeof (body as Record<string, unknown>).customer_id === "string"
+    ? (body as Record<string, unknown>).customer_id as string
+    : "";
+  if (!customer_id.trim() || customer_id.length > 64) {
+    return NextResponse.json({ error: "customer_id required" }, { status: 400 });
+  }
 
   // Müşteri gerçekten bu kiracıya mı ait? RLS yok, elle doğruluyoruz.
   const customer = await prisma.customer.findFirst({
-    where: { id: customer_id, tenant_id: tenant.id },
+    where: { id: customer_id.trim(), tenant_id: tenant.id },
     select: { id: true },
   });
   if (!customer) return NextResponse.json({ error: "Customer not found" }, { status: 404 });
@@ -24,7 +34,7 @@ export async function POST(req: NextRequest) {
 
   try {
     await prisma.portalToken.create({
-      data: { tenant_id: tenant.id, customer_id, token },
+      data: { tenant_id: tenant.id, customer_id: customer.id, token },
     });
   } catch {
     return NextResponse.json({ error: "Could not create portal link" }, { status: 500 });
