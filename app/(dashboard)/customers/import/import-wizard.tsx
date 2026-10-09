@@ -4,9 +4,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { parseCustomerCsv, importCustomers, type ImportRow } from "./actions";
 
-const SAMPLE = `ad,telefon,e-posta,not
-Ayşe Yılmaz,+90 555 111 2233,ayse@ornek.com,Düğün Eylül 2026
-Mehmet Demir,+90 532 444 5566,,VIP müşteri`;
+const SAMPLE = `name,phone,email,notes
+Emily Carter,+1 212 555 0144,emily@example.com,Wedding September 2026
+Olivia Bennett,+1 415 555 0198,,VIP client`;
 
 export default function ImportWizard() {
   const [fileName, setFileName] = useState("");
@@ -82,13 +82,13 @@ export default function ImportWizard() {
             onClick={() => router.push("/customers")}
             className="px-5 py-2.5 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-800"
           >
-            Müşterileri gör
+            View customers
           </button>
           <button
             onClick={reset}
             className="px-5 py-2.5 border border-gray-300 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50"
           >
-            Yeni içe aktarma
+            Start another import
           </button>
         </div>
       </div>
@@ -120,7 +120,7 @@ export default function ImportWizard() {
 
         <details className="mt-3">
           <summary className="text-xs text-gray-500 cursor-pointer hover:text-gray-700">
-            Örnek format
+            Example format
           </summary>
           <pre className="mt-2 p-3 bg-gray-50 rounded-lg text-[11px] text-gray-600 overflow-x-auto">
             {SAMPLE}
@@ -129,7 +129,7 @@ export default function ImportWizard() {
       </div>
 
       {error && (
-        <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm">
+        <div role="alert" className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm">
           {error}
         </div>
       )}
@@ -140,11 +140,11 @@ export default function ImportWizard() {
         <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
             <div className="text-sm">
-              <span className="font-semibold text-green-600">{validCount} geçerli</span>
+              <span className="font-semibold text-green-600">{validCount} valid</span>
               {errorCount > 0 && (
-                <span className="text-red-500 ml-2">{errorCount} hatalı</span>
+                <span className="text-red-500 ml-2">{errorCount} errors</span>
               )}
-              <span className="text-gray-400 ml-2">/ {rows.length} satır</span>
+              <span className="text-gray-400 ml-2">/ {rows.length} rows</span>
             </div>
             <button
               onClick={handleImport}
@@ -158,10 +158,10 @@ export default function ImportWizard() {
             <table className="w-full text-sm">
               <thead className="sticky top-0 bg-white">
                 <tr className="border-b border-gray-100">
-                  <th className="text-left px-4 py-2 text-xs font-semibold text-gray-500 uppercase">Ad</th>
-                  <th className="text-left px-4 py-2 text-xs font-semibold text-gray-500 uppercase">Telefon</th>
-                  <th className="text-left px-4 py-2 text-xs font-semibold text-gray-500 uppercase">E-posta</th>
-                  <th className="text-left px-4 py-2 text-xs font-semibold text-gray-500 uppercase">Durum</th>
+                  <th className="text-left px-4 py-2 text-xs font-semibold text-gray-500 uppercase">Name</th>
+                  <th className="text-left px-4 py-2 text-xs font-semibold text-gray-500 uppercase">Phone</th>
+                  <th className="text-left px-4 py-2 text-xs font-semibold text-gray-500 uppercase">Email</th>
+                  <th className="text-left px-4 py-2 text-xs font-semibold text-gray-500 uppercase">Status</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
@@ -183,7 +183,7 @@ export default function ImportWizard() {
             </table>
             {rows.length > 200 && (
               <p className="px-4 py-2 text-xs text-gray-400">
-                İlk 200 satır gösteriliyor…
+                Showing the first 200 rows…
               </p>
             )}
           </div>

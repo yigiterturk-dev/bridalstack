@@ -159,7 +159,7 @@ export default function OnboardingPage() {
         </div>
 
         {error && (
-          <div className="mb-4 p-3 rounded-lg bg-red-50 text-red-700 text-sm border border-red-200">
+          <div role="alert" className="mb-4 p-3 rounded-lg bg-red-50 text-red-700 text-sm border border-red-200">
             {error}
           </div>
         )}
@@ -209,7 +209,7 @@ export default function OnboardingPage() {
                 }
                 className="mt-6 w-full py-3 bg-gray-900 text-white rounded-xl font-medium hover:bg-gray-800 transition-colors"
               >
-                Devam
+                Continue
               </button>
             </div>
           )}
@@ -227,6 +227,7 @@ export default function OnboardingPage() {
                     <input
                       value={s.name}
                       onChange={(e) => updateService(i, { name: e.target.value })}
+                      aria-label={`Service ${i + 1} name`}
                       placeholder="Service name (e.g. Fitting)"
                       maxLength={120}
                       className="flex-1 px-3 py-2.5 rounded-xl border border-gray-300 text-sm outline-none focus:ring-2 focus:ring-[var(--accent-ring)] focus:border-[var(--accent)]"
@@ -236,7 +237,8 @@ export default function OnboardingPage() {
                       min={5}
                       value={s.duration ?? ""}
                       onChange={(e) => updateService(i, { duration: Number(e.target.value) })}
-                      placeholder="dk"
+                      aria-label={`Service ${i + 1} duration in minutes`}
+                      placeholder="min"
                       className="w-20 px-3 py-2.5 rounded-xl border border-gray-300 text-sm outline-none"
                     />
                     <input
@@ -244,6 +246,7 @@ export default function OnboardingPage() {
                       min={0}
                       value={s.price ?? ""}
                       onChange={(e) => updateService(i, { price: Number(e.target.value) })}
+                      aria-label={`Service ${i + 1} price`}
                       placeholder="$"
                       className="w-24 px-3 py-2.5 rounded-xl border border-gray-300 text-sm outline-none"
                     />
@@ -251,7 +254,7 @@ export default function OnboardingPage() {
                       <button
                         onClick={() => removeServiceRow(i)}
                         className="text-gray-400 hover:text-red-500"
-                        aria-label="Remove"
+                        aria-label={`Remove service ${i + 1}`}
                       >
                         <span className="material-symbols-outlined text-lg">close</span>
                       </button>
@@ -263,7 +266,7 @@ export default function OnboardingPage() {
                 onClick={addServiceRow}
                 className="mt-3 text-sm text-[var(--accent)] hover:text-[var(--accent-hover)] font-medium"
               >
-                + Hizmet ekle
+                + Add service
               </button>
 
               <div className="flex gap-3 mt-6">
@@ -271,13 +274,13 @@ export default function OnboardingPage() {
                   onClick={() => setStep(1)}
                   className="flex-1 py-3 border border-gray-300 rounded-xl font-medium text-gray-700 hover:bg-gray-50"
                 >
-                  Geri
+                  Back
                 </button>
                 <button
                   onClick={() => setStep(3)}
                   className="flex-1 py-3 bg-gray-900 text-white rounded-xl font-medium hover:bg-gray-800"
                 >
-                  Devam
+                  Continue
                 </button>
               </div>
             </div>
@@ -374,7 +377,7 @@ export default function OnboardingPage() {
                   onClick={() => setStep(3)}
                   className="flex-1 py-3 border border-gray-300 rounded-xl font-medium text-gray-700 hover:bg-gray-50"
                 >
-                  Geri
+                  Back
                 </button>
                 <button
                   onClick={handleFinish}

@@ -85,7 +85,7 @@ export default async function PublicBookingPage({ params }: Props) {
       <footer className="text-center py-8 mt-6">
         <p className="text-xs text-gray-400 inline-flex items-center gap-1">
           <span className="material-symbols-outlined text-[13px]">bolt</span>
-          BridalStack ile güçlendirildi
+          Powered by BridalStack
         </p>
       </footer>
     </div>
