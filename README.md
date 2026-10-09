@@ -4,7 +4,7 @@ A multi-tenant CRM prototype for bridal retail operations. It brings customer re
 
 [![CI](https://github.com/yigiterturk-dev/stackcrm/actions/workflows/ci.yml/badge.svg)](https://github.com/yigiterturk-dev/stackcrm/actions/workflows/ci.yml)
 [![Next.js](https://img.shields.io/badge/Next.js-16-black)](https://nextjs.org/)
-[![Tests](https://img.shields.io/badge/tests-302%20unit%20%2B%20320%20e2e-16a34a)](tests)
+[![Tests](https://img.shields.io/badge/tests-304%20unit%20%2B%20321%20e2e-16a34a)](tests)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 > Status: the domain rules, TypeScript build, lint, and dependency audit are verified locally, and a 22-stage end-to-end suite runs against a live Neon Postgres database or an isolated migration database, depending on the stage. Stripe, Resend, Vercel Blob, and AI integrations are environment-gated and require owner-provided credentials.
@@ -46,7 +46,7 @@ Authorization is layered: the proxy rejects unauthenticated requests to protecte
 
 ## Verified domain behavior
 
-`npm test` covers 302 unit cases; `tests/e2e/` adds 320 checks across 22 stages against a running server, a live database, or an isolated migration database. Together they cover:
+`npm test` covers 304 unit cases; `tests/e2e/` adds 321 checks across 22 stages against a running server, a live database, or an isolated migration database. Together they cover:
 
 - booking happy paths, malformed tenant IDs, invalid time windows, past dates, missing contact data, and collision detection;
 - role ranking, permission escalation denial, legacy-role normalization, and unknown-role fallback;

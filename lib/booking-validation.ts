@@ -80,3 +80,28 @@ export function hasConflict(
     (b) => !BLOCKING_EXEMPT.has(b.status) && intervalsOverlap(start_time, end_time, b.start_time, b.end_time)
   );
 }
+
+export type BookingSchedule = {
+  start_time: string;
+  end_time: string;
+  break_start: string | null;
+  break_end: string | null;
+  is_off: boolean;
+};
+
+// A client can alter the slot buttons, so the API must enforce the same
+// working-hours rule as the public booking UI. Multiple schedule rows are
+// allowed for split shifts; one matching row is enough.
+export function fitsSchedule(
+  start_time: string,
+  end_time: string,
+  schedules: BookingSchedule[]
+): boolean {
+  return schedules.some((schedule) => {
+    if (schedule.is_off || start_time < schedule.start_time || end_time > schedule.end_time) return false;
+    if (schedule.break_start && schedule.break_end && intervalsOverlap(start_time, end_time, schedule.break_start, schedule.break_end)) {
+      return false;
+    }
+    return true;
+  });
+}

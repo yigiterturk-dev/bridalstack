@@ -32,6 +32,12 @@ async function run() {
 
   await prisma.tenantMember.update({ where: { id: member.id }, data: { is_bookable: true } });
   const date = new Date(Date.now() + 4 * 864e5).toISOString().split("T")[0];
+  const dayOfWeek = new Date(`${date}T12:00:00Z`).getUTCDay();
+  await prisma.staffSchedule.upsert({
+    where: { member_id_day_of_week: { member_id: member.id, day_of_week: dayOfWeek } },
+    update: { tenant_id: tenant.id, start_time: "09:00", end_time: "18:00", break_start: null, break_end: null, is_off: false },
+    create: { tenant_id: tenant.id, member_id: member.id, day_of_week: dayOfWeek, start_time: "09:00", end_time: "18:00", is_off: false },
+  });
   const payload = {
     tenant_id: tenant.id,
     service_id: service.id,
@@ -49,6 +55,13 @@ async function run() {
     body: "not-json",
   });
   check("Bozuk booking gövdesi 400 döndürüyor", malformed.status === 400, `status ${malformed.status}`);
+
+  const outsideHours = await fetch(`${BASE}/api/book`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ ...payload, member_id: member.id, start_time: "08:00", end_time: "09:00" }),
+  });
+  check("Mesai dışı booking API tarafından reddediliyor", outsideHours.status === 409, `status ${outsideHours.status}`);
 
   const responses = await Promise.all([
     fetch(`${BASE}/api/book`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(payload) }),

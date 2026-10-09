@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { validateBookingInput, intervalsOverlap, hasConflict, type BookingInput } from "../lib/booking-validation.ts";
+import { validateBookingInput, intervalsOverlap, hasConflict, fitsSchedule, type BookingInput } from "../lib/booking-validation.ts";
 
 const VALID: BookingInput = {
   tenant_id: "11111111-1111-1111-1111-111111111111",
@@ -63,4 +63,15 @@ test("hasConflict: iptal/no-show çakışma SAYILMAZ; boş aralık serbest", () 
   ];
   assert.equal(hasConflict("10:00", "11:00", cancelled), false);
   assert.equal(hasConflict("12:00", "13:00", [{ start_time: "10:00", end_time: "11:00", status: "confirmed" }]), false);
+});
+
+test("fitsSchedule: çalışma saatleri içindeki slot kabul edilir", () => {
+  assert.equal(fitsSchedule("10:00", "11:00", [{ start_time: "09:00", end_time: "18:00", break_start: null, break_end: null, is_off: false }]), true);
+});
+
+test("fitsSchedule: mesai dışı, mola ve izinli gün slotları reddedilir", () => {
+  const schedule = { start_time: "09:00", end_time: "18:00", break_start: "12:00", break_end: "13:00", is_off: false };
+  assert.equal(fitsSchedule("08:00", "09:00", [schedule]), false);
+  assert.equal(fitsSchedule("12:30", "13:30", [schedule]), false);
+  assert.equal(fitsSchedule("10:00", "11:00", [{ ...schedule, is_off: true }]), false);
 });

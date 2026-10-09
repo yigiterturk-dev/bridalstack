@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { rateLimit, clientIp } from "@/lib/ratelimit";
-import { UUID_RE, validateBookingInput } from "@/lib/booking-validation";
+import { UUID_RE, fitsSchedule, validateBookingInput } from "@/lib/booking-validation";
 
 export const dynamic = "force-dynamic";
 
@@ -57,6 +57,7 @@ export async function POST(req: Request) {
     }
 
     const member_id = member_id_raw && UUID_RE.test(member_id_raw) ? member_id_raw : null;
+    const dayOfWeek = new Date(`${booking_date}T12:00:00Z`).getUTCDay();
 
     // 3. Tenant + servis gerçekten var mı? (uydurma id ile yazımı engelle)
     const svc = await prisma.service.findFirst({
@@ -78,6 +79,16 @@ export async function POST(req: Request) {
       const staff = await prisma.tenantMember.findFirst({ where: { id: member_id, tenant_id }, select: { id: true } });
       if (!staff) {
         return NextResponse.json({ error: "Staff member not found." }, { status: 404 });
+      }
+      const [schedules, timeOff] = await Promise.all([
+        prisma.staffSchedule.findMany({
+          where: { tenant_id, member_id, day_of_week: dayOfWeek },
+          select: { start_time: true, end_time: true, break_start: true, break_end: true, is_off: true },
+        }),
+        prisma.staffTimeOff.findFirst({ where: { tenant_id, member_id, date: booking_date }, select: { id: true } }),
+      ]);
+      if (timeOff || !fitsSchedule(start_time, end_time, schedules)) {
+        return NextResponse.json({ error: "That time is not available." }, { status: 409 });
       }
     }
 
@@ -145,6 +156,26 @@ export async function POST(req: Request) {
                 select: { member_id: true, service_id: true },
               })
             : [];
+          const candidateIds = candidates.map((candidate) => candidate.id);
+          const [candidateSchedules, candidateTimeOff] = candidateIds.length
+            ? await Promise.all([
+                tx.staffSchedule.findMany({
+                  where: { tenant_id, member_id: { in: candidateIds }, day_of_week: dayOfWeek },
+                  select: { member_id: true, start_time: true, end_time: true, break_start: true, break_end: true, is_off: true },
+                }),
+                tx.staffTimeOff.findMany({
+                  where: { tenant_id, member_id: { in: candidateIds }, date: booking_date },
+                  select: { member_id: true },
+                }),
+              ])
+            : [[], []];
+          const schedulesByMember = new Map<string, typeof candidateSchedules>();
+          for (const schedule of candidateSchedules) {
+            const rows = schedulesByMember.get(schedule.member_id) ?? [];
+            rows.push(schedule);
+            schedulesByMember.set(schedule.member_id, rows);
+          }
+          const timeOffMembers = new Set(candidateTimeOff.map((row) => row.member_id));
           const linkedServices = new Map<string, string[]>();
           for (const link of serviceLinks) {
             const services = linkedServices.get(link.member_id) ?? [];
@@ -155,6 +186,7 @@ export async function POST(req: Request) {
           for (const candidate of candidates) {
             const services = linkedServices.get(candidate.id) ?? [];
             if (services.length > 0 && !services.includes(service_id)) continue;
+            if (timeOffMembers.has(candidate.id) || !fitsSchedule(start_time, end_time, schedulesByMember.get(candidate.id) ?? [])) continue;
 
             const lockKey = `${tenant_id}:${candidate.id}:${booking_date}`;
             await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtextextended(${lockKey}, 0))`;
