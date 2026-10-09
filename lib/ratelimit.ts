@@ -9,6 +9,7 @@ type Hit = { count: number; resetAt: number };
 
 const buckets = new Map<string, Hit>();
 const KEY_PREFIX = "rl:";
+const UPSTASH_TIMEOUT_MS = 3_000;
 
 function upstashConfig(): { url: string; token: string } | null {
   const url = process.env.UPSTASH_REDIS_REST_URL;
@@ -62,7 +63,7 @@ async function sharedRateLimit(
   const redisKey = `${KEY_PREFIX}${key}`;
   const auth = { Authorization: `Bearer ${cfg.token}`, "Upstash-Encoding": "plain" };
 
-  const incr = await fetch(`${cfg.url}/incr/${encodeURIComponent(redisKey)}`, {
+  const incr = await upstashFetch(`${cfg.url}/incr/${encodeURIComponent(redisKey)}`, {
     method: "POST",
     headers: auth,
   });
@@ -73,16 +74,17 @@ async function sharedRateLimit(
     // İlk vuruş pencereyi başlatır; INCR atomik olduğundan yalnız bir istek
     // 1 görür, böylece her vuruşta pencere sıfırlanmaz (kayan pencere değil,
     // sabit pencere: basit ve yeterli).
-    await fetch(`${cfg.url}/pexpire/${encodeURIComponent(redisKey)}/${windowMs}`, {
+    const expire = await upstashFetch(`${cfg.url}/pexpire/${encodeURIComponent(redisKey)}/${windowMs}`, {
       method: "POST",
       headers: auth,
     });
+    if (!expire.ok) throw new Error(`upstash pexpire ${expire.status}`);
   }
 
   if (count > limit) {
     let ttlMs = windowMs;
     try {
-      const ttl = await fetch(`${cfg.url}/pttl/${encodeURIComponent(redisKey)}`, {
+      const ttl = await upstashFetch(`${cfg.url}/pttl/${encodeURIComponent(redisKey)}`, {
         method: "POST",
         headers: auth,
       });
@@ -97,6 +99,16 @@ async function sharedRateLimit(
   }
 
   return decideFromIncr(count, limit, windowMs);
+}
+
+async function upstashFetch(url: string, init: RequestInit): Promise<Response> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), UPSTASH_TIMEOUT_MS);
+  try {
+    return await fetch(url, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 export async function rateLimit(key: string, limit = 5, windowMs = 60_000): Promise<RateLimitResult> {
