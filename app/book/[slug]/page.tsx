@@ -31,12 +31,17 @@ export default async function PublicBookingPage({ params }: Props) {
   ]);
 
   const memberIds = members.map((m) => m.id);
+  const today = new Date().toISOString().slice(0, 10);
   // Eski sorgu staff_services'i kiracı filtresiz çekiyordu — sadece bu butiğin personeli.
-  const [staffServices, schedules] = await Promise.all([
+  const [staffServices, schedules, bookings] = await Promise.all([
     prisma.staffService.findMany({ where: { member_id: { in: memberIds } }, select: { member_id: true, service_id: true } }),
     prisma.staffSchedule.findMany({
       where: { member_id: { in: memberIds } },
       select: { member_id: true, day_of_week: true, start_time: true, end_time: true, break_start: true, break_end: true, is_off: true },
+    }),
+    prisma.booking.findMany({
+      where: { tenant_id: tenant.id, booking_date: { gte: today }, status: { notIn: ["cancelled", "no_show"] } },
+      select: { member_id: true, booking_date: true, start_time: true, end_time: true },
     }),
   ]);
 
@@ -82,6 +87,12 @@ export default async function PublicBookingPage({ params }: Props) {
             breakStart: s.break_start,
             breakEnd: s.break_end,
             isOff: s.is_off,
+          }))}
+          bookings={(bookings ?? []).map((b) => ({
+            memberId: b.member_id,
+            bookingDate: b.booking_date,
+            startTime: b.start_time,
+            endTime: b.end_time,
           }))}
         />
       </div>

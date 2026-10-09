@@ -6,6 +6,7 @@ import Image from "next/image";
 type Service = { id: string; name: string; category: string | null; duration: number; price: number; price_max: number | null; description: string | null };
 type Staff = { id: string; name: string; title: string | null; photo: string | null; serviceIds: string[] };
 type Schedule = { memberId: string; dayOfWeek: number; startTime: string; endTime: string; breakStart: string | null; breakEnd: string | null; isOff: boolean };
+type ExistingBooking = { memberId: string | null; bookingDate: string; startTime: string; endTime: string };
 
 type Props = {
   tenantId: string;
@@ -13,6 +14,7 @@ type Props = {
   services: Service[];
   staff: Staff[];
   schedules: Schedule[];
+  bookings: ExistingBooking[];
 };
 
 type Step = "service" | "staff" | "datetime" | "info" | "done";
@@ -26,7 +28,7 @@ function formatDuration(minutes: number) {
   return `${minutes}m`;
 }
 
-export default function BookingForm({ tenantId, accent, services, staff, schedules }: Props) {
+export default function BookingForm({ tenantId, accent, services, staff, schedules, bookings }: Props) {
   const [step, setStep] = useState<Step>("service");
   const [serviceId, setServiceId] = useState<string | null>(null);
   const [staffId, setStaffId] = useState<string | null>(null);
@@ -55,9 +57,10 @@ export default function BookingForm({ tenantId, accent, services, staff, schedul
   const availableSlots = useMemo(() => {
     if (!date || !selectedService) return [];
     const dayOfWeek = new Date(date + "T12:00:00").getDay();
+    const eligibleStaffIds = new Set(availableStaff.map((member) => member.id));
     const memberSchedules = staffId
       ? schedules.filter((s) => s.memberId === staffId && s.dayOfWeek === dayOfWeek && !s.isOff)
-      : schedules.filter((s) => s.dayOfWeek === dayOfWeek && !s.isOff);
+      : schedules.filter((s) => eligibleStaffIds.has(s.memberId) && s.dayOfWeek === dayOfWeek && !s.isOff);
 
     if (memberSchedules.length === 0) return [];
 
@@ -82,13 +85,19 @@ export default function BookingForm({ tenantId, accent, services, staff, schedul
           }
         }
         const label = `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
-        if (!slots.includes(label)) slots.push(label);
+        const slotEnd = `${String(Math.floor((h * 60 + m + duration) / 60)).padStart(2, "0")}:${String((h * 60 + m + duration) % 60).padStart(2, "0")}`;
+        const isBooked = bookings.some((booking) =>
+          booking.bookingDate === date &&
+          (booking.memberId === sched.memberId || (!staffId && booking.memberId === null)) &&
+          booking.startTime < slotEnd && booking.endTime > label
+        );
+        if (!isBooked && !slots.includes(label)) slots.push(label);
         m += 30;
         if (m >= 60) { h++; m -= 60; }
       }
     }
     return slots.sort();
-  }, [date, staffId, selectedService, schedules]);
+  }, [availableStaff, bookings, date, staffId, selectedService, schedules]);
 
   const grouped = useMemo(() => {
     return services.reduce((acc, s) => {
