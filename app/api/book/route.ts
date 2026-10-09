@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { rateLimit, clientIp } from "@/lib/ratelimit";
 import { UUID_RE, fitsSchedule, validateBookingInput } from "@/lib/booking-validation";
+import { bookingRequestEmail, sendEmail } from "@/lib/email";
 
 export const dynamic = "force-dynamic";
 
@@ -69,7 +70,7 @@ export async function POST(req: Request) {
     // 3. Tenant + servis gerçekten var mı? (uydurma id ile yazımı engelle)
     const svc = await prisma.service.findFirst({
       where: { id: service_id, tenant_id, is_active: true },
-      select: { id: true, price: true, duration: true },
+      select: { id: true, name: true, price: true, duration: true },
     });
 
     if (!svc) {
@@ -77,6 +78,10 @@ export async function POST(req: Request) {
     }
     // Fiyat istemciden DEĞİL, sunucudaki servis kaydından alınır.
     const amount = Number(svc.price ?? 0);
+    const tenantOwner = await prisma.tenant.findUnique({
+      where: { id: tenant_id },
+      select: { name: true, owner: { select: { email: true } } },
+    });
 
     // 4. Personel doğrulaması. Çakışma kontrolü ve yazım aşağıdaki transaction'da
     // aynı kilit altında yapılır; aksi halde iki eşzamanlı istek aynı boş slotu
@@ -246,6 +251,18 @@ export async function POST(req: Request) {
       }
       console.error("Could not write booking:", e);
       return NextResponse.json({ error: "Could not create the booking." }, { status: 500 });
+    }
+
+    if (tenantOwner?.owner?.email) {
+      const mail = bookingRequestEmail(
+        customer_name,
+        tenantOwner.name,
+        svc.name,
+        booking_date,
+        `${start_time}–${end_time}`
+      );
+      const delivery = await sendEmail({ to: tenantOwner.owner.email, ...mail });
+      if (!delivery.sent) console.warn("Booking created but owner notification was not sent:", delivery.reason);
     }
 
     return NextResponse.json({ ok: true, booking });

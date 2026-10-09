@@ -1,0 +1,36 @@
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { bookingRequestEmail } from "../lib/email.ts";
+
+test("booking request email includes the booking details", () => {
+  const email = bookingRequestEmail(
+    "Ada Lovelace",
+    "The Bridal Room",
+    "First fitting",
+    "2026-10-21",
+    "14:00–15:00"
+  );
+
+  assert.equal(email.subject, "New booking request — The Bridal Room");
+  assert.match(email.html, /Ada Lovelace/);
+  assert.match(email.html, /First fitting/);
+  assert.match(email.html, /2026-10-21/);
+  assert.match(email.html, /14:00–15:00/);
+});
+
+test("booking request email escapes user-controlled HTML", () => {
+  const email = bookingRequestEmail(
+    '<img src=x onerror="alert(1)">',
+    "Roses & Lace",
+    "Couture <script>alert(1)</script>",
+    "2026-10-21&next",
+    "14:00 < 15:00"
+  );
+
+  assert.doesNotMatch(email.html, /<img src=x/);
+  assert.doesNotMatch(email.html, /<script>alert/);
+  assert.match(email.html, /&lt;img src=x onerror=&quot;alert\(1\)&quot;&gt;/);
+  assert.match(email.html, /Roses &amp; Lace/);
+  assert.match(email.html, /2026-10-21&amp;next/);
+  assert.match(email.html, /14:00 &lt; 15:00/);
+});

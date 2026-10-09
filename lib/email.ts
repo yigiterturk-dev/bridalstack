@@ -5,6 +5,16 @@ const FROM = process.env.EMAIL_FROM || "BridalStack <noreply@bridalstack.com>";
 
 export type EmailResult = { sent: boolean; reason?: "unconfigured" | "failed" };
 
+function escapeHtml(value: string): string {
+  return value.replace(/[&<>'"]/g, (character) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    "'": "&#39;",
+    '"': "&quot;",
+  })[character] ?? character);
+}
+
 /**
  * E-posta göndermek hiçbir zaman çağıranı patlatmaz.
  *
@@ -56,6 +66,37 @@ export function appointmentReminderEmail(customerName: string, shopName: string,
           We look forward to seeing you! If you need to reschedule, please contact us.
         </p>
         <p style="color: #999; font-size: 12px; margin-top: 32px;">Sent via BridalStack</p>
+      </div>
+    `,
+  };
+}
+
+export function bookingRequestEmail(
+  customerName: string,
+  shopName: string,
+  serviceName: string,
+  date: string,
+  time: string
+) {
+  const safeCustomer = escapeHtml(customerName);
+  const safeShop = escapeHtml(shopName);
+  const safeService = escapeHtml(serviceName);
+  const safeDate = escapeHtml(date);
+  const safeTime = escapeHtml(time);
+  return {
+    subject: `New booking request — ${shopName}`,
+    html: `
+      <div style="font-family: system-ui, sans-serif; max-width: 520px; margin: 0 auto; padding: 32px;">
+        <h2 style="color:#111827;margin:0 0 8px;">New booking request</h2>
+        <p style="color:#6b7280;line-height:1.6;margin:0 0 24px;">
+          ${safeCustomer} requested an appointment at <strong>${safeShop}</strong>.
+        </p>
+        <div style="background:#f9fafb;border-radius:12px;padding:20px;margin:20px 0;">
+          <p style="margin:0;color:#111827;font-weight:600;">${safeService}</p>
+          <p style="margin:8px 0 0;color:#4b5563;">${safeDate} · ${safeTime}</p>
+        </div>
+        <p style="color:#6b7280;line-height:1.6;">Open BridalStack to review and confirm this request.</p>
+        <p style="color:#9ca3af;font-size:12px;margin-top:32px;">Sent via BridalStack</p>
       </div>
     `,
   };
