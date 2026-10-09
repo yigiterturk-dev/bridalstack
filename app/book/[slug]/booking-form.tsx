@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import Image from "next/image";
 
 type Service = { id: string; name: string; category: string | null; duration: number; price: number; price_max: number | null; description: string | null };
@@ -38,6 +38,11 @@ export default function BookingForm({ tenantId, accent, services, staff, schedul
   const [notes, setNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const errorRef = useRef<HTMLParagraphElement>(null);
+
+  useEffect(() => {
+    if (error) errorRef.current?.focus();
+  }, [error]);
 
   const selectedService = services.find((s) => s.id === serviceId);
   const selectedStaff = staff.find((s) => s.id === staffId);
@@ -97,7 +102,15 @@ export default function BookingForm({ tenantId, accent, services, staff, schedul
   const minDate = new Date().toISOString().split("T")[0];
 
   async function handleSubmit() {
-    if (!serviceId || !date || !time || !name.trim()) return;
+    if (!serviceId || !date || !time) return;
+    if (!name.trim()) {
+      setError("Please enter your full name.");
+      return;
+    }
+    if (!phone.trim() && !email.trim()) {
+      setError("Please provide a phone number or email address.");
+      return;
+    }
     setSubmitting(true);
     setError("");
 
@@ -105,23 +118,30 @@ export default function BookingForm({ tenantId, accent, services, staff, schedul
     const endMin = h * 60 + m + (selectedService?.duration ?? 30);
     const endTime = `${String(Math.floor(endMin / 60)).padStart(2, "0")}:${String(endMin % 60).padStart(2, "0")}`;
 
-    const res = await fetch("/api/book", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        tenant_id: tenantId,
-        service_id: serviceId,
-        member_id: staffId,
-        customer_name: name.trim(),
-        customer_phone: phone.trim(),
-        customer_email: email.trim(),
-        booking_date: date,
-        start_time: time,
-        end_time: endTime,
-        notes: notes.trim(),
-        amount: selectedService?.price ?? 0,
-      }),
-    });
+    let res: Response;
+    try {
+      res = await fetch("/api/book", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tenant_id: tenantId,
+          service_id: serviceId,
+          member_id: staffId,
+          customer_name: name.trim(),
+          customer_phone: phone.trim(),
+          customer_email: email.trim(),
+          booking_date: date,
+          start_time: time,
+          end_time: endTime,
+          notes: notes.trim(),
+          amount: selectedService?.price ?? 0,
+        }),
+      });
+    } catch {
+      setError("We couldn't reach the boutique. Check your connection and try again.");
+      setSubmitting(false);
+      return;
+    }
 
     if (!res.ok) {
       let msg = "Something went wrong. Please try again.";
@@ -321,7 +341,7 @@ export default function BookingForm({ tenantId, accent, services, staff, schedul
 
       {/* Step: Contact Info */}
       {step === "info" && (
-        <div className="bg-white rounded-2xl border border-gray-200/80 shadow-sm p-6 bs-animate-in">
+        <form onSubmit={(event) => { event.preventDefault(); void handleSubmit(); }} className="bg-white rounded-2xl border border-gray-200/80 shadow-sm p-6 bs-animate-in">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Your details</h2>
           <div className="flex flex-col gap-3.5">
             <div>
@@ -354,13 +374,13 @@ export default function BookingForm({ tenantId, accent, services, staff, schedul
             <div className="text-sm font-semibold text-gray-900 mt-1.5 tabular-nums">${Number(selectedService?.price ?? 0).toFixed(0)}</div>
           </div>
 
-          <p className="text-xs text-gray-400 mt-3">Please give us either a phone number or an email address.</p>
-          {error && <p role="alert" className="text-sm text-red-500 mt-2 flex items-center gap-1"><span aria-hidden="true" className="material-symbols-outlined text-base">error</span>{error}</p>}
+          <p id="booking-contact-help" className="text-xs text-gray-400 mt-3">Please give us either a phone number or an email address.</p>
+          {error && <p ref={errorRef} tabIndex={-1} role="alert" aria-live="assertive" className="text-sm text-red-500 mt-2 flex items-center gap-1 focus:outline-none"><span aria-hidden="true" className="material-symbols-outlined text-base">error</span>{error}</p>}
 
           <div className="flex items-center gap-3 mt-5">
-            <button onClick={() => setStep("datetime")} className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2 rounded"><span aria-hidden="true" className="material-symbols-outlined text-base">arrow_back</span>Back</button>
+            <button type="button" onClick={() => setStep("datetime")} className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2 rounded"><span aria-hidden="true" className="material-symbols-outlined text-base">arrow_back</span>Back</button>
             <button
-              onClick={handleSubmit}
+              type="submit"
               disabled={!name.trim() || (!phone.trim() && !email.trim()) || submitting}
               className="ml-auto py-2.5 px-6 text-white rounded-xl text-sm font-medium shadow-sm transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-500 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ backgroundColor: accent }}
@@ -368,7 +388,7 @@ export default function BookingForm({ tenantId, accent, services, staff, schedul
               {submitting ? "Sending..." : "Request appointment"}
             </button>
           </div>
-        </div>
+        </form>
       )}
     </div>
   );
