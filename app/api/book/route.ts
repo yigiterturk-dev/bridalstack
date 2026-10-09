@@ -25,7 +25,11 @@ export async function POST(req: Request) {
 
     let body: Record<string, unknown>;
     try {
-      body = await req.json();
+      const parsed: unknown = await req.json();
+      if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+        return NextResponse.json({ error: "Invalid request." }, { status: 400 });
+      }
+      body = parsed as Record<string, unknown>;
     } catch {
       return NextResponse.json({ error: "Invalid request." }, { status: 400 });
     }
@@ -56,7 +60,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: valid.error }, { status: 400 });
     }
 
-    const member_id = member_id_raw && UUID_RE.test(member_id_raw) ? member_id_raw : null;
+    if (member_id_raw && !UUID_RE.test(member_id_raw)) {
+      return NextResponse.json({ error: "Invalid staff member." }, { status: 400 });
+    }
+    const member_id = member_id_raw || null;
     const dayOfWeek = new Date(`${booking_date}T12:00:00Z`).getUTCDay();
 
     // 3. Tenant + servis gerçekten var mı? (uydurma id ile yazımı engelle)

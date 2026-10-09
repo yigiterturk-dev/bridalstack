@@ -56,6 +56,20 @@ async function run() {
   });
   check("Bozuk booking gövdesi 400 döndürüyor", malformed.status === 400, `status ${malformed.status}`);
 
+  const nonObjectBody = await fetch(`${BASE}/api/book`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: "null",
+  });
+  check("Null booking gövdesi 400 döndürüyor", nonObjectBody.status === 400, `status ${nonObjectBody.status}`);
+
+  const invalidMember = await fetch(`${BASE}/api/book`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ ...payload, member_id: "not-a-uuid" }),
+  });
+  check("Bozuk staff kimliği 400 döndürüyor", invalidMember.status === 400, `status ${invalidMember.status}`);
+
   const outsideHours = await fetch(`${BASE}/api/book`, {
     method: "POST",
     headers: { "content-type": "application/json" },
