@@ -117,6 +117,7 @@ export default async function DashboardPage() {
     { label: "Orders & Contracts", value: orderCount, icon: "receipt_long", href: "/orders", module: "sales" as const },
     { label: "Gowns in Inventory", value: productCount, icon: "checkroom", href: "/products", module: "inventory" as const },
   ].filter((s) => modules.includes(s.module));
+  const isEmptyWorkspace = stats.length > 0 && stats.every((stat) => stat.value === 0);
 
   // Son 6 ay için ay bazlı gelir toplamı — kayıt olmayan aylar sıfır kalır.
   const revenueBuckets: { key: string; month: string; revenue: number }[] = [];
@@ -167,6 +168,35 @@ export default async function DashboardPage() {
           </Link>
         ))}
       </div>
+
+      {isEmptyWorkspace && (
+        <section className="mb-8 rounded-2xl border border-stone-200/70 bg-white/75 p-6 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)]" aria-labelledby="getting-started-title">
+          <div className="flex flex-col gap-1 mb-5">
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-rose-500">Getting started</p>
+            <h2 id="getting-started-title" className="text-lg font-bold text-stone-900">Set up your boutique in a few steps</h2>
+            <p className="text-sm text-stone-500">Add your first records and your dashboard will start working for you.</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {[
+              hasCrm && { href: "/customers/new", icon: "person_add", title: "Add your first bride", description: "Create a profile with wedding details and notes." },
+              hasAppointments && { href: "/appointments", icon: "event", title: "Book an appointment", description: "Keep consultations and fittings in one calendar." },
+              hasInventory && { href: "/products/new", icon: "checkroom", title: "Add a gown", description: "Start tracking stock, try-ons, and availability." },
+            ].filter(Boolean).map((step) => {
+              const item = step as { href: string; icon: string; title: string; description: string };
+              return (
+                <Link key={item.href} href={item.href} className="group flex items-start gap-3 rounded-xl border border-stone-200/80 bg-stone-50/60 p-4 hover:border-rose-200 hover:bg-rose-50/40 transition-colors">
+                  <span className="material-symbols-outlined text-rose-500 text-[22px] mt-0.5">{item.icon}</span>
+                  <span className="min-w-0">
+                    <span className="block text-sm font-semibold text-stone-900 group-hover:text-rose-700">{item.title}</span>
+                    <span className="block text-xs leading-relaxed text-stone-500 mt-1">{item.description}</span>
+                  </span>
+                  <span className="material-symbols-outlined text-stone-300 text-lg ml-auto group-hover:text-rose-400">arrow_forward</span>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       {followUps.length > 0 && (
         <Link
