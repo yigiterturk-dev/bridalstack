@@ -55,7 +55,10 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#FDFCFB] bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] px-4 animate-fade-in-up">
+    <div
+      className="min-h-screen flex items-center justify-center bg-[#FDFCFB] px-4 animate-fade-in-up"
+      style={{ backgroundImage: "radial-gradient(rgba(120,113,108,0.12) 0.7px, transparent 0.7px)", backgroundSize: "18px 18px" }}
+    >
       <div className="absolute inset-0 bg-gradient-to-br from-rose-50/40 via-transparent to-stone-100/40 pointer-events-none" />
       
       <div className="w-full max-w-md relative z-10">

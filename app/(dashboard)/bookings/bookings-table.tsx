@@ -25,9 +25,11 @@ export default function BookingsTable({ bookings }: { bookings: Booking[] }) {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [actionError, setActionError] = useState("");
 
   async function updateStatus(id: string, newStatus: string) {
     setUpdatingId(id);
+    setActionError("");
     try {
       const res = await updateBookingStatus(id, newStatus);
       if (!res.ok) throw new Error(res.error);
@@ -35,6 +37,7 @@ export default function BookingsTable({ bookings }: { bookings: Booking[] }) {
       startTransition(() => router.refresh());
     } catch (err) {
       console.error("Error updating status:", err);
+      setActionError(err instanceof Error ? err.message : "Could not update the booking. Please try again.");
     } finally {
       setUpdatingId(null);
     }
@@ -69,6 +72,12 @@ export default function BookingsTable({ bookings }: { bookings: Booking[] }) {
           <p className="text-sm text-gray-500 mt-1">Manage client online appointment bookings and statuses.</p>
         </div>
       </div>
+
+      {actionError && (
+        <div role="alert" aria-live="assertive" className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+          {actionError}
+        </div>
+      )}
 
       {/* Stats Widget */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
