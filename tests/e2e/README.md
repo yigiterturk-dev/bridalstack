@@ -26,6 +26,7 @@ node tests/e2e/stage18-cash-sessions.mjs # kasa oturumları ve farklar (izole DB
 node tests/e2e/stage19-calendar-suppliers.mjs # takvim ve tedarikçi akışları (izole DB)
 node tests/e2e/stage20-trial-demo.mjs # trial kapısı ve demo verisi (izole DB)
 node tests/e2e/stage21-ai-gate.mjs # AI Stylist paket kapısı
+node tests/e2e/stage22-booking-concurrency.mjs # eşzamanlı booking kilidi, no-preference ataması ve müşteri dedupe
 ```
 
 Betikler `@prisma/client`'ı çözebilmek için proje kökünden çalıştırılmalı.
