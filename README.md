@@ -4,7 +4,7 @@ A multi-tenant CRM prototype for bridal retail operations. It brings customer re
 
 [![CI](https://github.com/yigiterturk-dev/stackcrm/actions/workflows/ci.yml/badge.svg)](https://github.com/yigiterturk-dev/stackcrm/actions/workflows/ci.yml)
 [![Next.js](https://img.shields.io/badge/Next.js-16-black)](https://nextjs.org/)
-[![Tests](https://img.shields.io/badge/tests-50%20unit%20%2B%20134%20e2e-16a34a)](tests)
+[![Tests](https://img.shields.io/badge/tests-301%20unit%20%2B%20134%20e2e-16a34a)](tests)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 > Status: the domain rules, TypeScript build, lint, and dependency audit are verified locally, and an eight-stage end-to-end suite runs against a live Neon Postgres database. Stripe, Resend, Vercel Blob, and AI integrations are environment-gated and require owner-provided credentials.
@@ -46,7 +46,7 @@ Authorization is layered: the proxy rejects unauthenticated requests to protecte
 
 ## Verified domain behavior
 
-`npm test` covers 50 unit cases; `tests/e2e/` adds 134 checks against a running server and a live database. Together they cover:
+`npm test` covers 301 unit cases; `tests/e2e/` adds 134 checks against a running server and a live database. Together they cover:
 
 - booking happy paths, malformed tenant IDs, invalid time windows, past dates, missing contact data, and collision detection;
 - role ranking, permission escalation denial, legacy-role normalization, and unknown-role fallback;
@@ -55,11 +55,12 @@ Authorization is layered: the proxy rejects unauthenticated requests to protecte
 Run the same quality gates used by CI:
 
 ```bash
-npm ci
+npm ci --ignore-scripts
+npx prisma generate
 npm run lint
 npm test
 npm run build
-npm audit
+npm audit --omit=dev --audit-level=high
 ```
 
 ## Local setup
@@ -69,7 +70,8 @@ Requirements: Node.js 24+, npm, and a Postgres database (Neon recommended).
 ```bash
 git clone https://github.com/yigiterturk-dev/stackcrm.git
 cd stackcrm
-npm ci
+npm ci --ignore-scripts
+npx prisma generate
 cp .env.example .env.local   # then fill DATABASE_URL and NEXTAUTH_SECRET
 npx prisma migrate deploy
 npm run dev
