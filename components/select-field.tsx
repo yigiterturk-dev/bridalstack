@@ -35,6 +35,7 @@ export default function SelectField({
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const boxRef = useRef<HTMLDivElement>(null);
+  const selectId = `${name.replace(/[^a-zA-Z0-9_-]/g, "-")}-select`;
 
   const withSearch = searchable ?? options.length > 8;
   const selected = options.find((o) => o.value === value) ?? null;
@@ -89,10 +90,13 @@ export default function SelectField({
       />
 
       <button
+        id={selectId}
         type="button"
         onClick={() => setOpen((o) => !o)}
+        aria-label={selected ? `${placeholder}: ${selected.label}` : placeholder}
         aria-haspopup="listbox"
         aria-expanded={open}
+        aria-controls={`${selectId}-listbox`}
         className="w-full flex items-center justify-between gap-2 px-4 py-2.5 rounded-xl border border-stone-200 bg-white text-sm text-left outline-none hover:border-stone-300 focus:border-stone-400 transition-colors"
       >
         <span className={`truncate ${selected ? "text-stone-900" : "text-stone-400"}`}>
@@ -112,12 +116,13 @@ export default function SelectField({
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search…"
+                aria-label={`${placeholder} search`}
                 className="w-full px-3 py-2 rounded-lg border border-stone-200 text-sm outline-none focus:border-stone-400"
               />
             </div>
           )}
 
-          <div role="listbox" className="max-h-64 overflow-y-auto py-1">
+          <div id={`${selectId}-listbox`} role="listbox" aria-label={`${placeholder} options`} className="max-h-64 overflow-y-auto py-1">
             {visible.length === 0 ? (
               <div className="px-4 py-3 text-sm text-stone-400">No matches</div>
             ) : (

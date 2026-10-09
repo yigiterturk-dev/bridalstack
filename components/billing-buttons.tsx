@@ -17,7 +17,7 @@ export function UpgradeButton({
 
   const newPrice = calculateMonthlyPrice(selectedPacks.filter((p) => p !== "base"));
   const currentPrice = calculateMonthlyPrice(currentPacks.filter((p) => p !== "base"));
-  const hasChanges = JSON.stringify(selectedPacks.sort()) !== JSON.stringify(currentPacks.sort());
+  const hasChanges = JSON.stringify([...selectedPacks].sort()) !== JSON.stringify([...currentPacks].sort());
 
   function togglePack(packId: PackId) {
     if (packId === "base" || !isPackSellable(packId)) return;
@@ -50,6 +50,7 @@ export function UpgradeButton({
   if (!billingConfigured) {
     return (
       <button
+        type="button"
         disabled
         title="Paid checkout launches soon. Your current plan keeps working, and active trials run their full course."
         className="inline-flex items-center gap-2 px-4 py-2.5 bg-gray-100 text-gray-400 rounded-xl text-sm font-medium cursor-not-allowed"
@@ -63,6 +64,7 @@ export function UpgradeButton({
   if (!open) {
     return (
       <button
+        type="button"
         onClick={() => setOpen(true)}
         className="inline-flex items-center gap-2 px-4 py-2.5 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors"
       >
@@ -76,7 +78,7 @@ export function UpgradeButton({
     <div className="bg-white rounded-2xl border border-gray-200 p-6">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-gray-900">Customize Your Plan</h3>
-        <button onClick={() => setOpen(false)} aria-label="Close plan selector" className="text-gray-400 hover:text-gray-600">
+        <button type="button" onClick={() => setOpen(false)} aria-label="Close plan selector" className="text-gray-400 hover:text-gray-600">
           <span className="material-symbols-outlined">close</span>
         </button>
       </div>
@@ -89,6 +91,7 @@ export function UpgradeButton({
           return (
             <button
               key={packId}
+              type="button"
               onClick={() => togglePack(packId)}
               disabled={locked}
               title={!sellable && packId !== "base" ? "Not available for purchase yet" : undefined}
@@ -120,6 +123,7 @@ export function UpgradeButton({
           )}
         </div>
         <button
+          type="button"
           onClick={handleCheckout}
           disabled={loading || !hasChanges}
           className="px-6 py-2.5 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors disabled:opacity-50"
