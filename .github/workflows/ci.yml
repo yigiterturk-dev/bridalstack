@@ -24,9 +24,15 @@ jobs:
         with:
           node-version: 24
           cache: npm
-      - run: npm ci
+      # Keep dependency installation from executing package lifecycle hooks.
+      # Prisma generation is invoked explicitly in the next step and in build.
+      - run: npm ci --ignore-scripts
       - run: npx prisma generate
       - run: npm run lint
       - run: npm test
       - run: npm run build
-      - run: npm audit --audit-level=high
+      # Runtime dependencies must have no high/critical advisories. The full
+      # tree still gets a critical-only gate because lint tooling currently
+      # carries non-runtime high advisories with no compatible fix.
+      - run: npm audit --omit=dev --audit-level=high
+      - run: npm audit --audit-level=critical
