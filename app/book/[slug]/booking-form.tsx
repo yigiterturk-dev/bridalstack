@@ -100,6 +100,7 @@ export default function BookingForm({ tenantId, accent, services, staff, schedul
   }, [services]);
 
   const minDate = new Date().toISOString().split("T")[0];
+  const hasPublishedAvailability = schedules.some((schedule) => !schedule.isOff);
 
   async function handleSubmit() {
     if (!serviceId || !date || !time) return;
@@ -168,6 +169,18 @@ export default function BookingForm({ tenantId, accent, services, staff, schedul
         <p className="text-gray-600 mb-1">{selectedService?.name} — {new Date(date + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", day: "numeric", month: "long" })}</p>
         <p className="text-gray-600">at {time}{selectedStaff ? ` · ${selectedStaff.name}` : ""}</p>
         <p className="text-sm text-gray-500 mt-6 max-w-sm mx-auto">Your appointment is <strong className="text-gray-700">awaiting confirmation</strong>. We will let you know as soon as it is confirmed.</p>
+      </div>
+    );
+  }
+
+  if (services.length === 0) {
+    return (
+      <div role="status" className="bg-white rounded-2xl border border-gray-200/80 shadow-sm p-8 text-center bs-animate-in">
+        <div className="w-12 h-12 rounded-2xl mx-auto mb-4 flex items-center justify-center" style={{ backgroundColor: accent + "18" }}>
+          <span aria-hidden="true" className="material-symbols-outlined text-2xl" style={{ color: accent }}>event_busy</span>
+        </div>
+        <h2 className="text-lg font-semibold text-gray-900">Online booking is being set up</h2>
+        <p className="text-sm text-gray-500 mt-2 max-w-sm mx-auto">This boutique has not published its appointment services yet. Please contact the boutique directly to arrange a visit.</p>
       </div>
     );
   }
@@ -244,39 +257,46 @@ export default function BookingForm({ tenantId, accent, services, staff, schedul
       {step === "staff" && (
         <div className="bg-white rounded-2xl border border-gray-200/80 shadow-sm p-6 bs-animate-in">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Choose a stylist</h2>
-          <div className="flex flex-col gap-2">
-            <button
-              onClick={() => { setStaffId(null); setStep("datetime"); }}
-              className="text-left p-4 rounded-xl border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all flex items-center gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
-            >
-              <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: accent + "15" }}>
-                <span className="material-symbols-outlined text-[20px]" style={{ color: accent }}>groups</span>
-              </div>
-              <div>
-                <div className="font-medium text-gray-900 text-sm">No preference</div>
-                <div className="text-xs text-gray-500">Any available stylist</div>
-              </div>
-            </button>
-            {availableStaff.map((s) => (
+          {availableStaff.length === 0 ? (
+            <div role="status" className="rounded-xl bg-gray-50 border border-gray-100 p-5 text-center">
+              <p className="text-sm text-gray-600">No stylist is available for this service yet.</p>
+              <p className="text-xs text-gray-500 mt-1">Please contact the boutique directly to arrange your appointment.</p>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-2">
               <button
-                key={s.id}
-                onClick={() => { setStaffId(s.id); setStep("datetime"); }}
+                onClick={() => { setStaffId(null); setStep("datetime"); }}
                 className="text-left p-4 rounded-xl border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all flex items-center gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
               >
-                {s.photo ? (
-                  <Image unoptimized src={s.photo} alt={s.name} width={40} height={40} className="w-10 h-10 rounded-full object-cover shrink-0" />
-                ) : (
-                  <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center shrink-0">
-                    <span className="material-symbols-outlined text-gray-400 text-[20px]">person</span>
-                  </div>
-                )}
+                <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: accent + "15" }}>
+                  <span aria-hidden="true" className="material-symbols-outlined text-[20px]" style={{ color: accent }}>groups</span>
+                </div>
                 <div>
-                  <div className="font-medium text-gray-900 text-sm">{s.name}</div>
-                  {s.title && <div className="text-xs text-gray-500">{s.title}</div>}
+                  <div className="font-medium text-gray-900 text-sm">No preference</div>
+                  <div className="text-xs text-gray-500">Any available stylist</div>
                 </div>
               </button>
-            ))}
-          </div>
+              {availableStaff.map((s) => (
+                <button
+                  key={s.id}
+                  onClick={() => { setStaffId(s.id); setStep("datetime"); }}
+                  className="text-left p-4 rounded-xl border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all flex items-center gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+                >
+                  {s.photo ? (
+                    <Image unoptimized src={s.photo} alt={s.name} width={40} height={40} className="w-10 h-10 rounded-full object-cover shrink-0" />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center shrink-0">
+                      <span aria-hidden="true" className="material-symbols-outlined text-gray-400 text-[20px]">person</span>
+                    </div>
+                  )}
+                  <div>
+                    <div className="font-medium text-gray-900 text-sm">{s.name}</div>
+                    {s.title && <div className="text-xs text-gray-500">{s.title}</div>}
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
           <button onClick={() => setStep("service")} className="mt-4 inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2 rounded"><span aria-hidden="true" className="material-symbols-outlined text-base">arrow_back</span>Back</button>
         </div>
       )}
@@ -319,7 +339,7 @@ export default function BookingForm({ tenantId, accent, services, staff, schedul
                 </div>
               ) : (
                 <div className="rounded-xl bg-gray-50 border border-gray-100 p-4 text-center">
-                  <p className="text-sm text-gray-500">No times available on this date. Please try another day.</p>
+                  <p className="text-sm text-gray-500">{hasPublishedAvailability ? "No times available on this date. Please try another day." : "The boutique has not published availability yet. Please contact them directly to arrange an appointment."}</p>
                 </div>
               )}
             </div>
