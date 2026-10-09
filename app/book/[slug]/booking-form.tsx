@@ -272,7 +272,8 @@ export default function BookingForm({ tenantId, accent, services, staff, schedul
               type="date"
               min={minDate}
               value={date}
-              onChange={(e) => { setDate(e.target.value); setTime(""); }}
+              onChange={(e) => { setDate(e.currentTarget.value); setTime(""); }}
+              onInput={(e) => { setDate(e.currentTarget.value); setTime(""); }}
               className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none transition focus:border-gray-400 focus:ring-2"
               style={{ ["--tw-ring-color" as string]: accent + "33" }}
             />
