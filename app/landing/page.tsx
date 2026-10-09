@@ -162,7 +162,7 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {ALL_PACK_IDS.map((packId) => {
               const pack = PACKS[packId];
-              const sellable = packId === "base" || isPackSellable(packId);
+              const sellable = pack.monthlyPrice === 0 || isPackSellable(packId);
               return (
                 <div key={packId} className={`bg-stone-800/50 backdrop-blur-xl rounded-[2.5rem] p-10 transition-all duration-500 hover:-translate-y-2 ${packId === "sales" ? "border border-rose-500/50 shadow-[0_0_50px_-12px_rgba(225,29,72,0.3)] relative" : "border border-stone-700/50"}`}>
                   {packId === "sales" && (
