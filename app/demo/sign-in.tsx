@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { signIn, signOut } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 /**
  * Tanıtım hesabına giriş. Parola gizli değil: hesap salt okunur ve herkese
@@ -18,6 +19,7 @@ export default function DemoSignIn({
   signOutFirst?: boolean;
 }) {
   const [failed, setFailed] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     let cancelled = false;
@@ -28,7 +30,7 @@ export default function DemoSignIn({
     if (signOutFirst) {
       signOut({ redirect: false })
         .then(() => {
-          window.location.href = "/demo";
+          router.push("/demo");
         })
         .catch(() => {
           if (!cancelled) setFailed(true);
@@ -44,7 +46,7 @@ export default function DemoSignIn({
     return () => {
       cancelled = true;
     };
-  }, [email, password, signOutFirst]);
+  }, [email, password, router, signOutFirst]);
 
   return (
     <main className="mx-auto flex min-h-screen max-w-lg flex-col items-center justify-center gap-4 px-6 text-center">
