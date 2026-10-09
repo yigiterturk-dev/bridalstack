@@ -71,6 +71,7 @@ export default function BarcodeScanner({
           </h3>
           <button
             onClick={onClose}
+            aria-label="Close barcode scanner"
             className="text-gray-400 hover:text-gray-700 p-1.5 hover:bg-gray-50 rounded-xl transition-all"
           >
             <span className="material-symbols-outlined text-lg">close</span>

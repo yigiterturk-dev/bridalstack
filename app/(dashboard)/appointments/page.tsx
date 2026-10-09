@@ -158,14 +158,14 @@ async function AppointmentsContent({ tenantId }: { tenantId: string }) {
                               <form action={updateAppointmentStatus}>
                                 <input type="hidden" name="id" value={a.id} />
                                 <input type="hidden" name="status" value="confirmed" />
-                                <button type="submit" className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-500 hover:text-white transition-colors" title="Confirm">
+                                <button type="submit" aria-label="Confirm appointment" className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-500 hover:text-white transition-colors" title="Confirm">
                                   <span className="material-symbols-outlined text-[16px]">check</span>
                                 </button>
                               </form>
                               <form action={updateAppointmentStatus}>
                                 <input type="hidden" name="id" value={a.id} />
                                 <input type="hidden" name="status" value="completed" />
-                                <button type="submit" className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 hover:bg-emerald-500 hover:text-white transition-colors" title="Mark Completed">
+                                <button type="submit" aria-label="Mark appointment completed" className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 hover:bg-emerald-500 hover:text-white transition-colors" title="Mark Completed">
                                   <span className="material-symbols-outlined text-[16px]">done_all</span>
                                 </button>
                               </form>
