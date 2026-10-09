@@ -1,8 +1,8 @@
 // ╔══════════════════════════════════════════════════════════════════════════╗
 // ║  Hız sınırlayıcı. Upstash Redis (REST) yapılandırılmışsa sayaç tüm         ║
 // ║  instance'lar arasında paylaşılır; yapılandırılmamışsa in-memory sürer.    ║
-// ║  Paylaşımlı store erişilemezse istek engellenmez (fail-open): koruma       ║
-// ║  bozulur ama ürün çalışmaya devam eder; hata loglanır.                     ║
+// ║  Paylaşımlı store erişilemezse istekler geçici olarak reddedilir            ║
+// ║  (fail-closed): abuse koruması sessizce devre dışı kalmaz.                 ║
 // ╚══════════════════════════════════════════════════════════════════════════╝
 
 type Hit = { count: number; resetAt: number };
@@ -105,8 +105,8 @@ export async function rateLimit(key: string, limit = 5, windowMs = 60_000): Prom
   try {
     return await sharedRateLimit(key, limit, windowMs, cfg);
   } catch (err) {
-    console.error("[ratelimit] paylasimli store erisilemiyor, fail-open:", err);
-    return { allowed: true, remaining: limit, retryAfter: 0 };
+    console.error("[ratelimit] paylasimli store erisilemiyor, fail-closed:", err);
+    return { allowed: false, remaining: 0, retryAfter: Math.max(1, Math.min(60, Math.ceil(windowMs / 1000))) };
   }
 }
 
