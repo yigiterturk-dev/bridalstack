@@ -81,23 +81,29 @@ export async function POST(req: Request) {
       }
     }
 
-    // 5. Müşteri profilini en iyi çabayla eşle/oluştur
+    // 5. Müşteri profilini tenant içinde eşle/oluştur. Aynı kimlikle gelen
+    // eşzamanlı booking'ler duplicate müşteri üretmesin diye kimlik anahtarını
+    // transaction-scoped advisory lock ile seri hale getiriyoruz.
     let customerId: string | null = null;
     try {
       if (customer_email || customer_phone) {
-        const existing = await prisma.customer.findFirst({
-          where: { tenant_id, ...(customer_email ? { email: customer_email } : { phone: customer_phone }) },
-          select: { id: true },
-        });
-        if (existing) {
-          customerId = existing.id;
-        } else {
-          const created = await prisma.customer.create({
+        customerId = await prisma.$transaction(async (tx) => {
+          const identity = customer_email ? `email:${customer_email}` : `phone:${customer_phone}`;
+          const lockKey = `${tenant_id}:customer:${identity}`;
+          await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtextextended(${lockKey}, 0))`;
+
+          const existing = await tx.customer.findFirst({
+            where: { tenant_id, ...(customer_email ? { email: customer_email } : { phone: customer_phone }) },
+            select: { id: true },
+          });
+          if (existing) return existing.id;
+
+          const created = await tx.customer.create({
             data: { tenant_id, name: customer_name, phone: customer_phone || null, email: customer_email || null, status: "new" },
             select: { id: true },
           });
-          customerId = created.id;
-        }
+          return created.id;
+        });
       }
     } catch (e) {
       console.warn("Could not link customer profile:", e);
