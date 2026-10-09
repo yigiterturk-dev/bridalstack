@@ -29,18 +29,26 @@ export default function PortalLinkButton({ customerId }: { customerId: string })
 
   async function copy() {
     if (!url) return;
-    await navigator.clipboard.writeText(url);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    setError(null);
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      setError("Could not copy the link. Select it and copy it manually.");
+    }
   }
 
   if (url) {
     return (
-      <div className="flex items-center gap-2">
-        <input type="text" readOnly value={url} aria-label="Client portal link" className="flex-1 px-3 py-1.5 rounded-lg border border-gray-300 text-xs bg-gray-50 font-mono" />
-        <button type="button" onClick={copy} aria-label={copied ? "Copied" : "Copy client portal link"} className="px-3 py-1.5 rounded-lg bg-gray-900 text-white text-xs font-medium hover:bg-gray-800">
-          {copied ? "Copied!" : "Copy"}
-        </button>
+      <div className="flex flex-col gap-1.5">
+        <div className="flex items-center gap-2">
+          <input type="text" readOnly value={url} aria-label="Client portal link" className="flex-1 px-3 py-1.5 rounded-lg border border-gray-300 text-xs bg-gray-50 font-mono" />
+          <button type="button" onClick={copy} aria-label={copied ? "Copied" : "Copy client portal link"} className="px-3 py-1.5 rounded-lg bg-gray-900 text-white text-xs font-medium hover:bg-gray-800">
+            {copied ? "Copied!" : "Copy"}
+          </button>
+        </div>
+        {error && <p role="alert" className="text-xs text-red-600">{error}</p>}
       </div>
     );
   }
@@ -53,7 +61,7 @@ export default function PortalLinkButton({ customerId }: { customerId: string })
         type="button"
         className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-300 text-xs font-medium text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
       >
-        <span className="material-symbols-outlined text-sm">link</span>
+        <span className="material-symbols-outlined text-sm" aria-hidden="true">link</span>
         {loading ? "Generating..." : "Client Portal"}
       </button>
       {error && <p role="alert" className="text-xs text-red-600">{error}</p>}

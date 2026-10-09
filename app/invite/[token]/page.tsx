@@ -59,7 +59,7 @@ export default async function InvitePage({ params, searchParams }: Props) {
   ]);
 
   const error = sp?.error ? (
-    <div className="rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700 mb-4">
+    <div role="alert" className="rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700 mb-4">
       {ERRORS[sp.error] ?? "Something went wrong."}
     </div>
   ) : null;
@@ -115,22 +115,25 @@ export default async function InvitePage({ params, searchParams }: Props) {
       <form action={acceptInviteWithSignup} className="flex flex-col gap-4">
         <input type="hidden" name="token" value={token} />
         <div>
-          <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">Your name</label>
+          <label htmlFor="invite-name" className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">Your name</label>
           <input
+            id="invite-name"
             name="name" required autoComplete="name"
             className="w-full px-5 py-4 rounded-2xl border border-stone-200 bg-white/50 text-stone-900 outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-50 transition-all"
           />
         </div>
         <div>
-          <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">Choose a password</label>
+          <label htmlFor="invite-password" className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">Choose a password</label>
           <input
+            id="invite-password"
             name="password" type="password" required minLength={8} autoComplete="new-password"
             className="w-full px-5 py-4 rounded-2xl border border-stone-200 bg-white/50 text-stone-900 outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-50 transition-all"
           />
         </div>
         <div>
-          <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">Confirm password</label>
+          <label htmlFor="invite-confirm-password" className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">Confirm password</label>
           <input
+            id="invite-confirm-password"
             name="confirm" type="password" required minLength={8} autoComplete="new-password"
             className="w-full px-5 py-4 rounded-2xl border border-stone-200 bg-white/50 text-stone-900 outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-50 transition-all"
           />
