@@ -16,6 +16,12 @@ export const metadata: Metadata = siteMetadata({
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-[#FDFCFB] overflow-hidden relative font-sans selection:bg-rose-200 selection:text-rose-900">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:rounded-full focus:bg-stone-900 focus:px-5 focus:py-3 focus:text-sm focus:font-semibold focus:text-white focus:shadow-xl"
+      >
+        Skip to content
+      </a>
       {/* Exquisite Luxury Background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
         <div className="absolute -top-[30%] -left-[10%] w-[70%] h-[70%] rounded-full bg-gradient-to-br from-rose-100/40 to-orange-50/40 blur-[120px] mix-blend-multiply animate-pulse" style={{ animationDuration: '8s' }} />
@@ -23,26 +29,30 @@ export default function LandingPage() {
         <div className="absolute -bottom-[20%] left-[20%] w-[50%] h-[50%] rounded-full bg-gradient-to-tr from-stone-200/40 to-orange-100/20 blur-[130px] mix-blend-multiply" />
         
         {/* Subtle grid pattern for texture */}
-        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] mix-blend-overlay" />
+        <div
+          className="absolute inset-0 opacity-[0.06] mix-blend-overlay"
+          aria-hidden="true"
+          style={{ backgroundImage: "radial-gradient(rgba(120,113,108,0.45) 0.7px, transparent 0.7px)", backgroundSize: "18px 18px" }}
+        />
       </div>
 
       {/* Nav */}
-      <nav className="fixed top-0 w-full bg-white/40 backdrop-blur-2xl border-b border-stone-200/50 z-50 transition-all">
+      <nav aria-label="Primary navigation" className="fixed top-0 w-full bg-white/40 backdrop-blur-2xl border-b border-stone-200/50 z-50 transition-all">
         <div className="max-w-6xl mx-auto px-6 h-20 flex items-center justify-between">
-          <h1 className="text-2xl font-extrabold text-stone-900 tracking-tight flex items-center gap-2">
+          <Link href="/" aria-label="BridalStack home" className="text-2xl font-extrabold text-stone-900 tracking-tight flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-4 rounded-lg">
             Bridal<span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-400 to-amber-500">Stack</span>
-          </h1>
+          </Link>
           <div className="hidden md:flex items-center gap-8">
-            <a href="#features" className="text-[14px] font-semibold text-stone-600 hover:text-rose-500 tracking-wide uppercase transition-colors">Features</a>
-            <a href="#pricing" className="text-[14px] font-semibold text-stone-600 hover:text-rose-500 tracking-wide uppercase transition-colors">Pricing</a>
-            <Link href="/guides" className="text-[14px] font-semibold text-stone-600 hover:text-rose-500 tracking-wide uppercase transition-colors">Guides</Link>
-            <Link href="/login" className="text-[15px] font-medium text-stone-900 hover:text-rose-600 transition-colors">Sign In</Link>
-            <Link href="/signup" className="px-6 py-2.5 bg-stone-900 text-white rounded-full text-[14px] font-semibold hover:bg-stone-800 hover:shadow-xl hover:shadow-stone-900/20 transition-all duration-300">
+            <a href="#features" className="text-[14px] font-semibold text-stone-600 hover:text-rose-500 tracking-wide uppercase transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-4 rounded">Features</a>
+            <a href="#pricing" className="text-[14px] font-semibold text-stone-600 hover:text-rose-500 tracking-wide uppercase transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-4 rounded">Pricing</a>
+            <Link href="/guides" className="text-[14px] font-semibold text-stone-600 hover:text-rose-500 tracking-wide uppercase transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-4 rounded">Guides</Link>
+            <Link href="/login" className="text-[15px] font-medium text-stone-900 hover:text-rose-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-4 rounded">Sign In</Link>
+            <Link href="/signup" className="px-6 py-2.5 bg-stone-900 text-white rounded-full text-[14px] font-semibold hover:bg-stone-800 hover:shadow-xl hover:shadow-stone-900/20 transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-4">
               Start Free
             </Link>
           </div>
           <div className="flex md:hidden items-center">
-            <Link href="/signup" className="px-4 py-2 bg-stone-900 text-white rounded-full text-xs font-bold hover:bg-stone-800 transition-colors">
+            <Link href="/signup" className="px-4 py-2 bg-stone-900 text-white rounded-full text-xs font-bold hover:bg-stone-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-4">
               Start Free
             </Link>
           </div>
@@ -50,6 +60,7 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero */}
+      <main id="main-content">
       <section className="pt-48 pb-32 px-6 relative z-10">
         <div className="max-w-5xl mx-auto text-center">
           <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-white/60 backdrop-blur-md border border-stone-200/60 shadow-sm text-stone-800 text-xs font-bold tracking-widest uppercase mb-10 animate-fade-in-up">
@@ -65,12 +76,12 @@ export default function LandingPage() {
             Manage brides, fittings, inventory, contracts, and payments from one breathtaking interface. Leave the spreadsheets behind.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-5 mt-14">
-            <Link href="/signup" className="w-full sm:w-auto px-10 py-4 bg-stone-900 text-white rounded-full text-lg font-medium hover:bg-stone-800 shadow-[0_8px_30px_rgba(0,0,0,0.12)] hover:shadow-[0_8px_30px_rgba(28,25,23,0.3)] hover:-translate-y-0.5 transition-all duration-300">
+            <Link href="/signup" className="w-full sm:w-auto px-10 py-4 bg-stone-900 text-white rounded-full text-lg font-medium hover:bg-stone-800 shadow-[0_8px_30px_rgba(0,0,0,0.12)] hover:shadow-[0_8px_30px_rgba(28,25,23,0.3)] hover:-translate-y-0.5 transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-4">
               Start Free →
             </Link>
             {/* Kayıt duvarına çarpmadan ürünü gören kişi geri dönüyor —
                 ikincil CTA bu yüzden özellik listesi değil, canlı demo. */}
-            <Link href="/demo" className="w-full sm:w-auto px-10 py-4 bg-white/50 backdrop-blur-sm border border-stone-200 rounded-full text-lg font-medium text-stone-700 hover:bg-white hover:border-stone-300 hover:shadow-sm transition-all duration-300">
+            <Link href="/demo" className="w-full sm:w-auto px-10 py-4 bg-white/50 backdrop-blur-sm border border-stone-200 rounded-full text-lg font-medium text-stone-700 hover:bg-white hover:border-stone-300 hover:shadow-sm transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-4">
               See a Live Shop
             </Link>
           </div>
@@ -239,6 +250,7 @@ export default function LandingPage() {
           </Link>
         </div>
       </section>
+      </main>
 
       {/* Footer */}
       <footer className="bg-white py-16 px-6 relative z-10">
