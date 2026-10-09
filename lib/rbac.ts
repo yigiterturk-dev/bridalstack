@@ -80,17 +80,17 @@ export function roleAtLeast(role: string | null | undefined, min: Role): boolean
 }
 
 export const ROLE_LABELS: Record<Role, string> = {
-  owner: "Sahip",
-  admin: "Yönetici",
-  stylist: "Stilist",
-  viewer: "Görüntüleyici",
+  owner: "Owner",
+  admin: "Administrator",
+  stylist: "Stylist",
+  viewer: "Viewer",
 };
 
 export const ROLE_DESCRIPTIONS: Record<Role, string> = {
-  owner: "Tam erişim + faturalandırma",
-  admin: "Faturalandırma hariç tam erişim",
-  stylist: "Müşteri, randevu ve sipariş yönetimi",
-  viewer: "Salt okunur erişim",
+  owner: "Full access + billing",
+  admin: "Full access except billing",
+  stylist: "Manage customers, appointments, and orders",
+  viewer: "Read-only access",
 };
 
 export const ASSIGNABLE_ROLES: Role[] = ["admin", "stylist", "viewer"];

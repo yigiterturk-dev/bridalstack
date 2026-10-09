@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { roleAtLeast, hasPermission, normalizeRole } from "../lib/rbac.ts";
+import { roleAtLeast, hasPermission, normalizeRole, ROLE_LABELS, ROLE_DESCRIPTIONS } from "../lib/rbac.ts";
 
 test("roleAtLeast: owner, admin eşiğini geçer (happy path)", () => {
   assert.equal(roleAtLeast("owner", "admin"), true);
@@ -31,4 +31,19 @@ test("normalizeRole: eski 'member' -> 'stylist', geçersiz -> 'viewer'", () => {
   assert.equal(normalizeRole("member"), "stylist");
   assert.equal(normalizeRole("garbage"), "viewer");
   assert.equal(normalizeRole(null), "viewer");
+});
+
+test("staff role labels and descriptions are customer-facing English", () => {
+  assert.deepEqual(ROLE_LABELS, {
+    owner: "Owner",
+    admin: "Administrator",
+    stylist: "Stylist",
+    viewer: "Viewer",
+  });
+  assert.deepEqual(ROLE_DESCRIPTIONS, {
+    owner: "Full access + billing",
+    admin: "Full access except billing",
+    stylist: "Manage customers, appointments, and orders",
+    viewer: "Read-only access",
+  });
 });
