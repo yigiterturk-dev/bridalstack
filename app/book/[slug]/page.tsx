@@ -2,11 +2,15 @@ import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import BookingForm from "./booking-form";
+import { DEMO_TENANT_SLUG } from "@/lib/demo-identity";
+import { ensureDemoTenant } from "@/lib/demo-tenant";
 
 type Props = { params: Promise<{ slug: string }> };
 
 export default async function PublicBookingPage({ params }: Props) {
   const { slug } = await params;
+  if (slug === DEMO_TENANT_SLUG) await ensureDemoTenant();
+
   const tenant = await prisma.tenant.findUnique({
     where: { slug },
     select: { id: true, name: true, logo_url: true, accent_color: true, settings: true },

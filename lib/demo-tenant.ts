@@ -61,11 +61,54 @@ export async function ensureDemoTenant(now = new Date()) {
     });
   }
 
-  await prisma.tenantMember.upsert({
+  const ownerMember = await prisma.tenantMember.upsert({
     where: { tenant_id_user_id: { tenant_id: tenant.id, user_id: ownerId } },
-    update: {},
-    create: { tenant_id: tenant.id, user_id: ownerId, role: "owner", display_name: "Owner" },
+    update: { display_name: "Owner", title: "Lead Bridal Stylist", is_bookable: true },
+    create: { tenant_id: tenant.id, user_id: ownerId, role: "owner", display_name: "Owner", title: "Lead Bridal Stylist", is_bookable: true },
+    select: { id: true },
   });
+
+  // The public demo should also prove the booking journey, not just the back office.
+  // Seed the catalog once; real demo bookings and any future edits are preserved.
+  const existingServices = await prisma.service.findMany({
+    where: { tenant_id: tenant.id, is_active: true },
+    select: { id: true },
+  });
+  const serviceIds = existingServices.length
+    ? existingServices.map((service) => service.id)
+    : (
+        await Promise.all([
+          { name: "Bridal Consultation", category: "Appointments", duration: 60, price: 0, description: "A relaxed first appointment to explore your vision." },
+          { name: "First Fitting", category: "Fittings", duration: 90, price: 150, description: "Try on gowns and build your shortlist with a stylist." },
+          { name: "Alterations Fitting", category: "Fittings", duration: 45, price: 85, description: "A focused fitting for final adjustments and measurements." },
+        ].map((service, sort_order) =>
+          prisma.service.create({
+            data: { tenant_id: tenant.id, ...service, sort_order },
+            select: { id: true },
+          }),
+        )
+      )
+    ).map((service) => service.id);
+
+  await Promise.all(
+    serviceIds.map((service_id) =>
+      prisma.staffService.upsert({
+        where: { member_id_service_id: { member_id: ownerMember.id, service_id } },
+        update: {},
+        create: { member_id: ownerMember.id, service_id },
+      }),
+    ),
+  );
+
+  await Promise.all(
+    Array.from({ length: 7 }, (_, day_of_week) =>
+      prisma.staffSchedule.upsert({
+        where: { member_id_day_of_week: { member_id: ownerMember.id, day_of_week } },
+        update: { start_time: "09:00", end_time: "17:00", break_start: "12:00", break_end: "13:00", is_off: day_of_week === 0 },
+        create: { tenant_id: tenant.id, member_id: ownerMember.id, day_of_week, start_time: "09:00", end_time: "17:00", break_start: "12:00", break_end: "13:00", is_off: day_of_week === 0 },
+      }),
+    ),
+  );
 
   // Ziyaretçi VIEWER. Burayı "admin" yapmak demoyu ilk gelenin insafına bırakır.
   await prisma.tenantMember.upsert({
