@@ -83,7 +83,7 @@ export function paymentReminderEmail(customerName: string, shopName: string, amo
   };
 }
 
-// Taksit hatırlatma e-postası (Türkçe) — kind'a göre ton değişir.
+// Installment reminder email — tone changes by kind.
 export function installmentReminderEmail(
   customerName: string,
   shopName: string,
@@ -93,26 +93,26 @@ export function installmentReminderEmail(
 ) {
   const heading =
     kind === "overdue"
-      ? "Gecikmiş taksit ödemeniz var"
+      ? "Your installment payment is overdue"
       : kind === "due_today"
-      ? "Bugün taksit ödeme gününüz"
-      : "Yaklaşan taksit ödemeniz";
+      ? "Your installment payment is due today"
+      : "Upcoming installment payment";
   const accent = kind === "overdue" ? "#b91c1c" : kind === "due_today" ? "#d97706" : "#111";
   const bg = kind === "overdue" ? "#fef2f2" : kind === "due_today" ? "#fffbeb" : "#f9fafb";
   return {
     subject: `${heading} — ${shopName}`,
     html: `
       <div style="font-family: system-ui, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px;">
-        <h2 style="color: #111; margin-bottom: 8px;">Merhaba ${customerName},</h2>
+        <h2 style="color: #111; margin-bottom: 8px;">Hi ${customerName},</h2>
         <p style="color: #555; line-height: 1.6;">
-          <strong>${shopName}</strong> nezdindeki taksit ödemenizle ilgili bir hatırlatma.
+          This is a reminder about your installment payment with <strong>${shopName}</strong>.
         </p>
         <div style="background: ${bg}; border-radius: 12px; padding: 20px; margin: 20px 0;">
           <p style="margin: 0; color: #111; font-size: 24px; font-weight: 700;">${amount}</p>
-          <p style="margin: 4px 0 0; color: ${accent};">Vade: ${dueDate}</p>
+          <p style="margin: 4px 0 0; color: ${accent};">Due: ${dueDate}</p>
         </div>
         <p style="color: #555; line-height: 1.6;">
-          Sorularınız için bizimle iletişime geçebilirsiniz.
+          Please contact us if you have any questions about your payment.
         </p>
         <p style="color: #999; font-size: 12px; margin-top: 32px;">Sent by Bridal Stack</p>
       </div>

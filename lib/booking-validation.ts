@@ -39,16 +39,16 @@ export function validateBookingInput(
     !TIME_RE.test(end_time) ||
     start_time >= end_time
   ) {
-    return { ok: false, error: "Eksik veya geçersiz alanlar." };
+    return { ok: false, error: "Missing or invalid fields." };
   }
   if (customer_email && !EMAIL_RE.test(customer_email)) {
-    return { ok: false, error: "Geçersiz e-posta." };
+    return { ok: false, error: "Invalid email address." };
   }
   if (!customer_phone && !customer_email) {
-    return { ok: false, error: "Telefon veya e-posta gereklidir." };
+    return { ok: false, error: "A phone number or email address is required." };
   }
   if (booking_date < today) {
-    return { ok: false, error: "Geçmiş bir tarih seçilemez." };
+    return { ok: false, error: "A past date cannot be selected." };
   }
   return { ok: true };
 }

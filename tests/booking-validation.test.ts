@@ -25,13 +25,13 @@ test("validateBookingInput: e-postasız ama telefonlu da geçerli", () => {
 test("validateBookingInput: geçmiş tarih reddedilir (abuse)", () => {
   const r = validateBookingInput({ ...VALID, booking_date: "2020-01-01" }, TODAY);
   assert.equal(r.ok, false);
-  assert.match((r as { error: string }).error, /Geçmiş/);
+  assert.match((r as { error: string }).error, /past date/i);
 });
 
 test("validateBookingInput: sahte tenant_id (UUID değil) reddedilir — fail-closed", () => {
   const r = validateBookingInput({ ...VALID, tenant_id: "'; DROP TABLE bookings;--" }, TODAY);
   assert.equal(r.ok, false);
-  assert.match((r as { error: string }).error, /Eksik veya geçersiz/);
+  assert.match((r as { error: string }).error, /missing or invalid/i);
 });
 
 test("validateBookingInput: bitiş <= başlangıç reddedilir", () => {
@@ -42,7 +42,7 @@ test("validateBookingInput: bitiş <= başlangıç reddedilir", () => {
 test("validateBookingInput: ne telefon ne e-posta -> reddedilir", () => {
   const r = validateBookingInput({ ...VALID, customer_phone: "", customer_email: "" }, TODAY);
   assert.equal(r.ok, false);
-  assert.match((r as { error: string }).error, /Telefon veya e-posta/);
+  assert.match((r as { error: string }).error, /phone number or email/i);
 });
 
 test("intervalsOverlap: yarı-açık aralık — sınırda dokunma çakışma değil", () => {
