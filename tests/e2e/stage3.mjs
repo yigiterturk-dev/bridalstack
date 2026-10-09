@@ -26,6 +26,9 @@ const contract = await prisma.contract.create({
   check("Sözleşme başlığı görünüyor", html.includes("Gown Purchase Agreement"));
 }
 {
+  const malformed = await fetch(`${BASE}/api/contracts/sign`, { method: "POST",
+    headers: { "content-type": "application/json" }, body: "not-json" });
+  check("Bozuk imza gövdesi 400 dönüyor", malformed.status === 400, `status ${malformed.status}`);
   const missingAgreement = await fetch(`${BASE}/api/contracts/sign`, { method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({ token, signature_data: "Zeynep Kaya" }) });

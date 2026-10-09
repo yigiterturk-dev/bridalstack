@@ -39,6 +39,18 @@ export default async function ContractSignPage({ params }: Props) {
     );
   }
 
+  if (contract.status !== "sent") {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+        <div className="text-center max-w-md">
+          <span className="material-symbols-outlined text-5xl text-gray-400 mb-4 block" aria-hidden="true">description</span>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Contract unavailable</h1>
+          <p className="text-gray-500">This contract is no longer available for signing. Please contact the boutique if you need a new link.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4">
       <div className="max-w-2xl mx-auto">

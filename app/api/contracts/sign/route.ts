@@ -2,8 +2,23 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 export async function POST(req: NextRequest) {
-  const { token, signature_data, agreement_confirmed } = await req.json();
-  if (!token || !signature_data || agreement_confirmed !== true) {
+  let body: unknown;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Request body must be valid JSON" }, { status: 400 });
+  }
+
+  if (!body || typeof body !== "object") {
+    return NextResponse.json({ error: "Request body is required" }, { status: 400 });
+  }
+
+  const payload = body as Record<string, unknown>;
+  const token = typeof payload.token === "string" ? payload.token.trim() : "";
+  const signature_data = typeof payload.signature_data === "string" ? payload.signature_data : "";
+  const agreement_confirmed = payload.agreement_confirmed;
+
+  if (!token || token.length > 256 || !signature_data || signature_data.length > 1_000_000 || agreement_confirmed !== true) {
     return NextResponse.json({ error: "Signature and agreement confirmation are required" }, { status: 400 });
   }
 
