@@ -76,13 +76,17 @@ export function bookingRequestEmail(
   shopName: string,
   serviceName: string,
   date: string,
-  time: string
+  time: string,
+  contact: { email?: string; phone?: string } = {}
 ) {
   const safeCustomer = escapeHtml(customerName);
   const safeShop = escapeHtml(shopName);
   const safeService = escapeHtml(serviceName);
   const safeDate = escapeHtml(date);
   const safeTime = escapeHtml(time);
+  const safeEmail = escapeHtml(contact.email || "");
+  const safePhone = escapeHtml(contact.phone || "");
+  const contactLine = [safeEmail, safePhone].filter(Boolean).join(" · ");
   return {
     subject: `New booking request — ${shopName}`,
     html: `
@@ -94,6 +98,7 @@ export function bookingRequestEmail(
         <div style="background:#f9fafb;border-radius:12px;padding:20px;margin:20px 0;">
           <p style="margin:0;color:#111827;font-weight:600;">${safeService}</p>
           <p style="margin:8px 0 0;color:#4b5563;">${safeDate} · ${safeTime}</p>
+          ${contactLine ? `<p style="margin:8px 0 0;color:#4b5563;">Contact: ${contactLine}</p>` : ""}
         </div>
         <p style="color:#6b7280;line-height:1.6;">Open BridalStack to review and confirm this request.</p>
         <p style="color:#9ca3af;font-size:12px;margin-top:32px;">Sent via BridalStack</p>

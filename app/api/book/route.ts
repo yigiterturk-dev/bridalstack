@@ -259,7 +259,8 @@ export async function POST(req: Request) {
         tenantOwner.name,
         svc.name,
         booking_date,
-        `${start_time}–${end_time}`
+        `${start_time}–${end_time}`,
+        { email: customer_email, phone: customer_phone }
       );
       const delivery = await sendEmail({ to: tenantOwner.owner.email, ...mail });
       if (!delivery.sent) console.warn("Booking created but owner notification was not sent:", delivery.reason);
