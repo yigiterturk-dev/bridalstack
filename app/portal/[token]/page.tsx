@@ -41,6 +41,19 @@ export default async function ClientPortalPage({ params }: Props) {
       orderBy: { created_at: "desc" }, take: 20,
     }),
   ]);
+
+  if (!customer) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+        <div className="text-center max-w-md">
+          <span className="material-symbols-outlined text-5xl text-gray-400 mb-4 block" aria-hidden="true">person_off</span>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Portal unavailable</h1>
+          <p className="text-gray-500">This client portal is no longer available. Please contact the boutique for a new link.</p>
+        </div>
+      </div>
+    );
+  }
+
   const tryOns = tryOnRows.map(({ product, ...t }) => ({ ...t, products: product }));
 
   const REACTION_EMOJI: Record<string, string> = { loved: "😍", liked: "👍", maybe: "🤔", no: "👎" };
@@ -59,7 +72,7 @@ export default async function ClientPortalPage({ params }: Props) {
         {(appointments ?? []).length > 0 && (
           <section className="bg-white rounded-2xl border border-gray-200 p-6">
             <h2 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-              <span className="material-symbols-outlined" style={{ color: accent }}>event</span>
+              <span className="material-symbols-outlined" aria-hidden="true" style={{ color: accent }}>event</span>
               Your Appointments
             </h2>
             <div className="flex flex-col gap-3">
@@ -88,7 +101,7 @@ export default async function ClientPortalPage({ params }: Props) {
         {(orders ?? []).length > 0 && (
           <section className="bg-white rounded-2xl border border-gray-200 p-6">
             <h2 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-              <span className="material-symbols-outlined" style={{ color: accent }}>receipt_long</span>
+              <span className="material-symbols-outlined" aria-hidden="true" style={{ color: accent }}>receipt_long</span>
               Your Orders
             </h2>
             <div className="flex flex-col gap-3">
@@ -114,7 +127,7 @@ export default async function ClientPortalPage({ params }: Props) {
         {(tryOns ?? []).length > 0 && (
           <section className="bg-white rounded-2xl border border-gray-200 p-6">
             <h2 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-              <span className="material-symbols-outlined" style={{ color: accent }}>checkroom</span>
+              <span className="material-symbols-outlined" aria-hidden="true" style={{ color: accent }}>checkroom</span>
               Gowns You Tried
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -123,7 +136,7 @@ export default async function ClientPortalPage({ params }: Props) {
                 return (
                   <div key={i} className="p-4 rounded-xl border border-gray-100 hover:border-gray-300 transition-colors">
                     {(t.photo_urls as string[])?.length > 0 && (
-                      <Image unoptimized src={(t.photo_urls as string[])[0]} alt={product?.name ?? ""} width={600} height={400} className="w-full h-40 object-cover rounded-lg mb-3" />
+                      <Image unoptimized src={(t.photo_urls as string[])[0]} alt={`${product?.name ?? "Gown"} try-on photo`} width={600} height={400} className="w-full h-40 object-cover rounded-lg mb-3" />
                     )}
                     <div className="font-medium text-gray-900 text-sm">{product?.name ?? "Gown"}</div>
                     {product?.category && <div className="text-xs text-gray-400">{product.category}</div>}
@@ -138,6 +151,14 @@ export default async function ClientPortalPage({ params }: Props) {
                 );
               })}
             </div>
+          </section>
+        )}
+
+        {appointments.length === 0 && orders.length === 0 && tryOns.length === 0 && (
+          <section className="bg-white rounded-2xl border border-gray-200 p-8 text-center">
+            <span className="material-symbols-outlined text-4xl text-rose-400 mb-3 block" aria-hidden="true">auto_awesome</span>
+            <h2 className="font-semibold text-gray-900">Your boutique is getting things ready</h2>
+            <p className="text-sm text-gray-500 mt-2">There are no updates to show yet. Check back soon or contact your stylist if you have a question.</p>
           </section>
         )}
 
