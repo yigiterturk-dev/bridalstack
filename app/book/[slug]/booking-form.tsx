@@ -17,6 +17,15 @@ type Props = {
 
 type Step = "service" | "staff" | "datetime" | "info" | "done";
 
+function formatDuration(minutes: number) {
+  if (minutes >= 60) {
+    const hours = Math.floor(minutes / 60);
+    const remainder = minutes % 60;
+    return `${hours}h${remainder ? ` ${remainder}m` : ""}`;
+  }
+  return `${minutes}m`;
+}
+
 export default function BookingForm({ tenantId, accent, services, staff, schedules }: Props) {
   const [step, setStep] = useState<Step>("service");
   const [serviceId, setServiceId] = useState<string | null>(null);
@@ -194,7 +203,7 @@ export default function BookingForm({ tenantId, accent, services, staff, schedul
                         <div className="min-w-0">
                           <div className="font-medium text-gray-900 text-sm">{s.name}</div>
                           <div className="text-xs text-gray-500 mt-0.5">
-                            {s.duration >= 60 ? `${Math.floor(s.duration / 60)}sa${s.duration % 60 ? ` ${s.duration % 60}dk` : ""}` : `${s.duration}dk`}
+                            {formatDuration(s.duration)}
                             {s.description && ` · ${s.description}`}
                           </div>
                         </div>
@@ -224,7 +233,7 @@ export default function BookingForm({ tenantId, accent, services, staff, schedul
                 <span className="material-symbols-outlined text-[20px]" style={{ color: accent }}>groups</span>
               </div>
               <div>
-                <div className="font-medium text-gray-900 text-sm">Fark etmez</div>
+                <div className="font-medium text-gray-900 text-sm">No preference</div>
                 <div className="text-xs text-gray-500">Any available stylist</div>
               </div>
             </button>
@@ -248,7 +257,7 @@ export default function BookingForm({ tenantId, accent, services, staff, schedul
               </button>
             ))}
           </div>
-          <button onClick={() => setStep("service")} className="mt-4 inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 transition-colors"><span className="material-symbols-outlined text-base">arrow_back</span>Back</button>
+          <button onClick={() => setStep("service")} className="mt-4 inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 transition-colors"><span aria-hidden="true" className="material-symbols-outlined text-base">arrow_back</span>Back</button>
         </div>
       )}
 
@@ -257,8 +266,9 @@ export default function BookingForm({ tenantId, accent, services, staff, schedul
         <div className="bg-white rounded-2xl border border-gray-200/80 shadow-sm p-6 bs-animate-in">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Choose a date and time</h2>
           <div className="mb-5">
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Tarih</label>
+            <label htmlFor="appointment-date" className="block text-sm font-medium text-gray-700 mb-1.5">Date</label>
             <input
+              id="appointment-date"
               type="date"
               min={minDate}
               value={date}
@@ -294,7 +304,7 @@ export default function BookingForm({ tenantId, accent, services, staff, schedul
             </div>
           )}
           <div className="flex items-center gap-3 mt-5">
-            <button onClick={() => setStep("staff")} className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 transition-colors"><span className="material-symbols-outlined text-base">arrow_back</span>Back</button>
+            <button onClick={() => setStep("staff")} className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 transition-colors"><span aria-hidden="true" className="material-symbols-outlined text-base">arrow_back</span>Back</button>
             {time && (
               <button
                 onClick={() => setStep("info")}
@@ -314,20 +324,20 @@ export default function BookingForm({ tenantId, accent, services, staff, schedul
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Your details</h2>
           <div className="flex flex-col gap-3.5">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Full name *</label>
-              <input value={name} onChange={(e) => setName(e.target.value)} className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none transition focus:border-gray-400 focus:ring-2" style={{ ["--tw-ring-color" as string]: accent + "33" }} placeholder="Your name" />
+              <label htmlFor="booking-name" className="block text-sm font-medium text-gray-700 mb-1.5">Full name *</label>
+              <input id="booking-name" value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none transition focus:border-gray-400 focus:ring-2" style={{ ["--tw-ring-color" as string]: accent + "33" }} placeholder="Your name" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Phone</label>
-              <input value={phone} onChange={(e) => setPhone(e.target.value)} type="tel" className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none transition focus:border-gray-400 focus:ring-2" style={{ ["--tw-ring-color" as string]: accent + "33" }} placeholder="(555) 123-4567" />
+              <label htmlFor="booking-phone" className="block text-sm font-medium text-gray-700 mb-1.5">Phone</label>
+              <input id="booking-phone" value={phone} onChange={(e) => setPhone(e.target.value)} type="tel" autoComplete="tel" className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none transition focus:border-gray-400 focus:ring-2" style={{ ["--tw-ring-color" as string]: accent + "33" }} placeholder="(555) 123-4567" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
-              <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none transition focus:border-gray-400 focus:ring-2" style={{ ["--tw-ring-color" as string]: accent + "33" }} placeholder="you@example.com" />
+              <label htmlFor="booking-email" className="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
+              <input id="booking-email" value={email} onChange={(e) => setEmail(e.target.value)} type="email" autoComplete="email" className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none transition focus:border-gray-400 focus:ring-2" style={{ ["--tw-ring-color" as string]: accent + "33" }} placeholder="you@example.com" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Notes</label>
-              <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none resize-y transition focus:border-gray-400 focus:ring-2" style={{ ["--tw-ring-color" as string]: accent + "33" }} placeholder="Anything we should know..." />
+              <label htmlFor="booking-notes" className="block text-sm font-medium text-gray-700 mb-1.5">Notes</label>
+              <textarea id="booking-notes" value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none resize-y transition focus:border-gray-400 focus:ring-2" style={{ ["--tw-ring-color" as string]: accent + "33" }} placeholder="Anything we should know..." />
             </div>
           </div>
 
@@ -338,16 +348,16 @@ export default function BookingForm({ tenantId, accent, services, staff, schedul
             <div className="text-xs text-gray-500 mt-1">
               {new Date(date + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", day: "numeric", month: "long" })} · {time}
               {selectedStaff ? ` · ${selectedStaff.name}` : ""}
-              {" · "}{selectedService && selectedService.duration >= 60 ? `${Math.floor(selectedService.duration / 60)}h${selectedService.duration % 60 ? ` ${selectedService.duration % 60}m` : ""}` : `${selectedService?.duration}m`}
+              {" · "}{selectedService ? formatDuration(selectedService.duration) : ""}
             </div>
             <div className="text-sm font-semibold text-gray-900 mt-1.5 tabular-nums">${Number(selectedService?.price ?? 0).toFixed(0)}</div>
           </div>
 
           <p className="text-xs text-gray-400 mt-3">Please give us either a phone number or an email address.</p>
-          {error && <p className="text-sm text-red-500 mt-2 flex items-center gap-1"><span className="material-symbols-outlined text-base">error</span>{error}</p>}
+          {error && <p role="alert" className="text-sm text-red-500 mt-2 flex items-center gap-1"><span aria-hidden="true" className="material-symbols-outlined text-base">error</span>{error}</p>}
 
           <div className="flex items-center gap-3 mt-5">
-            <button onClick={() => setStep("datetime")} className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 transition-colors"><span className="material-symbols-outlined text-base">arrow_back</span>Back</button>
+            <button onClick={() => setStep("datetime")} className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 transition-colors"><span aria-hidden="true" className="material-symbols-outlined text-base">arrow_back</span>Back</button>
             <button
               onClick={handleSubmit}
               disabled={!name.trim() || (!phone.trim() && !email.trim()) || submitting}
