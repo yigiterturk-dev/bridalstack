@@ -13,6 +13,7 @@ export function UpgradeButton({
   const [selectedPacks, setSelectedPacks] = useState<PackId[]>(currentPacks);
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const newPrice = calculateMonthlyPrice(selectedPacks.filter((p) => p !== "base"));
   const currentPrice = calculateMonthlyPrice(currentPacks.filter((p) => p !== "base"));
@@ -27,6 +28,7 @@ export function UpgradeButton({
 
   async function handleCheckout() {
     setLoading(true);
+    setError(null);
     try {
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
@@ -35,9 +37,9 @@ export function UpgradeButton({
       });
       const data = await res.json();
       if (data.url) window.location.href = data.url;
-      else alert(data.error || "Something went wrong");
+      else setError(data.error || "We couldn't start checkout. Please try again.");
     } catch {
-      alert("Something went wrong");
+      setError("We couldn't start checkout. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -74,7 +76,7 @@ export function UpgradeButton({
     <div className="bg-white rounded-2xl border border-gray-200 p-6">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-gray-900">Customize Your Plan</h3>
-        <button onClick={() => setOpen(false)} className="text-gray-400 hover:text-gray-600">
+        <button onClick={() => setOpen(false)} aria-label="Close plan selector" className="text-gray-400 hover:text-gray-600">
           <span className="material-symbols-outlined">close</span>
         </button>
       </div>
@@ -125,35 +127,41 @@ export function UpgradeButton({
           {loading ? "Processing..." : "Update Subscription"}
         </button>
       </div>
+      {error && <p role="alert" className="mt-4 text-sm text-red-600">{error}</p>}
     </div>
   );
 }
 
 export function ManageBillingButton() {
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function handlePortal() {
     setLoading(true);
+    setError(null);
     try {
       const res = await fetch("/api/stripe/portal", { method: "POST" });
       const data = await res.json();
       if (data.url) window.location.href = data.url;
-      else alert(data.error || "Something went wrong");
+      else setError(data.error || "We couldn't open billing. Please try again.");
     } catch {
-      alert("Something went wrong");
+      setError("We couldn't open billing. Please try again.");
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <button
-      onClick={handlePortal}
-      disabled={loading}
-      className="inline-flex items-center gap-2 px-4 py-2.5 border border-gray-300 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
-    >
-      <span className="material-symbols-outlined text-lg">credit_card</span>
-      {loading ? "..." : "Manage Billing"}
-    </button>
+    <div className="flex flex-col items-start gap-2">
+      <button
+        onClick={handlePortal}
+        disabled={loading}
+        className="inline-flex items-center gap-2 px-4 py-2.5 border border-gray-300 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
+      >
+        <span className="material-symbols-outlined text-lg">credit_card</span>
+        {loading ? "Opening..." : "Manage Billing"}
+      </button>
+      {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
+    </div>
   );
 }
