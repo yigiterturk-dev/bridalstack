@@ -224,7 +224,7 @@ export default function LandingPage() {
       <section className="py-32 px-6 bg-[#FDFCFB] relative overflow-hidden z-10 border-b border-stone-200/50">
         <div className="max-w-4xl mx-auto text-center relative z-10">
           <h2 className="text-5xl font-extrabold text-stone-900 tracking-tight leading-tight">Ready to modernize your boutique?</h2>
-          <p className="text-stone-500 mt-6 text-2xl font-light">Join hundreds of elite bridal boutiques using BridalStack.</p>
+          <p className="text-stone-500 mt-6 text-2xl font-light">Spend less time on admin and more time with every bride.</p>
           <Link href="/signup" className="inline-block mt-12 px-12 py-5 bg-stone-900 text-white rounded-full text-lg font-bold hover:bg-rose-600 hover:scale-105 transition-all duration-300 shadow-[0_10px_40px_rgba(0,0,0,0.15)] hover:shadow-[0_10px_40px_rgba(225,29,72,0.3)]">
             Start Free →
           </Link>
