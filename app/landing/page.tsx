@@ -111,20 +111,15 @@ export default function LandingPage() {
               { icon: "auto_awesome", title: "AI Stylist", desc: "Ask your AI assistant: 'What are the best-selling A-line gowns under $3,000 this month?'" },
               { icon: "draw", title: "Digital Contracts", desc: "Send a signing link, capture the signature, and keep the signed agreement on the order." },
               { icon: "analytics", title: "Advanced Analytics", desc: "Deep insights into monthly revenue, top-performing categories, and conversion rates." },
-              { icon: "account_balance", title: "Finance & Ledger", desc: "Installment plans, cash register, and daily revenue collection.", soon: true },
-              { icon: "payments", title: "Staff Commissions", desc: "Stylist performance tracking with automatic commission and bonus calculation.", soon: true },
+              { icon: "account_balance", title: "Finance & Ledger", desc: "Installment plans, cash register, and daily revenue collection." },
+              { icon: "payments", title: "Staff Commissions", desc: "Stylist performance tracking with automatic commission and bonus calculation." },
             ].map((f) => (
-              <div key={f.title} className={`bg-white/70 backdrop-blur-sm p-10 rounded-[2.5rem] border border-stone-100 transition-all duration-500 group ${f.soon ? "" : "hover:border-rose-200 hover:shadow-[0_20px_40px_-15px_rgba(225,29,72,0.1)] hover:-translate-y-1"}`}>
-                <div className={`w-16 h-16 rounded-2xl bg-stone-50 flex items-center justify-center mb-8 transition-all duration-500 ${f.soon ? "" : "group-hover:bg-rose-500 group-hover:shadow-lg group-hover:shadow-rose-500/30"}`}>
-                  <span className={`material-symbols-outlined text-3xl text-stone-800 transition-colors duration-300 ${f.soon ? "opacity-50" : "group-hover:text-white"}`}>{f.icon}</span>
+              <div key={f.title} className="bg-white/70 backdrop-blur-sm p-10 rounded-[2.5rem] border border-stone-100 transition-all duration-500 group hover:border-rose-200 hover:shadow-[0_20px_40px_-15px_rgba(225,29,72,0.1)] hover:-translate-y-1">
+                <div className="w-16 h-16 rounded-2xl bg-stone-50 flex items-center justify-center mb-8 transition-all duration-500 group-hover:bg-rose-500 group-hover:shadow-lg group-hover:shadow-rose-500/30">
+                  <span className="material-symbols-outlined text-3xl text-stone-800 transition-colors duration-300 group-hover:text-white">{f.icon}</span>
                 </div>
                 <div className="flex items-center gap-3 mb-3">
                   <h3 className="text-xl font-bold text-stone-900">{f.title}</h3>
-                  {f.soon && (
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-amber-700 bg-amber-50 border border-amber-100 px-2.5 py-1 rounded-full">
-                      Coming soon
-                    </span>
-                  )}
                 </div>
                 <p className="text-[15px] text-stone-500 leading-relaxed">{f.desc}</p>
               </div>
