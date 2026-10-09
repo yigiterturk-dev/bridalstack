@@ -37,8 +37,8 @@ export default function PortalLinkButton({ customerId }: { customerId: string })
   if (url) {
     return (
       <div className="flex items-center gap-2">
-        <input type="text" readOnly value={url} className="flex-1 px-3 py-1.5 rounded-lg border border-gray-300 text-xs bg-gray-50 font-mono" />
-        <button onClick={copy} className="px-3 py-1.5 rounded-lg bg-gray-900 text-white text-xs font-medium hover:bg-gray-800">
+        <input type="text" readOnly value={url} aria-label="Client portal link" className="flex-1 px-3 py-1.5 rounded-lg border border-gray-300 text-xs bg-gray-50 font-mono" />
+        <button type="button" onClick={copy} aria-label={copied ? "Copied" : "Copy client portal link"} className="px-3 py-1.5 rounded-lg bg-gray-900 text-white text-xs font-medium hover:bg-gray-800">
           {copied ? "Copied!" : "Copy"}
         </button>
       </div>
@@ -50,6 +50,7 @@ export default function PortalLinkButton({ customerId }: { customerId: string })
       <button
         onClick={generate}
         disabled={loading}
+        type="button"
         className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-300 text-xs font-medium text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
       >
         <span className="material-symbols-outlined text-sm">link</span>
