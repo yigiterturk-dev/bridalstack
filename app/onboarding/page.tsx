@@ -28,13 +28,17 @@ export default function OnboardingPage() {
   // Taslağı yükle
   useEffect(() => {
     (async () => {
-      const draft = await loadDraft();
-      if (draft) {
-        if (draft.shopName) setShopName(draft.shopName);
-        if (draft.packs?.length) setSelectedPacks(draft.packs);
-        if (draft.services?.length) setServices(draft.services);
-        if (draft.staff?.length) setStaff(draft.staff);
-        if (draft.step) setStep(Math.min(3, draft.step));
+      try {
+        const draft = await loadDraft();
+        if (draft) {
+          if (draft.shopName) setShopName(draft.shopName);
+          if (draft.packs?.length) setSelectedPacks(draft.packs);
+          if (draft.services?.length) setServices(draft.services);
+          if (draft.staff?.length) setStaff(draft.staff);
+          if (draft.step) setStep(Math.min(3, draft.step));
+        }
+      } catch {
+        setError("We could not load your saved progress. You can continue, but keep this tab open while setting up.");
       }
       setHydrated(true);
     })();
@@ -45,14 +49,19 @@ export default function OnboardingPage() {
       if (saveTimer.current) clearTimeout(saveTimer.current);
       saveTimer.current = setTimeout(async () => {
         setSaving(true);
-        await saveDraft({
-          shopName,
-          packs: selectedPacks,
-          services,
-          staff,
-          step,
-          ...next,
-        });
+        try {
+          const result = await saveDraft({
+            shopName,
+            packs: selectedPacks,
+            services,
+            staff,
+            step,
+            ...next,
+          });
+          if (!result.ok) setError("We could not save your progress. Keep this tab open and try again.");
+        } catch {
+          setError("We could not save your progress. Keep this tab open and try again.");
+        }
         setSaving(false);
       }, 600);
     },
