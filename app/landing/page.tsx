@@ -40,6 +40,11 @@ export default function LandingPage() {
               Start Free
             </Link>
           </div>
+          <div className="flex md:hidden items-center">
+            <Link href="/signup" className="px-4 py-2 bg-stone-900 text-white rounded-full text-xs font-bold hover:bg-stone-800 transition-colors">
+              Start Free
+            </Link>
+          </div>
         </div>
       </nav>
 
