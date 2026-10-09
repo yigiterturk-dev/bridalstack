@@ -26,15 +26,19 @@ const contract = await prisma.contract.create({
   check("Sözleşme başlığı görünüyor", html.includes("Gown Purchase Agreement"));
 }
 {
-  const res = await fetch(`${BASE}/api/contracts/sign`, { method: "POST",
+  const missingAgreement = await fetch(`${BASE}/api/contracts/sign`, { method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({ token, signature_data: "Zeynep Kaya" }) });
+  check("Onay olmadan sözleşme imzalanamıyor", missingAgreement.status === 400, `status ${missingAgreement.status}`);
+  const res = await fetch(`${BASE}/api/contracts/sign`, { method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ token, signature_data: "Zeynep Kaya", agreement_confirmed: true }) });
   check("Sözleşme imzalanıyor", res.status < 300, `status ${res.status}`);
   const c = await prisma.contract.findUnique({ where: { id: contract.id }, select: { status: true } });
   check("Sözleşme durumu signed oldu", c?.status === "signed", `durum ${c?.status}`);
   const again = await fetch(`${BASE}/api/contracts/sign`, { method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ token, signature_data: "Sahte İmza" }) });
+    body: JSON.stringify({ token, signature_data: "Sahte İmza", agreement_confirmed: true }) });
   check("İmzalanmış sözleşme ikinci kez imzalanamıyor", again.status === 404, `status ${again.status}`);
 }
 {

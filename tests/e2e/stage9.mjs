@@ -73,7 +73,7 @@ const contract=await prisma.contract.create({data:{tenant_id:tenant.id,customer_
 // ── Sözleşme çıktısı: imzalı ──
 {
   await fetch(`${BASE}/api/contracts/sign`,{method:"POST",headers:{"content-type":"application/json"},
-    body:JSON.stringify({token,signature_data:"Print Bride"})});
+    body:JSON.stringify({token,signature_data:"Print Bride",agreement_confirmed:true})});
   const html=strip(await(await fetch(`${BASE}/print/contract/${contract.id}`,{headers:H})).text());
   check("İmzalı sözleşmede imza görünüyor", html.includes("Signed by") && html.includes("Print Bride"));
   check("İmza tarihi görünüyor", html.includes("Signed on"));

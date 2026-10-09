@@ -2,8 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 export async function POST(req: NextRequest) {
-  const { token, signature_data } = await req.json();
-  if (!token || !signature_data) return NextResponse.json({ error: "Missing data" }, { status: 400 });
+  const { token, signature_data, agreement_confirmed } = await req.json();
+  if (!token || !signature_data || agreement_confirmed !== true) {
+    return NextResponse.json({ error: "Signature and agreement confirmation are required" }, { status: 400 });
+  }
 
   const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown";
 

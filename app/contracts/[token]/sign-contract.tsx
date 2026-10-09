@@ -9,11 +9,16 @@ export default function SignContract({ token, customerName }: { token: string; c
   const [loading, setLoading] = useState(false);
   const [typedName, setTypedName] = useState("");
   const [mode, setMode] = useState<"draw" | "type">("draw");
+  const [hasDrawn, setHasDrawn] = useState(false);
+  const [agreed, setAgreed] = useState(false);
+  const [error, setError] = useState("");
 
   function startDraw(e: React.MouseEvent | React.TouchEvent) {
     const canvas = canvasRef.current;
     if (!canvas) return;
     setDrawing(true);
+    setHasDrawn(true);
+    setError("");
     const ctx = canvas.getContext("2d")!;
     const rect = canvas.getBoundingClientRect();
     const x = "touches" in e ? e.touches[0].clientX - rect.left : e.clientX - rect.left;
@@ -41,21 +46,37 @@ export default function SignContract({ token, customerName }: { token: string; c
     const canvas = canvasRef.current;
     if (!canvas) return;
     canvas.getContext("2d")!.clearRect(0, 0, canvas.width, canvas.height);
+    setHasDrawn(false);
   }
 
   async function handleSign() {
+    const signatureData = mode === "draw" ? canvasRef.current?.toDataURL() : `TYPED:${typedName.trim()}`;
+    if (!agreed) {
+      setError("Please confirm that you agree to the terms before signing.");
+      return;
+    }
+    if (!signatureData || (mode === "draw" ? !hasDrawn : !typedName.trim())) {
+      setError("Please add your signature before submitting.");
+      return;
+    }
+
     setLoading(true);
-    const signatureData = mode === "draw" ? canvasRef.current?.toDataURL() : `TYPED:${typedName}`;
+    setError("");
 
     try {
       const res = await fetch(`/api/contracts/sign`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, signature_data: signatureData }),
+        body: JSON.stringify({ token, signature_data: signatureData, agreement_confirmed: true }),
       });
-      if (res.ok) setSigned(true);
+      if (res.ok) {
+        setSigned(true);
+      } else {
+        const body = await res.json().catch(() => null);
+        setError(body?.error ?? "This contract is no longer available for signing. Please contact the boutique.");
+      }
     } catch {
-      alert("Failed to sign");
+      setError("We could not submit your signature. Check your connection and try again.");
     } finally {
       setLoading(false);
     }
@@ -76,8 +97,8 @@ export default function SignContract({ token, customerName }: { token: string; c
       <h3 className="font-semibold text-gray-900 mb-4">Sign Below</h3>
 
       <div className="flex gap-2 mb-4">
-        <button onClick={() => setMode("draw")} className={`px-4 py-2 rounded-xl text-sm font-medium ${mode === "draw" ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-700"}`}>Draw</button>
-        <button onClick={() => setMode("type")} className={`px-4 py-2 rounded-xl text-sm font-medium ${mode === "type" ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-700"}`}>Type</button>
+        <button type="button" onClick={() => { setMode("draw"); setError(""); }} className={`px-4 py-2 rounded-xl text-sm font-medium ${mode === "draw" ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-700"}`}>Draw</button>
+        <button type="button" onClick={() => { setMode("type"); setError(""); }} className={`px-4 py-2 rounded-xl text-sm font-medium ${mode === "type" ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-700"}`}>Type</button>
       </div>
 
       {mode === "draw" ? (
@@ -86,6 +107,8 @@ export default function SignContract({ token, customerName }: { token: string; c
             ref={canvasRef}
             width={560}
             height={150}
+            role="img"
+            aria-label="Signature drawing area"
             className="w-full border border-gray-300 rounded-xl cursor-crosshair bg-white touch-none"
             onMouseDown={startDraw}
             onMouseMove={draw}
@@ -95,15 +118,16 @@ export default function SignContract({ token, customerName }: { token: string; c
             onTouchMove={draw}
             onTouchEnd={() => setDrawing(false)}
           />
-          <button onClick={clear} className="text-xs text-gray-500 hover:text-gray-900 mt-2">Clear</button>
+          <button type="button" onClick={clear} className="text-xs text-gray-500 hover:text-gray-900 mt-2">Clear</button>
         </div>
       ) : (
         <div>
           <input
             type="text"
             value={typedName}
-            onChange={(e) => setTypedName(e.target.value)}
+            onChange={(e) => { setTypedName(e.target.value); setError(""); }}
             placeholder="Type your full name"
+            aria-label="Full name for signature"
             className="w-full px-4 py-4 rounded-xl border border-gray-300 text-2xl outline-none"
             style={{ fontFamily: "cursive" }}
           />
@@ -112,14 +136,17 @@ export default function SignContract({ token, customerName }: { token: string; c
 
       <div className="flex items-center gap-3 mt-4">
         <label className="flex items-center gap-2 text-sm text-gray-600">
-          <input type="checkbox" required className="rounded" />
+          <input type="checkbox" checked={agreed} onChange={(e) => { setAgreed(e.target.checked); setError(""); }} className="rounded" />
           I agree to the terms above
         </label>
       </div>
 
+      {error && <p role="alert" className="mt-3 text-sm text-red-600">{error}</p>}
+
       <button
+        type="button"
         onClick={handleSign}
-        disabled={loading || (mode === "type" && !typedName.trim())}
+        disabled={loading || !agreed || (mode === "type" ? !typedName.trim() : !hasDrawn)}
         className="w-full mt-4 py-3 bg-rose-600 text-white rounded-xl text-base font-medium hover:bg-rose-700 transition-colors disabled:opacity-50"
       >
         {loading ? "Signing..." : "Sign Contract"}
