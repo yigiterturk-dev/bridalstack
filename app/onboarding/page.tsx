@@ -302,7 +302,7 @@ export default function OnboardingPage() {
                     <button
                       key={packId}
                       onClick={() => togglePack(packId)}
-                      disabled={packId === "base" || !sellable}
+                      disabled={packId === "base" || pack.monthlyPrice === 0 || !sellable}
                       className={`flex items-center justify-between p-4 rounded-xl border-2 text-left transition-all ${
                         active ? "border-gray-900 bg-gray-50" : "border-gray-100 hover:border-gray-300"
                       } ${packId === "base" || !sellable ? "opacity-60" : ""}`}
@@ -313,7 +313,7 @@ export default function OnboardingPage() {
                       </div>
                       <div className="text-right">
                         <div className="text-sm font-semibold text-gray-900">
-                          {!sellable && packId !== "base" ? "Coming soon" : pack.monthlyPrice === 0 ? "Free" : `${formatPrice(pack.monthlyPrice)}/mo`}
+                          {pack.monthlyPrice === 0 ? "Included" : !sellable ? "Coming soon" : `${formatPrice(pack.monthlyPrice)}/mo`}
                         </div>
                         {active && <span className="text-xs text-green-600">✓ Active</span>}
                       </div>

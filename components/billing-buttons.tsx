@@ -87,14 +87,14 @@ export function UpgradeButton({
           const pack = PACKS[packId];
           const active = selectedPacks.includes(packId);
           const sellable = isPackSellable(packId);
-          const locked = packId === "base" || !sellable;
+          const locked = packId === "base" || pack.monthlyPrice === 0 || !sellable;
           return (
             <button
               key={packId}
               type="button"
               onClick={() => togglePack(packId)}
               disabled={locked}
-              title={!sellable && packId !== "base" ? "Not available for purchase yet" : undefined}
+              title={!sellable && pack.monthlyPrice > 0 ? "Not available for purchase yet" : undefined}
               className={`text-left p-4 rounded-xl border-2 transition-all ${
                 active ? "border-gray-900 bg-gray-50" : "border-gray-100 hover:border-gray-300"
               } ${locked ? "opacity-60 cursor-not-allowed" : ""}`}
@@ -104,10 +104,10 @@ export function UpgradeButton({
                 {active && packId !== "base" && <span className="text-green-500 text-xs">✓</span>}
               </div>
               <div className="text-xs text-gray-500">
-                {packId !== "base" && !sellable
+                {pack.monthlyPrice === 0
+                  ? "Included"
+                  : !sellable
                   ? "Coming soon"
-                  : pack.monthlyPrice === 0
-                  ? "Free"
                   : `${formatPrice(pack.monthlyPrice)}/mo`}
               </div>
             </button>

@@ -284,7 +284,7 @@ export default async function SettingsPage({ searchParams }: Props) {
               const pack = PACKS[packId];
               const onTrial = tenant.trial_packs.includes(packId);
               const isActive = tenant.packs.includes(packId) || onTrial;
-              const sellable = packId === "base" || isPackSellable(packId);
+              const sellable = pack.monthlyPrice === 0 || isPackSellable(packId);
               return (
                 <div
                   key={packId}
@@ -303,7 +303,7 @@ export default async function SettingsPage({ searchParams }: Props) {
                     ) : !sellable ? (
                       <span className="text-xs font-medium text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">In development</span>
                     ) : (
-                      <span className="text-xs font-medium text-gray-400">{formatPrice(pack.monthlyPrice)}/mo</span>
+                      <span className="text-xs font-medium text-gray-400">{pack.monthlyPrice === 0 ? "Included" : `${formatPrice(pack.monthlyPrice)}/mo`}</span>
                     )}
                   </div>
                   <p className="text-xs text-gray-500 mb-3">{pack.description}</p>
