@@ -46,7 +46,7 @@ Authorization is layered: the proxy rejects unauthenticated requests to protecte
 
 ## Verified domain behavior
 
-`npm test` covers 306 unit cases; `tests/e2e/` adds 324 checks across 22 stages against a running server, a live database, or an isolated migration database. Together they cover:
+`npm test` covers 307 unit cases; `tests/e2e/` adds 324 checks across 22 stages against a running server, a live database, or an isolated migration database. Together they cover:
 
 - booking happy paths, malformed tenant IDs, invalid time windows, past dates, missing contact data, and collision detection;
 - role ranking, permission escalation denial, legacy-role normalization, and unknown-role fallback;

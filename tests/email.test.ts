@@ -1,6 +1,14 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { bookingRequestEmail } from "../lib/email.ts";
+import { bookingRequestEmail, sanitizeEmailSubject } from "../lib/email.ts";
+
+test("email subjects cannot inject newlines and stay bounded", () => {
+  assert.equal(
+    sanitizeEmailSubject("  New booking\r\nBcc: attacker@example.com  "),
+    "New booking Bcc: attacker@example.com"
+  );
+  assert.equal(sanitizeEmailSubject("a".repeat(240)).length, 200);
+});
 
 test("booking request email includes the booking details", () => {
   const email = bookingRequestEmail(

@@ -4,6 +4,11 @@ const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KE
 const FROM = process.env.EMAIL_FROM || "BridalStack <noreply@bridalstack.com>";
 
 export type EmailResult = { sent: boolean; reason?: "unconfigured" | "failed" };
+const EMAIL_TIMEOUT_MS = 5_000;
+
+export function sanitizeEmailSubject(subject: string): string {
+  return subject.replace(/[\r\n]+/g, " ").replace(/\s+/g, " ").trim().slice(0, 200);
+}
 
 function escapeHtml(value: string): string {
   return value.replace(/[&<>'"]/g, (character) => ({
@@ -37,7 +42,10 @@ export async function sendEmail({
   }
 
   try {
-    const { error } = await resend.emails.send({ from: FROM, to, subject, html });
+    const { error } = await withTimeout(
+      resend.emails.send({ from: FROM, to, subject: sanitizeEmailSubject(subject), html }),
+      EMAIL_TIMEOUT_MS
+    );
     if (error) {
       console.error(`[EMAIL FAIL] to=${to} subject=${subject} error=${error.message}`);
       return { sent: false, reason: "failed" };
@@ -47,6 +55,16 @@ export async function sendEmail({
     console.error(`[EMAIL FAIL] to=${to} subject=${subject} error=${String(err)}`);
     return { sent: false, reason: "failed" };
   }
+}
+
+function withTimeout<T>(promise: Promise<T>, milliseconds: number): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error("Email provider timed out")), milliseconds);
+    promise.then(
+      (value) => { clearTimeout(timer); resolve(value); },
+      (error) => { clearTimeout(timer); reject(error); }
+    );
+  });
 }
 
 export function appointmentReminderEmail(customerName: string, shopName: string, date: string, time: string) {
