@@ -130,10 +130,12 @@ export default function SelectField({
         type="button"
         onClick={() => (open ? setOpen(false) : openMenu())}
         onKeyDown={handleNavigationKeyDown}
+        role="combobox"
         aria-label={selected ? `${placeholder}: ${selected.label}` : placeholder}
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-controls={`${selectId}-listbox`}
+        aria-activedescendant={open && visible[highlightedIndex] ? `${selectId}-option-${highlightedIndex}` : undefined}
         className="w-full flex items-center justify-between gap-2 px-4 py-2.5 rounded-xl border border-stone-200 bg-white text-sm text-left outline-none hover:border-stone-300 focus:border-stone-400 transition-colors"
       >
         <span className={`truncate ${selected ? "text-stone-900" : "text-stone-400"}`}>
@@ -158,6 +160,7 @@ export default function SelectField({
                 onKeyDown={handleNavigationKeyDown}
                 placeholder="Search…"
                 aria-label={`${placeholder} search`}
+                aria-activedescendant={visible[highlightedIndex] ? `${selectId}-option-${highlightedIndex}` : undefined}
                 className="w-full px-3 py-2 rounded-lg border border-stone-200 text-sm outline-none focus:border-stone-400"
               />
             </div>
@@ -176,7 +179,6 @@ export default function SelectField({
                     type="button"
                     role="option"
                     aria-selected={isSelected}
-                    aria-current={index === highlightedIndex ? "true" : undefined}
                     onClick={() => choose(o.value)}
                     className={`w-full flex items-center justify-between gap-3 px-4 py-2.5 text-left text-sm hover:bg-stone-50 ${
                       index === highlightedIndex ? "bg-stone-50" : ""
