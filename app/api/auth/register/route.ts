@@ -18,8 +18,14 @@ export async function POST(req: Request) {
       });
     }
 
-    const body = await req.json();
-    const v = validateRegistration(body);
+    let body: unknown;
+    try {
+      body = await req.json();
+    } catch {
+      return new Response(JSON.stringify({ error: "Invalid request body" }), { status: 400 });
+    }
+    const input = body && typeof body === "object" ? body as { email?: unknown; password?: unknown; shopName?: unknown } : {};
+    const v = validateRegistration(input);
     if (!v.ok) {
       return new Response(JSON.stringify({ error: v.error }), { status: 400 });
     }

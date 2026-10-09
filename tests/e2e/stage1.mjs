@@ -33,6 +33,14 @@ const PASSWORD = "Str0ngPass!234";
 const SHOP = `Test Bridal ${stamp}`;
 
 const run = async () => {
+// Geçersiz gövde, genel sunucu hatasına dönüşmemeli.
+let malformed = await req("/api/auth/register", {
+  method: "POST",
+  headers: { "content-type": "application/json" },
+  body: "not-json",
+}, false);
+check("Bozuk kayıt gövdesi 400 döndürüyor", malformed.status === 400, `status ${malformed.status}`);
+
 // 1 — kayıt
 let r = await req("/api/auth/register", {
   method: "POST",
