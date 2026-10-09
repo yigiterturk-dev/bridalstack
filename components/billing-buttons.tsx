@@ -49,15 +49,20 @@ export function UpgradeButton({
   // durumu baştan söylüyoruz: deneme süreci yine çalışır, satın alma sonradan.
   if (!billingConfigured) {
     return (
-      <button
-        type="button"
-        disabled
-        title="Paid checkout launches soon. Your current plan keeps working, and active trials run their full course."
-        className="inline-flex items-center gap-2 px-4 py-2.5 bg-gray-100 text-gray-400 rounded-xl text-sm font-medium cursor-not-allowed"
-      >
-        <span className="material-symbols-outlined text-lg">hourglass_top</span>
-        Paid plans coming soon
-      </button>
+      <div className="flex flex-col items-start gap-1.5 max-w-xs">
+        <button
+          type="button"
+          disabled
+          aria-disabled="true"
+          className="inline-flex items-center gap-2 px-4 py-2.5 bg-gray-100 text-gray-400 rounded-xl text-sm font-medium cursor-not-allowed"
+        >
+          <span aria-hidden="true" className="material-symbols-outlined text-lg">hourglass_top</span>
+          Paid plans coming soon
+        </button>
+        <p className="text-xs text-gray-500" role="status">
+          Paid checkout is being connected. Your current plan and any active trial continue to work.
+        </p>
+      </div>
     );
   }
 
@@ -66,7 +71,9 @@ export function UpgradeButton({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="inline-flex items-center gap-2 px-4 py-2.5 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors"
+        aria-expanded={open}
+        aria-controls="plan-selector"
+        className="inline-flex items-center gap-2 px-4 py-2.5 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-500 focus-visible:ring-offset-2"
       >
         <span className="material-symbols-outlined text-lg">upgrade</span>
         Change Plan
@@ -75,11 +82,11 @@ export function UpgradeButton({
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 p-6">
+    <div id="plan-selector" className="bg-white rounded-2xl border border-gray-200 p-6">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-gray-900">Customize Your Plan</h3>
-        <button type="button" onClick={() => setOpen(false)} aria-label="Close plan selector" className="text-gray-400 hover:text-gray-600">
-          <span className="material-symbols-outlined">close</span>
+        <button type="button" onClick={() => setOpen(false)} aria-label="Close plan selector" className="text-gray-400 hover:text-gray-600 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-500 focus-visible:ring-offset-2">
+          <span aria-hidden="true" className="material-symbols-outlined">close</span>
         </button>
       </div>
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 mb-6">
@@ -97,7 +104,7 @@ export function UpgradeButton({
               title={!sellable && pack.monthlyPrice > 0 ? "Not available for purchase yet" : undefined}
               className={`text-left p-4 rounded-xl border-2 transition-all ${
                 active ? "border-gray-900 bg-gray-50" : "border-gray-100 hover:border-gray-300"
-              } ${locked ? "opacity-60 cursor-not-allowed" : ""}`}
+              } ${locked ? "opacity-60 cursor-not-allowed" : ""} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-500 focus-visible:ring-offset-2`}
             >
               <div className="flex items-center justify-between mb-1">
                 <span className="font-medium text-sm text-gray-900">{pack.name}</span>
@@ -126,7 +133,8 @@ export function UpgradeButton({
           type="button"
           onClick={handleCheckout}
           disabled={loading || !hasChanges}
-          className="px-6 py-2.5 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors disabled:opacity-50"
+          aria-busy={loading}
+          className="px-6 py-2.5 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-500 focus-visible:ring-offset-2"
         >
           {loading ? "Processing..." : "Update Subscription"}
         </button>
@@ -158,9 +166,11 @@ export function ManageBillingButton() {
   return (
     <div className="flex flex-col items-start gap-2">
       <button
+        type="button"
         onClick={handlePortal}
         disabled={loading}
-        className="inline-flex items-center gap-2 px-4 py-2.5 border border-gray-300 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
+        aria-busy={loading}
+        className="inline-flex items-center gap-2 px-4 py-2.5 border border-gray-300 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-500 focus-visible:ring-offset-2"
       >
         <span className="material-symbols-outlined text-lg">credit_card</span>
         {loading ? "Opening..." : "Manage Billing"}
