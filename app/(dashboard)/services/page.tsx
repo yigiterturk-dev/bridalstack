@@ -5,7 +5,7 @@ import { createService, deleteService, toggleService } from "./actions";
 import SelectField from "@/components/select-field";
 import ModuleGuard from "@/components/module-guard";
 import ConfirmSubmitButton from "@/components/confirm-submit-button";
-import { formatPrice } from "@/config/modules";
+import { CURRENCY_SYMBOL, formatPrice } from "@/config/modules";
 import SubmitButton from "@/components/submit-button";
 
 const CATEGORIES = ["Consultation", "Fitting", "Alterations", "Styling", "Accessories", "Hair", "Nails", "Skin", "Massage", "Makeup", "Tattoo", "Barber", "Lashes", "Waxing", "Other"];
@@ -74,11 +74,11 @@ export default async function ServicesPage() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label htmlFor="service-price" className="block text-sm font-medium text-gray-700 mb-1">Price ($)</label>
+              <label htmlFor="service-price" className="block text-sm font-medium text-gray-700 mb-1">Price ({CURRENCY_SYMBOL})</label>
                 <input id="service-price" name="price" type="number" step="0.01" min="0" className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none" placeholder="40" />
               </div>
               <div>
-                <label htmlFor="service-max-price" className="block text-sm font-medium text-gray-700 mb-1">Max Price ($)</label>
+              <label htmlFor="service-max-price" className="block text-sm font-medium text-gray-700 mb-1">Max Price ({CURRENCY_SYMBOL})</label>
                 <input id="service-max-price" name="price_max" type="number" step="0.01" min="0" className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none" placeholder="Optional" />
               </div>
             </div>

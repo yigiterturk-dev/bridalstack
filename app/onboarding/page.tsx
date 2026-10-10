@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { PRESETS } from "@/config/presets";
-import { PACKS, ALL_PACK_IDS, calculateMonthlyPrice, isPackSellable, formatPrice, type PackId } from "@/config/modules";
+import { PACKS, ALL_PACK_IDS, calculateMonthlyPrice, isPackSellable, formatPrice, CURRENCY_SYMBOL, type PackId } from "@/config/modules";
 import { loadDraft, saveDraft, finishOnboarding, type OnboardingDraft } from "./actions";
 
 type ServiceRow = { name: string; duration?: number; price?: number };
@@ -248,7 +248,7 @@ export default function OnboardingPage() {
               </p>
               <div className="flex flex-col gap-3">
                 {services.map((s, i) => (
-                  <div key={i} className="flex items-center gap-2">
+                  <div key={i} className="grid grid-cols-[minmax(0,1fr)_5rem_5rem_auto] items-center gap-2">
                     <input
                       value={s.name}
                       onChange={(e) => updateService(i, { name: e.target.value })}
@@ -272,7 +272,7 @@ export default function OnboardingPage() {
                       value={s.price ?? ""}
                       onChange={(e) => updateService(i, { price: Number(e.target.value) })}
                       aria-label={`Service ${i + 1} price`}
-                      placeholder="$"
+                      placeholder={CURRENCY_SYMBOL}
                       className="w-24 px-3 py-2.5 rounded-xl border border-gray-300 text-sm outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-ring)]"
                     />
                     {services.length > 1 && (

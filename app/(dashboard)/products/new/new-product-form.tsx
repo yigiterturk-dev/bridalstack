@@ -7,6 +7,7 @@ import BarcodeScanner from "@/components/barcode-scanner";
 import ImageUpload from "@/components/image-upload";
 import SelectField from "@/components/select-field";
 import SubmitButton from "@/components/submit-button";
+import { CURRENCY_SYMBOL } from "@/config/modules";
 
 const CATEGORIES = ["Bridal Gown", "Veil", "Tiara", "Accessories", "Bridesmaid", "Evening", "Other"];
 
@@ -96,11 +97,11 @@ export default function NewProductForm({
 
         <div className="grid grid-cols-3 gap-4">
           <div>
-            <label htmlFor="product-price" className="block text-sm font-medium text-gray-700 mb-1">Price ($)</label>
+            <label htmlFor="product-price" className="block text-sm font-medium text-gray-700 mb-1">Price ({CURRENCY_SYMBOL})</label>
             <input id="product-price" name="price" type="number" step="0.01" className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none" placeholder="0" />
           </div>
           <div>
-            <label htmlFor="product-cost" className="block text-sm font-medium text-gray-700 mb-1">Cost ($)</label>
+            <label htmlFor="product-cost" className="block text-sm font-medium text-gray-700 mb-1">Cost ({CURRENCY_SYMBOL})</label>
             <input id="product-cost" name="cost" type="number" step="0.01" className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none" placeholder="0" />
           </div>
           <div>
