@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { getCurrentMember } from "@/lib/tenant";
+import { getCurrentMember, getCurrentTenant } from "@/lib/tenant";
 import { hasPermission } from "@/lib/rbac";
 import { todayISO } from "@/lib/finance";
 import {
@@ -16,12 +16,15 @@ import {
   stockDelta,
 } from "@/lib/rentals";
 import { nonNegativeFloat } from "@/lib/numbers";
+import { normalizeTimeZone } from "@/lib/timezone";
 
 async function requireRentalsManager() {
   const member = await getCurrentMember();
   if (!member) redirect("/login");
   if (!hasPermission(member.role, "orders.manage")) redirect("/rentals?error=forbidden");
-  return member;
+  const tenant = await getCurrentTenant();
+  if (!tenant) redirect("/onboarding");
+  return { ...member, timeZone: normalizeTimeZone(tenant.settings.time_zone) };
 }
 
 function money(value: FormDataEntryValue | null): number {
@@ -110,7 +113,7 @@ export async function updateRentalStatus(formData: FormData) {
   if (!row) redirect("/rentals?error=notfound");
   if (!canTransition(row.status, next)) redirect("/rentals?error=transition");
 
-  const today = todayISO();
+  const today = todayISO(new Date(), member.timeZone);
   const needsCleaning = next === "returned" && String(formData.get("needs_cleaning")) === "on";
   const delta = stockDelta(row.status, next);
   const restock = next === "returned" ? returnRestockUnits(needsCleaning) : 0;
@@ -198,7 +201,7 @@ export async function collectLateFee(formData: FormData) {
 
   // Tarayıcıdan gelen rakama güvenilmez; tutar o anki veriden hesaplanır ve
   // daha önce tahsil edilen düşülür.
-  const amount = outstandingLateFee(row, todayISO());
+  const amount = outstandingLateFee(row, todayISO(new Date(), member.timeZone));
   if (amount <= 0) redirect("/rentals?error=nolatefee");
 
   await prisma.$transaction(async (tx) => {
@@ -217,7 +220,7 @@ export async function collectLateFee(formData: FormData) {
         amount,
         method: "cash",
         category: "rental",
-        occurred_on: todayISO(),
+        occurred_on: todayISO(new Date(), member.timeZone),
         description: `Late fee — ${row.product?.name ?? "gown"} · ${row.customer?.name ?? ""}`.trim(),
         customer_id: row.customer_id,
         created_by: member.userId,

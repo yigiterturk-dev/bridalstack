@@ -3,17 +3,20 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { getCurrentMember } from "@/lib/tenant";
+import { getCurrentMember, getCurrentTenant } from "@/lib/tenant";
 import { hasPermission } from "@/lib/rbac";
 import { todayISO } from "@/lib/finance";
 import { ALTERATION_KINDS, canTransition, kindLabel, shouldCharge } from "@/lib/alterations";
 import { nonNegativeFloat } from "@/lib/numbers";
+import { normalizeTimeZone } from "@/lib/timezone";
 
 async function requireAlterationsManager() {
   const member = await getCurrentMember();
   if (!member) redirect("/login");
   if (!hasPermission(member.role, "orders.manage")) redirect("/alterations?error=forbidden");
-  return member;
+  const tenant = await getCurrentTenant();
+  if (!tenant) redirect("/onboarding");
+  return { ...member, timeZone: normalizeTimeZone(tenant.settings.time_zone) };
 }
 
 const KIND_IDS = ALTERATION_KINDS.map((k) => k.id) as string[];
@@ -109,7 +112,7 @@ export async function updateAlterationStatus(formData: FormData) {
           amount: row.price,
           method: "cash",
           category: "alteration",
-          occurred_on: todayISO(),
+          occurred_on: todayISO(new Date(), member.timeZone),
           description: `${kindLabel(row.kind)} — ${row.customer?.name ?? "alteration"}`,
           customer_id: row.customer_id,
           order_id: row.order_id,
