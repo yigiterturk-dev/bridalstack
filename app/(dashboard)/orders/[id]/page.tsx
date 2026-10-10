@@ -330,15 +330,28 @@ export default async function OrderDetailPage({ params, searchParams }: Props) {
                 <form key={s} action={updateOrderStatus}>
                   <input type="hidden" name="id" value={order.id} />
                   <input type="hidden" name="status" value={s} />
-                  <button
-                    type="submit"
-                    disabled={order.status === s}
-                    className={`w-full text-left px-4 py-2.5 rounded-xl text-sm font-medium transition-colors capitalize ${
-                      order.status === s ? "bg-gray-900 text-white" : "bg-gray-50 text-gray-700 hover:bg-gray-100"
-                    }`}
-                  >
-                    {s.replace(/_/g, " ")}
-                  </button>
+                  {s === "cancelled" ? (
+                    <ConfirmSubmitButton
+                      message="Cancel this order? This cannot be undone."
+                      pendingLabel="Cancelling…"
+                      ariaLabel="Cancel order"
+                      className={`w-full text-left px-4 py-2.5 rounded-xl text-sm font-medium transition-colors capitalize disabled:opacity-60 disabled:cursor-wait ${
+                        order.status === s ? "bg-gray-900 text-white" : "bg-gray-50 text-gray-700 hover:bg-gray-100"
+                      }`}
+                    >
+                      {s.replace(/_/g, " ")}
+                    </ConfirmSubmitButton>
+                  ) : (
+                    <button
+                      type="submit"
+                      disabled={order.status === s}
+                      className={`w-full text-left px-4 py-2.5 rounded-xl text-sm font-medium transition-colors capitalize ${
+                        order.status === s ? "bg-gray-900 text-white" : "bg-gray-50 text-gray-700 hover:bg-gray-100"
+                      }`}
+                    >
+                      {s.replace(/_/g, " ")}
+                    </button>
+                  )}
                 </form>
               ))}
             </div>
@@ -453,8 +466,9 @@ export default async function OrderDetailPage({ params, searchParams }: Props) {
           <form action={createInstallmentPlan} className="grid sm:grid-cols-4 gap-4 items-end">
             <input type="hidden" name="order_id" value={order.id} />
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Amount to split</label>
+              <label htmlFor="installment-amount" className="block text-sm font-medium text-gray-700 mb-1">Amount to split</label>
               <input
+                id="installment-amount"
                 name="amount" type="number" step="0.01" min="0.01"
                 defaultValue={order.remaining_balance > 0 ? order.remaining_balance : undefined}
                 placeholder="Remaining balance"
@@ -462,21 +476,23 @@ export default async function OrderDetailPage({ params, searchParams }: Props) {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Installments</label>
+              <label htmlFor="installment-count" className="block text-sm font-medium text-gray-700 mb-1">Installments</label>
               <input
+                id="installment-count"
                 name="count" type="number" min="1" max="60" required defaultValue={6}
                 className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none focus:border-gray-900"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">First due date</label>
+              <label htmlFor="installment-first-due" className="block text-sm font-medium text-gray-700 mb-1">First due date</label>
               <input
+                id="installment-first-due"
                 name="first_due" type="date" required defaultValue={defaultFirstDue}
                 className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none focus:border-gray-900"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Every</label>
+              <label htmlFor="interval-select" className="block text-sm font-medium text-gray-700 mb-1">Every</label>
               <SelectField
                 name="interval"
                 defaultValue="1"
