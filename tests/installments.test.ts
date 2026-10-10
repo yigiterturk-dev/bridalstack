@@ -51,3 +51,10 @@ test("reminderFor: bugün vade -> due_today, ödenmiş/iptal -> null", () => {
   assert.equal(reminderFor({ due_date: "2026-06-01", paid_at: null, status: "pending" }, now), "overdue");
   assert.equal(reminderFor({ due_date: "2026-06-01", paid_at: "2026-05-01", status: "pending" }, now), null);
 });
+
+test("installment dates can use a tenant-local today override", () => {
+  const now = new Date("2026-06-11T00:30:00Z");
+  assert.equal(daysUntilDue("2026-06-10", now, "2026-06-10"), 0);
+  assert.equal(reminderFor({ due_date: "2026-06-10", paid_at: null, status: "pending" }, now, "2026-06-10"), "due_today");
+  assert.equal(deriveStatus({ due_date: "2026-06-10", paid_at: null, status: "pending" }, now, "2026-06-10"), "due");
+});

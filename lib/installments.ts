@@ -26,8 +26,8 @@ function dayUTC(d: Date | string): number {
 }
 
 // İki tarih arasındaki tam gün farkı (due - today). Pozitif = gelecekte.
-export function daysUntilDue(dueDate: string, now: Date = new Date()): number {
-  return dayUTC(dueDate) - dayUTC(now);
+export function daysUntilDue(dueDate: string, now: Date = new Date(), todayOverride?: string): number {
+  return dayUTC(dueDate) - (todayOverride ? dayUTC(todayOverride) : dayUTC(now));
 }
 
 // ───────────────────────────────────────────────────────────────────────────
@@ -77,10 +77,10 @@ export function buildInstallmentPlan(
 // Durum geçişi: ödenmemiş bir taksitin bugünkü tarihe göre statüsünü türetir.
 // pending → due (vade penceresinde) → overdue (vade geçti). paid/cancelled sabit.
 // ───────────────────────────────────────────────────────────────────────────
-export function deriveStatus(inst: Pick<InstallmentRow, "due_date" | "paid_at" | "status">, now: Date = new Date()): InstallmentStatus {
+export function deriveStatus(inst: Pick<InstallmentRow, "due_date" | "paid_at" | "status">, now: Date = new Date(), todayOverride?: string): InstallmentStatus {
   if (inst.status === "paid" || inst.paid_at) return "paid";
   if (inst.status === "cancelled") return "cancelled";
-  const diff = daysUntilDue(inst.due_date, now);
+  const diff = daysUntilDue(inst.due_date, now, todayOverride);
   if (diff < 0) return "overdue";
   if (diff <= UPCOMING_REMINDER_DAYS) return "due";
   return "pending";
@@ -92,10 +92,11 @@ export function deriveStatus(inst: Pick<InstallmentRow, "due_date" | "paid_at" |
 // ───────────────────────────────────────────────────────────────────────────
 export function reminderFor(
   inst: Pick<InstallmentRow, "due_date" | "paid_at" | "status">,
-  now: Date = new Date()
+  now: Date = new Date(),
+  todayOverride?: string
 ): ReminderKind | null {
   if (inst.status === "paid" || inst.paid_at || inst.status === "cancelled") return null;
-  const diff = daysUntilDue(inst.due_date, now);
+  const diff = daysUntilDue(inst.due_date, now, todayOverride);
   if (diff < 0) return "overdue";
   if (diff === 0) return "due_today";
   if (diff <= UPCOMING_REMINDER_DAYS) return "upcoming";

@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { sendEmail, installmentReminderEmail } from "@/lib/email";
 import { deriveStatus, reminderFor, type InstallmentStatus } from "@/lib/installments";
 import { formatPrice } from "@/config/modules";
+import { dateInTimeZone, normalizeTimeZone } from "@/lib/timezone";
 
 export const dynamic = "force-dynamic";
 
@@ -27,7 +28,7 @@ export async function GET(req: NextRequest) {
     select: {
       id: true, tenant_id: true, customer_id: true, amount: true, due_date: true, paid_at: true, status: true,
       customer: { select: { name: true, email: true } },
-      tenant: { select: { name: true } },
+      tenant: { select: { name: true, settings: true } },
     },
   });
 
@@ -37,16 +38,18 @@ export async function GET(req: NextRequest) {
 
   for (const row of installments) {
     const paidAt = row.paid_at ? row.paid_at.toISOString() : null;
+    const timeZone = normalizeTimeZone((row.tenant?.settings as Record<string, unknown> | null)?.time_zone);
+    const localToday = dateInTimeZone(now, timeZone);
 
     // 1) Durum geçişi
-    const next = deriveStatus({ due_date: row.due_date, paid_at: paidAt, status: row.status as InstallmentStatus }, now);
+    const next = deriveStatus({ due_date: row.due_date, paid_at: paidAt, status: row.status as InstallmentStatus }, now, localToday);
     if (next !== row.status) {
       await prisma.installment.update({ where: { id: row.id }, data: { status: next } });
       statusUpdated++;
     }
 
     // 2) Hatırlatma kararı
-    const kind = reminderFor({ due_date: row.due_date, paid_at: paidAt, status: next }, now);
+    const kind = reminderFor({ due_date: row.due_date, paid_at: paidAt, status: next }, now, localToday);
     if (!kind) continue;
 
     // Deduplike: UNIQUE(installment_id, kind) ihlali => zaten gönderilmiş, atla.
@@ -63,11 +66,11 @@ export async function GET(req: NextRequest) {
     const customer = row.customer;
     if (customer?.email) {
       const amountStr = formatPrice(Number(row.amount || 0));
-      const dueStr = new Date(row.due_date + "T12:00:00").toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" });
+      const dueStr = new Date(row.due_date + "T12:00:00Z").toLocaleDateString("en-US", { timeZone, day: "numeric", month: "long", year: "numeric" });
       const mail = installmentReminderEmail(customer.name, row.tenant?.name ?? "Your boutique", amountStr, dueStr, kind);
       try {
-        await sendEmail({ to: customer.email, ...mail });
-        emailsSent++;
+        const delivery = await sendEmail({ to: customer.email, ...mail });
+        if (delivery.sent) emailsSent++;
       } catch (e) {
         console.error("Could not send installment reminder email:", e);
       }
