@@ -47,6 +47,12 @@ export async function POST(req: Request) {
     const end_time = clean(body.end_time, 5);
     const notes = clean(body.notes, 500) || null;
 
+    // Do not pass attacker-controlled non-UUID strings to Prisma just to find
+    // the tenant's time zone. Keep malformed requests a predictable 400.
+    if (!UUID_RE.test(tenant_id) || !UUID_RE.test(service_id)) {
+      return NextResponse.json({ error: "Missing or invalid fields." }, { status: 400 });
+    }
+
     const tenantForDate = await prisma.tenant.findUnique({
       where: { id: tenant_id },
       select: { settings: true },
