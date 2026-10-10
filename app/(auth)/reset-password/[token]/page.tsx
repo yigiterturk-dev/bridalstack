@@ -36,7 +36,7 @@ export default async function ResetPasswordPage({ params, searchParams }: Props)
             </p>
             <Link
               href="/forgot-password"
-              className="inline-block py-4 px-6 bg-stone-900 text-white rounded-2xl font-bold hover:bg-rose-600 transition-all"
+              className="inline-block py-4 px-6 bg-stone-900 text-white rounded-2xl font-bold hover:bg-rose-600 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 focus-visible:ring-offset-2"
             >
               Request a new link
             </Link>
@@ -47,27 +47,28 @@ export default async function ResetPasswordPage({ params, searchParams }: Props)
             <form action={resetPassword} className="flex flex-col gap-4">
               <input type="hidden" name="token" value={token} />
               {sp?.error && (
-                <div className="rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700">
+                <div role="alert" aria-live="assertive" className="rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700">
                   {ERRORS[sp.error] ?? "Something went wrong."}
                 </div>
               )}
               <div>
-                <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">New password</label>
+                <label htmlFor="new-password" className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">New password</label>
                 <input
-                  name="password" type="password" required minLength={8} autoComplete="new-password"
-                  className="w-full px-5 py-4 rounded-2xl border border-stone-200 bg-white/50 text-stone-900 outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-50 transition-all"
+                  id="new-password" name="password" type="password" required minLength={8} autoComplete="new-password" aria-describedby="password-hint"
+                  className="w-full px-5 py-4 rounded-2xl border border-stone-200 bg-white/50 text-stone-900 outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-50 focus-visible:outline-none transition-all"
                 />
+                <p id="password-hint" className="mt-1.5 text-xs text-stone-400">At least 8 characters.</p>
               </div>
               <div>
-                <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">Confirm password</label>
+                <label htmlFor="confirm-password" className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">Confirm password</label>
                 <input
-                  name="confirm" type="password" required minLength={8} autoComplete="new-password"
-                  className="w-full px-5 py-4 rounded-2xl border border-stone-200 bg-white/50 text-stone-900 outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-50 transition-all"
+                  id="confirm-password" name="confirm" type="password" required minLength={8} autoComplete="new-password"
+                  className="w-full px-5 py-4 rounded-2xl border border-stone-200 bg-white/50 text-stone-900 outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-50 focus-visible:outline-none transition-all"
                 />
               </div>
               <button
                 type="submit"
-                className="w-full py-4 bg-stone-900 text-white rounded-2xl font-bold hover:bg-rose-600 transition-all duration-300"
+                className="w-full py-4 bg-stone-900 text-white rounded-2xl font-bold hover:bg-rose-600 transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 focus-visible:ring-offset-2"
               >
                 Save new password
               </button>
