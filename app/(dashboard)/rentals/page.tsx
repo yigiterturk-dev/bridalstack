@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentTenant } from "@/lib/tenant";
 import { formatPrice } from "@/config/modules";
 import { todayISO } from "@/lib/finance";
+import { normalizeTimeZone } from "@/lib/timezone";
 import ModuleGuard from "@/components/module-guard";
 import SelectField from "@/components/select-field";
 import SubmitButton from "@/components/submit-button";
@@ -51,13 +52,13 @@ export default async function RentalsPage({ searchParams }: Props) {
 
   return (
     <ModuleGuard moduleId="inventory" enabledModules={tenant.enabled_modules}>
-      <RentalsContent tenantId={tenant.id} error={params?.error} />
+      <RentalsContent tenantId={tenant.id} timeZone={normalizeTimeZone(tenant.settings.time_zone)} error={params?.error} />
     </ModuleGuard>
   );
 }
 
-async function RentalsContent({ tenantId, error }: { tenantId: string; error?: string }) {
-  const today = todayISO();
+async function RentalsContent({ tenantId, timeZone, error }: { tenantId: string; timeZone: string; error?: string }) {
+  const today = todayISO(new Date(), timeZone);
 
   const [rentals, customers, products, orders] = await Promise.all([
     prisma.rental.findMany({

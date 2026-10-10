@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentTenant } from "@/lib/tenant";
 import { formatPrice } from "@/config/modules";
 import { todayISO } from "@/lib/finance";
+import { normalizeTimeZone } from "@/lib/timezone";
 import ModuleGuard from "@/components/module-guard";
 import SelectField from "@/components/select-field";
 import { PO_STATUS_LABELS, isLate, summarize, type PoStatus } from "@/lib/purchasing";
@@ -36,13 +37,13 @@ export default async function PurchaseOrdersPage({ searchParams }: Props) {
 
   return (
     <ModuleGuard moduleId="inventory" enabledModules={tenant.enabled_modules}>
-      <PurchaseOrdersContent tenantId={tenant.id} error={params?.error} />
+      <PurchaseOrdersContent tenantId={tenant.id} timeZone={normalizeTimeZone(tenant.settings.time_zone)} error={params?.error} />
     </ModuleGuard>
   );
 }
 
-async function PurchaseOrdersContent({ tenantId, error }: { tenantId: string; error?: string }) {
-  const today = todayISO();
+async function PurchaseOrdersContent({ tenantId, timeZone, error }: { tenantId: string; timeZone: string; error?: string }) {
+  const today = todayISO(new Date(), timeZone);
 
   const [orders, suppliers] = await Promise.all([
     prisma.purchaseOrder.findMany({

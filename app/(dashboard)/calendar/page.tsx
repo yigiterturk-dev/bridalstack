@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getCurrentTenant } from "@/lib/tenant";
 import { todayISO } from "@/lib/finance";
+import { dateTimeInTimeZone, normalizeTimeZone } from "@/lib/timezone";
 import ModuleGuard from "@/components/module-guard";
 import {
   isLate,
@@ -21,8 +22,8 @@ export default async function CalendarPage({ searchParams }: PageProps) {
   const tenant = await getCurrentTenant();
   if (!tenant) redirect("/onboarding");
 
-  const now = new Date();
-  const today = todayISO();
+  const timeZone = normalizeTimeZone(tenant.settings.time_zone);
+  const today = todayISO(new Date(), timeZone);
 
   // Haftalık görünüm ayrı bir ekran değil, aynı verinin dar penceresi.
   const weekly = params?.view === "week";
@@ -30,10 +31,15 @@ export default async function CalendarPage({ searchParams }: PageProps) {
   const weekTo = weekly ? weekDates(weekFrom)[6] : "";
 
   const monthParam = params?.month;
-  const [year, month] = monthParam ? monthParam.split("-").map(Number) : [now.getFullYear(), now.getMonth() + 1];
+  const [todayYear, todayMonth] = today.split("-").map(Number);
+  const [year, month] = monthParam ? monthParam.split("-").map(Number) : [todayYear, todayMonth];
 
-  const start = weekly ? new Date(`${weekFrom}T00:00:00`) : new Date(year, month - 1, 1);
-  const end = weekly ? new Date(`${weekTo}T23:59:59`) : new Date(year, month, 0, 23, 59, 59);
+  const start = weekly
+    ? dateTimeInTimeZone(weekFrom, "00:00:00", timeZone)
+    : dateTimeInTimeZone(`${year}-${String(month).padStart(2, "0")}-01`, "00:00:00", timeZone);
+  const end = weekly
+    ? dateTimeInTimeZone(weekTo, "23:59:59", timeZone)
+    : dateTimeInTimeZone(`${year}-${String(month).padStart(2, "0")}-${String(new Date(Date.UTC(year, month, 0)).getUTCDate()).padStart(2, "0")}`, "23:59:59", timeZone);
 
   // Kiralamalar Inventory paketinde. Paket kapalıysa takvim de göstermez;
   // takvimin açık olması envanteri açmaz.
