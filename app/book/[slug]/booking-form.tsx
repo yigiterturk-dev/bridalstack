@@ -3,11 +3,13 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import Image from "next/image";
 import { formatPrice } from "@/config/modules";
+import { isStaffUnavailable } from "@/lib/booking-validation";
 
 type Service = { id: string; name: string; category: string | null; duration: number; price: number; price_max: number | null; description: string | null };
 type Staff = { id: string; name: string; title: string | null; photo: string | null; serviceIds: string[] };
 type Schedule = { memberId: string; dayOfWeek: number; startTime: string; endTime: string; breakStart: string | null; breakEnd: string | null; isOff: boolean };
 type ExistingBooking = { memberId: string | null; bookingDate: string; startTime: string; endTime: string };
+type TimeOff = { memberId: string; date: string };
 
 type Props = {
   tenantId: string;
@@ -16,6 +18,7 @@ type Props = {
   staff: Staff[];
   schedules: Schedule[];
   bookings: ExistingBooking[];
+  timeOff: TimeOff[];
   minDate: string;
 };
 
@@ -30,7 +33,7 @@ function formatDuration(minutes: number) {
   return `${minutes}m`;
 }
 
-export default function BookingForm({ tenantId, accent, services, staff, schedules, bookings, minDate }: Props) {
+export default function BookingForm({ tenantId, accent, services, staff, schedules, bookings, timeOff, minDate }: Props) {
   const [step, setStep] = useState<Step>("service");
   const [serviceId, setServiceId] = useState<string | null>(null);
   const [staffId, setStaffId] = useState<string | null>(null);
@@ -61,8 +64,8 @@ export default function BookingForm({ tenantId, accent, services, staff, schedul
     const dayOfWeek = new Date(date + "T12:00:00").getDay();
     const eligibleStaffIds = new Set(availableStaff.map((member) => member.id));
     const memberSchedules = staffId
-      ? schedules.filter((s) => s.memberId === staffId && s.dayOfWeek === dayOfWeek && !s.isOff)
-      : schedules.filter((s) => eligibleStaffIds.has(s.memberId) && s.dayOfWeek === dayOfWeek && !s.isOff);
+      ? schedules.filter((s) => s.memberId === staffId && !isStaffUnavailable(s.memberId, date, timeOff) && s.dayOfWeek === dayOfWeek && !s.isOff)
+      : schedules.filter((s) => eligibleStaffIds.has(s.memberId) && !isStaffUnavailable(s.memberId, date, timeOff) && s.dayOfWeek === dayOfWeek && !s.isOff);
 
     if (memberSchedules.length === 0) return [];
 
@@ -102,7 +105,7 @@ export default function BookingForm({ tenantId, accent, services, staff, schedul
       }
     }
     return slots.sort();
-  }, [availableStaff, bookings, date, staffId, selectedService, schedules]);
+  }, [availableStaff, bookings, date, staffId, selectedService, schedules, timeOff]);
 
   const grouped = useMemo(() => {
     return services.reduce((acc, s) => {

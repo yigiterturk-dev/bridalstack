@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { validateBookingInput, intervalsOverlap, hasConflict, fitsSchedule, canStaffBookService, type BookingInput } from "../lib/booking-validation.ts";
+import { validateBookingInput, intervalsOverlap, hasConflict, fitsSchedule, canStaffBookService, isStaffUnavailable, type BookingInput } from "../lib/booking-validation.ts";
 
 const VALID: BookingInput = {
   tenant_id: "11111111-1111-1111-1111-111111111111",
@@ -83,4 +83,11 @@ test("canStaffBookService: linksiz staff tüm servisleri yapabilir", () => {
 test("canStaffBookService: linkli staff yalnız bağlı servisi yapabilir", () => {
   assert.equal(canStaffBookService([VALID.service_id], VALID.service_id), true);
   assert.equal(canStaffBookService(["33333333-3333-3333-3333-333333333333"], VALID.service_id), false);
+});
+
+test("isStaffUnavailable: time-off only blocks the matching staff and date", () => {
+  const timeOff = [{ memberId: "staff-1", date: "2026-06-20" }];
+  assert.equal(isStaffUnavailable("staff-1", "2026-06-20", timeOff), true);
+  assert.equal(isStaffUnavailable("staff-1", "2026-06-21", timeOff), false);
+  assert.equal(isStaffUnavailable("staff-2", "2026-06-20", timeOff), false);
 });

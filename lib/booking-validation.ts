@@ -111,3 +111,9 @@ export function fitsSchedule(
 export function canStaffBookService(linkedServiceIds: string[], serviceId: string): boolean {
   return linkedServiceIds.length === 0 || linkedServiceIds.includes(serviceId);
 }
+
+export type BookingTimeOff = { memberId: string; date: string };
+
+export function isStaffUnavailable(memberId: string, date: string, timeOff: BookingTimeOff[]): boolean {
+  return timeOff.some((entry) => entry.memberId === memberId && entry.date === date);
+}

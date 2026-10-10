@@ -35,7 +35,7 @@ export default async function PublicBookingPage({ params }: Props) {
   const timeZone = normalizeTimeZone((tenant.settings as Record<string, unknown>)?.time_zone);
   const today = dateInTimeZone(new Date(), timeZone);
   // Eski sorgu staff_services'i kiracı filtresiz çekiyordu — sadece bu butiğin personeli.
-  const [staffServices, schedules, bookings] = await Promise.all([
+  const [staffServices, schedules, bookings, timeOff] = await Promise.all([
     prisma.staffService.findMany({ where: { member_id: { in: memberIds } }, select: { member_id: true, service_id: true } }),
     prisma.staffSchedule.findMany({
       where: { member_id: { in: memberIds } },
@@ -44,6 +44,10 @@ export default async function PublicBookingPage({ params }: Props) {
     prisma.booking.findMany({
       where: { tenant_id: tenant.id, booking_date: { gte: today }, status: { notIn: ["cancelled", "no_show"] } },
       select: { member_id: true, booking_date: true, start_time: true, end_time: true },
+    }),
+    prisma.staffTimeOff.findMany({
+      where: { tenant_id: tenant.id, member_id: { in: memberIds }, date: { gte: today } },
+      select: { member_id: true, date: true },
     }),
   ]);
 
@@ -96,6 +100,7 @@ export default async function PublicBookingPage({ params }: Props) {
             startTime: b.start_time,
             endTime: b.end_time,
           }))}
+          timeOff={(timeOff ?? []).map((entry) => ({ memberId: entry.member_id, date: entry.date }))}
           minDate={today}
         />
       </div>
