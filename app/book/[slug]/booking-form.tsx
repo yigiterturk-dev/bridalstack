@@ -172,7 +172,7 @@ export default function BookingForm({ tenantId, accent, services, staff, schedul
     return (
       <div role="status" aria-live="polite" className="bg-white rounded-2xl border border-gray-200/80 shadow-sm p-12 text-center bs-animate-in">
         <div className="w-16 h-16 rounded-full mx-auto mb-5 flex items-center justify-center" style={{ backgroundColor: accent + "18" }}>
-          <span className="material-symbols-outlined text-3xl" style={{ color: accent }}>check_circle</span>
+          <span aria-hidden="true" className="material-symbols-outlined text-3xl" style={{ color: accent }}>check_circle</span>
         </div>
         <h2 className="text-xl font-semibold text-gray-900 mb-2">Request received</h2>
         <p className="text-gray-600 mb-1">{selectedService?.name} — {new Date(date + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", day: "numeric", month: "long" })}</p>
@@ -214,7 +214,7 @@ export default function BookingForm({ tenantId, accent, services, staff, schedul
                   }`}
                   style={isCurrent ? { backgroundColor: accent } : isDone ? { backgroundColor: accent, opacity: 0.55 } : undefined}
                 >
-                  {isDone ? <span className="material-symbols-outlined text-[16px]">check</span> : i + 1}
+                  {isDone ? <span aria-hidden="true" className="material-symbols-outlined text-[16px]">check</span> : i + 1}
                 </div>
                 <span className={`text-[10px] font-medium ${isCurrent ? "text-gray-700" : "text-gray-400"}`}>{STEP_LABELS[s]}</span>
               </div>
@@ -236,8 +236,10 @@ export default function BookingForm({ tenantId, accent, services, staff, schedul
                   const sel = serviceId === s.id;
                   return (
                     <button
+                      type="button"
                       key={s.id}
                       onClick={() => { setServiceId(s.id); setStep("staff"); }}
+                      aria-pressed={sel}
                       className={`group text-left p-4 rounded-xl border transition-all hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${sel ? "ring-2" : "border-gray-200 hover:border-gray-300"}`}
                       style={sel ? { borderColor: accent, boxShadow: `0 0 0 2px ${accent}` } : undefined}
                     >
@@ -274,6 +276,7 @@ export default function BookingForm({ tenantId, accent, services, staff, schedul
           ) : (
             <div className="flex flex-col gap-2">
               <button
+                type="button"
                 onClick={() => { setStaffId(null); setStep("datetime"); }}
                 className="text-left p-4 rounded-xl border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all flex items-center gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
               >
@@ -287,6 +290,7 @@ export default function BookingForm({ tenantId, accent, services, staff, schedul
               </button>
               {availableStaff.map((s) => (
                 <button
+                  type="button"
                   key={s.id}
                   onClick={() => { setStaffId(s.id); setStep("datetime"); }}
                   className="text-left p-4 rounded-xl border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all flex items-center gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
@@ -323,7 +327,8 @@ export default function BookingForm({ tenantId, accent, services, staff, schedul
               value={date}
               onChange={(e) => { setDate(e.currentTarget.value); setTime(""); }}
               onInput={(e) => { setDate(e.currentTarget.value); setTime(""); }}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none transition focus:border-gray-400 focus:ring-2"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none transition focus:border-gray-400 focus:ring-2 focus-visible:outline-none"
+              aria-describedby="booking-contact-help"
               style={{ ["--tw-ring-color" as string]: accent + "33" }}
             />
           </div>
@@ -336,8 +341,10 @@ export default function BookingForm({ tenantId, accent, services, staff, schedul
                     const sel = time === slot;
                     return (
                       <button
+                        type="button"
                         key={slot}
                         onClick={() => setTime(slot)}
+                        aria-pressed={sel}
                         className={`py-2 rounded-lg text-sm font-medium transition-all tabular-nums focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${sel ? "text-white shadow-sm" : "bg-gray-50 text-gray-700 border border-gray-100 hover:border-gray-300 hover:bg-gray-100"}`}
                         style={sel ? { backgroundColor: accent } : undefined}
                       >
@@ -375,19 +382,19 @@ export default function BookingForm({ tenantId, accent, services, staff, schedul
           <div className="flex flex-col gap-3.5">
             <div>
               <label htmlFor="booking-name" className="block text-sm font-medium text-gray-700 mb-1.5">Full name *</label>
-              <input id="booking-name" value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none transition focus:border-gray-400 focus:ring-2" style={{ ["--tw-ring-color" as string]: accent + "33" }} placeholder="Your name" />
+              <input id="booking-name" value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" aria-required="true" className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none transition focus:border-gray-400 focus:ring-2 focus-visible:outline-none" style={{ ["--tw-ring-color" as string]: accent + "33" }} placeholder="Your name" />
             </div>
             <div>
               <label htmlFor="booking-phone" className="block text-sm font-medium text-gray-700 mb-1.5">Phone</label>
-              <input id="booking-phone" value={phone} onChange={(e) => setPhone(e.target.value)} type="tel" autoComplete="tel" className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none transition focus:border-gray-400 focus:ring-2" style={{ ["--tw-ring-color" as string]: accent + "33" }} placeholder="(555) 123-4567" />
+              <input id="booking-phone" value={phone} onChange={(e) => setPhone(e.target.value)} type="tel" autoComplete="tel" aria-describedby="booking-contact-help" className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none transition focus:border-gray-400 focus:ring-2 focus-visible:outline-none" style={{ ["--tw-ring-color" as string]: accent + "33" }} placeholder="(555) 123-4567" />
             </div>
             <div>
               <label htmlFor="booking-email" className="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
-              <input id="booking-email" value={email} onChange={(e) => setEmail(e.target.value)} type="email" autoComplete="email" className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none transition focus:border-gray-400 focus:ring-2" style={{ ["--tw-ring-color" as string]: accent + "33" }} placeholder="you@example.com" />
+              <input id="booking-email" value={email} onChange={(e) => setEmail(e.target.value)} type="email" autoComplete="email" aria-describedby="booking-contact-help" className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none transition focus:border-gray-400 focus:ring-2 focus-visible:outline-none" style={{ ["--tw-ring-color" as string]: accent + "33" }} placeholder="you@example.com" />
             </div>
             <div>
               <label htmlFor="booking-notes" className="block text-sm font-medium text-gray-700 mb-1.5">Notes</label>
-              <textarea id="booking-notes" value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none resize-y transition focus:border-gray-400 focus:ring-2" style={{ ["--tw-ring-color" as string]: accent + "33" }} placeholder="Anything we should know..." />
+              <textarea id="booking-notes" value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none resize-y transition focus:border-gray-400 focus:ring-2 focus-visible:outline-none" style={{ ["--tw-ring-color" as string]: accent + "33" }} placeholder="Anything we should know..." />
             </div>
           </div>
 
@@ -411,6 +418,7 @@ export default function BookingForm({ tenantId, accent, services, staff, schedul
             <button
               type="submit"
               disabled={!name.trim() || (!phone.trim() && !email.trim()) || submitting}
+              aria-busy={submitting}
               className="ml-auto py-2.5 px-6 text-white rounded-xl text-sm font-medium shadow-sm transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-500 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ backgroundColor: accent }}
             >
