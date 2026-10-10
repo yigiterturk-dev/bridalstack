@@ -11,6 +11,7 @@ import {
 import { addMember, updateRole, removeMember, revokeInvite } from "./actions";
 import SelectField from "@/components/select-field";
 import InviteLinkButton from "@/components/invite-link-button";
+import SubmitButton from "@/components/submit-button";
 import { inviteStatus } from "@/lib/invitations";
 
 type PageProps = { searchParams?: Promise<{ success?: string; error?: string }> };
@@ -95,12 +96,12 @@ export default async function StaffPage({ searchParams }: PageProps) {
                   }))}
                 />
               </div>
-              <button
-                type="submit"
-                className="mt-2 py-2.5 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-800"
+              <SubmitButton
+                pendingLabel="Sending invite…"
+                className="mt-2 py-2.5 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-800 disabled:opacity-60 disabled:cursor-wait"
               >
                 Send invite
-              </button>
+              </SubmitButton>
             </form>
             <div className="mt-4 p-3 rounded-xl bg-amber-50 border border-amber-200">
               <p className="text-xs text-amber-700">

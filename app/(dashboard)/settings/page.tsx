@@ -8,6 +8,7 @@ import { UpgradeButton, ManageBillingButton } from "@/components/billing-buttons
 import { BILLING_CONFIGURED } from "@/lib/stripe";
 import SignOutButton from "@/components/sign-out-button";
 import CopyField from "@/components/copy-field";
+import SubmitButton from "@/components/submit-button";
 import { updateShopProfile, startPackTrial, seedDemoData, clearDemoData } from "./actions";
 import { canStartTrial, TRIAL_DAYS } from "@/lib/trial";
 
@@ -195,12 +196,12 @@ export default async function SettingsPage({ searchParams }: Props) {
               </label>
 
               <div>
-                <button
-                  type="submit"
-                  className="px-5 py-2.5 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-800"
+                <SubmitButton
+                  pendingLabel="Saving changes…"
+                  className="px-5 py-2.5 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-800 disabled:opacity-60 disabled:cursor-wait"
                 >
                   Save Changes
-                </button>
+                </SubmitButton>
               </div>
             </form>
           ) : (
