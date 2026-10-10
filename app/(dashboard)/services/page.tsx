@@ -8,7 +8,7 @@ import ConfirmSubmitButton from "@/components/confirm-submit-button";
 import { formatPrice } from "@/config/modules";
 import SubmitButton from "@/components/submit-button";
 
-const CATEGORIES = ["Hair", "Nails", "Skin", "Massage", "Makeup", "Tattoo", "Barber", "Lashes", "Waxing", "Other"];
+const CATEGORIES = ["Consultation", "Fitting", "Alterations", "Styling", "Accessories", "Hair", "Nails", "Skin", "Massage", "Makeup", "Tattoo", "Barber", "Lashes", "Waxing", "Other"];
 const DURATIONS = [15, 30, 45, 60, 90, 120, 150, 180];
 
 export default async function ServicesPage() {
@@ -47,7 +47,7 @@ export default async function ServicesPage() {
           <form action={createService} className="flex flex-col gap-3">
             <div>
               <label htmlFor="service-name" className="block text-sm font-medium text-gray-700 mb-1">Name *</label>
-              <input id="service-name" name="name" required className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none" placeholder="e.g. Haircut & Style" />
+              <input id="service-name" name="name" required className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none" placeholder="e.g. Bridal Consultation" />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>

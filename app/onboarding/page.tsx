@@ -85,7 +85,12 @@ export default function OnboardingPage() {
   function selectPreset(presetId: string) {
     setSelectedPreset(presetId);
     const preset = PRESETS.find((p) => p.id === presetId);
-    if (preset && presetId !== "custom") setSelectedPacks(preset.packs);
+    if (preset && presetId !== "custom") {
+      setSelectedPacks(preset.packs);
+      if (preset.starterServices) {
+        setServices(preset.starterServices.map((service) => ({ ...service })));
+      }
+    }
   }
 
   function togglePack(packId: PackId) {
@@ -239,6 +244,7 @@ export default function OnboardingPage() {
               <h2 className="text-xl font-semibold text-gray-900 mb-2">Add your services</h2>
               <p className="text-sm text-gray-500 mb-6">
                 Optional. You can add more of these later.
+                {selectedPreset === "bridal" && " We added a few common bridal appointments to get you started."}
               </p>
               <div className="flex flex-col gap-3">
                 {services.map((s, i) => (

@@ -6,6 +6,7 @@ export type IndustryPreset = {
   description: string;
   icon: string;
   packs: PackId[];
+  starterServices?: { name: string; duration: number }[];
 };
 
 export const PRESETS: IndustryPreset[] = [
@@ -57,6 +58,12 @@ export const PRESETS: IndustryPreset[] = [
     description: "Gown sales/rental, try-ons, alterations",
     icon: "checkroom",
     packs: ["base", "sales", "finance", "inventory", "pro"],
+    starterServices: [
+      { name: "Bridal Consultation", duration: 60 },
+      { name: "First Fitting", duration: 90 },
+      { name: "Final Fitting", duration: 60 },
+      { name: "Alterations Consultation", duration: 30 },
+    ],
   },
   {
     id: "custom",
