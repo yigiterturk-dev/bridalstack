@@ -24,6 +24,11 @@ export default function OnboardingPage() {
   const [error, setError] = useState("");
   const router = useRouter();
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const errorRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (error) errorRef.current?.focus();
+  }, [error]);
 
   // Taslağı yükle
   useEffect(() => {
@@ -168,7 +173,7 @@ export default function OnboardingPage() {
         </div>
 
         {error && (
-          <div role="alert" className="mb-4 p-3 rounded-lg bg-red-50 text-red-700 text-sm border border-red-200">
+          <div ref={errorRef} tabIndex={-1} role="alert" aria-live="assertive" className="mb-4 p-3 rounded-lg bg-red-50 text-red-700 text-sm border border-red-200 focus:outline-none">
             {error}
           </div>
         )}
@@ -185,7 +190,7 @@ export default function OnboardingPage() {
                 value={shopName}
                 onChange={(e) => { setShopName(e.target.value); setError(""); }}
                 maxLength={120}
-                className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[var(--accent-ring)] focus:border-[var(--accent)] outline-none text-lg"
+                className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[var(--accent-ring)] focus:border-[var(--accent)] focus-visible:outline-none outline-none text-lg"
                 placeholder="e.g. Grace Bridal Boutique"
                 autoFocus
               />
@@ -197,13 +202,14 @@ export default function OnboardingPage() {
                     type="button"
                     key={preset.id}
                     onClick={() => selectPreset(preset.id)}
-                    className={`text-left p-3 rounded-xl border-2 transition-all ${
+                    aria-pressed={selectedPreset === preset.id}
+                    className={`text-left p-3 rounded-xl border-2 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-ring)] focus-visible:ring-offset-2 ${
                       selectedPreset === preset.id
                         ? "border-gray-900 bg-gray-50"
                         : "border-gray-100 hover:border-gray-300"
                     }`}
                   >
-                    <span className="material-symbols-outlined text-xl text-gray-600 mb-1 block">
+                    <span aria-hidden="true" className="material-symbols-outlined text-xl text-gray-600 mb-1 block">
                       {preset.icon}
                     </span>
                     <div className="font-medium text-gray-900 text-sm">{preset.name}</div>
@@ -220,7 +226,7 @@ export default function OnboardingPage() {
                 onClick={() =>
                   shopName.trim() ? setStep(2) : setError("Please enter a name")
                 }
-                className="mt-6 w-full py-3 bg-gray-900 text-white rounded-xl font-medium hover:bg-gray-800 transition-colors"
+                className="mt-6 w-full py-3 bg-gray-900 text-white rounded-xl font-medium hover:bg-gray-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-ring)] focus-visible:ring-offset-2"
               >
                 Continue
               </button>
@@ -243,7 +249,7 @@ export default function OnboardingPage() {
                       aria-label={`Service ${i + 1} name`}
                       placeholder="Service name (e.g. Fitting)"
                       maxLength={120}
-                      className="flex-1 px-3 py-2.5 rounded-xl border border-gray-300 text-sm outline-none focus:ring-2 focus:ring-[var(--accent-ring)] focus:border-[var(--accent)]"
+                      className="flex-1 px-3 py-2.5 rounded-xl border border-gray-300 text-sm outline-none focus:ring-2 focus:ring-[var(--accent-ring)] focus:border-[var(--accent)] focus-visible:outline-none"
                     />
                     <input
                       type="number"
@@ -252,7 +258,7 @@ export default function OnboardingPage() {
                       onChange={(e) => updateService(i, { duration: Number(e.target.value) })}
                       aria-label={`Service ${i + 1} duration in minutes`}
                       placeholder="min"
-                      className="w-20 px-3 py-2.5 rounded-xl border border-gray-300 text-sm outline-none"
+                      className="w-20 px-3 py-2.5 rounded-xl border border-gray-300 text-sm outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-ring)]"
                     />
                     <input
                       type="number"
@@ -261,16 +267,16 @@ export default function OnboardingPage() {
                       onChange={(e) => updateService(i, { price: Number(e.target.value) })}
                       aria-label={`Service ${i + 1} price`}
                       placeholder="$"
-                      className="w-24 px-3 py-2.5 rounded-xl border border-gray-300 text-sm outline-none"
+                      className="w-24 px-3 py-2.5 rounded-xl border border-gray-300 text-sm outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-ring)]"
                     />
                     {services.length > 1 && (
                       <button
                         type="button"
                         onClick={() => removeServiceRow(i)}
-                        className="text-gray-400 hover:text-red-500"
+                        className="text-gray-400 hover:text-red-500 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:ring-offset-2"
                         aria-label={`Remove service ${i + 1}`}
                       >
-                        <span className="material-symbols-outlined text-lg">close</span>
+                        <span aria-hidden="true" className="material-symbols-outlined text-lg">close</span>
                       </button>
                     )}
                   </div>
@@ -279,7 +285,7 @@ export default function OnboardingPage() {
               <button
                 type="button"
                 onClick={addServiceRow}
-                className="mt-3 text-sm text-[var(--accent)] hover:text-[var(--accent-hover)] font-medium"
+                className="mt-3 text-sm text-[var(--accent)] hover:text-[var(--accent-hover)] font-medium rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-ring)] focus-visible:ring-offset-2"
               >
                 + Add service
               </button>
@@ -288,14 +294,14 @@ export default function OnboardingPage() {
                 <button
                   type="button"
                   onClick={() => setStep(1)}
-                  className="flex-1 py-3 border border-gray-300 rounded-xl font-medium text-gray-700 hover:bg-gray-50"
+                  className="flex-1 py-3 border border-gray-300 rounded-xl font-medium text-gray-700 hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-ring)] focus-visible:ring-offset-2"
                 >
                   Back
                 </button>
                 <button
                   type="button"
                   onClick={() => setStep(3)}
-                  className="flex-1 py-3 bg-gray-900 text-white rounded-xl font-medium hover:bg-gray-800"
+                  className="flex-1 py-3 bg-gray-900 text-white rounded-xl font-medium hover:bg-gray-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-ring)] focus-visible:ring-offset-2"
                 >
                   Continue
                 </button>
@@ -326,7 +332,8 @@ export default function OnboardingPage() {
                       key={packId}
                       onClick={() => togglePack(packId)}
                       disabled={packId === "base" || pack.monthlyPrice === 0 || !sellable}
-                      className={`flex items-center justify-between p-4 rounded-xl border-2 text-left transition-all ${
+                      aria-pressed={active}
+                      className={`flex items-center justify-between p-4 rounded-xl border-2 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-ring)] focus-visible:ring-offset-2 ${
                         active ? "border-gray-900 bg-gray-50" : "border-gray-100 hover:border-gray-300"
                       } ${packId === "base" || !sellable ? "opacity-60" : ""}`}
                     >
@@ -354,14 +361,14 @@ export default function OnboardingPage() {
                 <button
                   type="button"
                   onClick={() => setStep(2)}
-                  className="flex-1 py-3 border border-gray-300 rounded-xl font-medium text-gray-700 hover:bg-gray-50"
+                  className="flex-1 py-3 border border-gray-300 rounded-xl font-medium text-gray-700 hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-ring)] focus-visible:ring-offset-2"
                 >
                   Back
                 </button>
                 <button
                   type="button"
                   onClick={() => setStep(4)}
-                  className="flex-1 py-3 bg-gray-900 text-white rounded-xl font-medium hover:bg-gray-800"
+                  className="flex-1 py-3 bg-gray-900 text-white rounded-xl font-medium hover:bg-gray-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-ring)] focus-visible:ring-offset-2"
                 >
                   Continue
                 </button>
@@ -401,7 +408,7 @@ export default function OnboardingPage() {
                 <button
                   type="button"
                   onClick={() => setStep(3)}
-                  className="flex-1 py-3 border border-gray-300 rounded-xl font-medium text-gray-700 hover:bg-gray-50"
+                  className="flex-1 py-3 border border-gray-300 rounded-xl font-medium text-gray-700 hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-ring)] focus-visible:ring-offset-2"
                 >
                   Back
                 </button>
@@ -409,7 +416,8 @@ export default function OnboardingPage() {
                   type="button"
                   onClick={handleFinish}
                   disabled={loading}
-                  className="flex-1 py-3 bg-gray-900 text-white rounded-xl font-medium hover:bg-gray-800 disabled:opacity-50"
+                  aria-busy={loading}
+                  className="flex-1 py-3 bg-gray-900 text-white rounded-xl font-medium hover:bg-gray-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-ring)] focus-visible:ring-offset-2 disabled:opacity-50"
                 >
                   {loading ? "Creating…" : "Launch my boutique"}
                 </button>
