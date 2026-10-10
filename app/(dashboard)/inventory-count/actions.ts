@@ -3,15 +3,18 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { getCurrentMember } from "@/lib/tenant";
+import { getCurrentMember, getCurrentTenant } from "@/lib/tenant";
 import { hasPermission } from "@/lib/rbac";
 import { closingQuantity } from "@/lib/inventory";
+import { dateInTimeZone, normalizeTimeZone } from "@/lib/timezone";
 
 async function requireInventoryManager() {
   const member = await getCurrentMember();
   if (!member) redirect("/login");
   if (!hasPermission(member.role, "products.manage")) redirect("/inventory-count?error=forbidden");
-  return member;
+  const tenant = await getCurrentTenant();
+  if (!tenant) redirect("/onboarding");
+  return { ...member, timeZone: normalizeTimeZone(tenant.settings.time_zone) };
 }
 
 /** Sayım gerçekten bu kiracının mı ve hâlâ açık mı? */
@@ -30,7 +33,7 @@ export async function startCount(formData: FormData) {
 
   const reference =
     String(formData.get("reference") || "").trim() ||
-    `Count ${new Date().toISOString().slice(0, 10)}`;
+    `Count ${dateInTimeZone(new Date(), member.timeZone)}`;
 
   // Aynı anda iki açık sayım, iki farklı "doğru" demektir. Tek açık sayım kuralı.
   const open = await prisma.stockCount.findFirst({
