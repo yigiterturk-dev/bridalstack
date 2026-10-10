@@ -5,6 +5,7 @@ import { formatPrice } from "@/config/modules";
 import { todayISO } from "@/lib/finance";
 import ModuleGuard from "@/components/module-guard";
 import SelectField from "@/components/select-field";
+import SubmitButton from "@/components/submit-button";
 import {
   CLEANING_STATUS_LABELS,
   allowedTransitions,
@@ -98,7 +99,7 @@ async function CleaningContent({ tenantId, error }: { tenantId: string; error?: 
         <div className="bg-white/70 backdrop-blur-xl rounded-[2rem] border border-stone-200/60 shadow-sm p-6 h-fit">
           <h2 className="text-lg font-bold text-stone-900 mb-4">Send a gown out</h2>
           <form action={createCleaningJob} className="flex flex-col gap-3">
-            <Field label="Gown">
+            <Field label="Gown" htmlFor="product_id-select">
               <SelectField
                 name="product_id"
                 required
@@ -112,22 +113,22 @@ async function CleaningContent({ tenantId, error }: { tenantId: string; error?: 
             </Field>
 
             <div className="grid grid-cols-2 gap-3">
-              <Field label="Quantity">
-                <input name="quantity" type="number" min="1" max="99" defaultValue={1} className={INPUT} />
+              <Field label="Quantity" htmlFor="cleaning-quantity">
+                <input id="cleaning-quantity" name="quantity" type="number" min="1" max="99" defaultValue={1} className={INPUT} />
               </Field>
-              <Field label="Cost">
-                <input name="cost" type="number" step="0.01" min="0" placeholder="0" className={INPUT} />
+              <Field label="Cost" htmlFor="cleaning-cost">
+                <input id="cleaning-cost" name="cost" type="number" step="0.01" min="0" placeholder="0" className={INPUT} />
               </Field>
             </div>
 
-            <Field label="Cleaner">
-              <input name="vendor" type="text" placeholder="Who is cleaning it?" className={INPUT} />
+            <Field label="Cleaner" htmlFor="cleaning-vendor">
+              <input id="cleaning-vendor" name="vendor" type="text" placeholder="Who is cleaning it?" className={INPUT} />
             </Field>
-            <Field label="Expected back">
-              <input name="expected_on" type="date" className={INPUT} />
+            <Field label="Expected back" htmlFor="cleaning-expected-on">
+              <input id="cleaning-expected-on" name="expected_on" type="date" className={INPUT} />
             </Field>
-            <Field label="Notes">
-              <textarea name="notes" rows={2} className={`${INPUT} resize-y`} placeholder="Optional…" />
+            <Field label="Notes" htmlFor="cleaning-notes">
+              <textarea id="cleaning-notes" name="notes" rows={2} className={`${INPUT} resize-y`} placeholder="Optional…" />
             </Field>
 
             <p className="text-xs text-stone-400 leading-relaxed">
@@ -135,12 +136,12 @@ async function CleaningContent({ tenantId, error }: { tenantId: string; error?: 
               returned. Returns and rentals open their own jobs — those gowns are already off the rail.
             </p>
 
-            <button
-              type="submit"
-              className="mt-1 py-2.5 bg-stone-900 text-white rounded-xl text-sm font-semibold hover:bg-rose-600 transition-colors"
+            <SubmitButton
+              pendingLabel="Saving cleaning job…"
+              className="mt-1 py-2.5 bg-stone-900 text-white rounded-xl text-sm font-semibold hover:bg-rose-600 transition-colors disabled:opacity-60 disabled:cursor-wait"
             >
               Send to cleaning
-            </button>
+            </SubmitButton>
           </form>
         </div>
 
@@ -246,10 +247,10 @@ async function CleaningContent({ tenantId, error }: { tenantId: string; error?: 
 const INPUT =
   "w-full px-4 py-2.5 rounded-xl border border-stone-200 bg-white text-sm text-stone-900 outline-none focus:border-stone-400 transition-colors";
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({ label, htmlFor, children }: { label: string; htmlFor: string; children: React.ReactNode }) {
   return (
     <div>
-      <label className="block text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1">{label}</label>
+      <label htmlFor={htmlFor} className="block text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1">{label}</label>
       {children}
     </div>
   );
