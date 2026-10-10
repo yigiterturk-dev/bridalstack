@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { getCurrentMember } from "@/lib/tenant";
+import { getCurrentMember, getCurrentTenant } from "@/lib/tenant";
 import { hasPermission } from "@/lib/rbac";
 import { todayISO } from "@/lib/finance";
 import {
@@ -19,12 +19,15 @@ import {
   weightedCost,
 } from "@/lib/purchasing";
 import { nonNegativeFloat } from "@/lib/numbers";
+import { normalizeTimeZone } from "@/lib/timezone";
 
 async function requirePurchasingManager() {
   const member = await getCurrentMember();
   if (!member) redirect("/login");
   if (!hasPermission(member.role, "products.manage")) redirect("/purchase-orders?error=forbidden");
-  return member;
+  const tenant = await getCurrentTenant();
+  if (!tenant) redirect("/onboarding");
+  return { ...member, timeZone: normalizeTimeZone(tenant.settings.time_zone) };
 }
 
 /** Siparişi kiracıyla birlikte okur. Başka kiracının siparişi hiç bulunmaz. */
@@ -37,11 +40,11 @@ async function loadPo(tenantId: string, id: string) {
   return po;
 }
 
-function refNo(): string {
-  const now = new Date();
-  const y = String(now.getFullYear()).slice(2);
-  const m = String(now.getMonth() + 1).padStart(2, "0");
-  const d = String(now.getDate()).padStart(2, "0");
+function refNo(timeZone: string): string {
+  const [year, month, day] = todayISO(new Date(), timeZone).split("-");
+  const y = year.slice(2);
+  const m = month;
+  const d = day;
   const rand = Math.random().toString(36).substring(2, 6).toUpperCase();
   return `PO${y}${m}${d}-${rand}`;
 }
@@ -61,7 +64,7 @@ export async function createPurchaseOrder(formData: FormData) {
   const typed = String(formData.get("expected_on") || "").trim();
   const expected_on = /^\d{4}-\d{2}-\d{2}$/.test(typed)
     ? typed
-    : expectedFromLeadTime(todayISO(), supplier.lead_time_days);
+    : expectedFromLeadTime(todayISO(new Date(), member.timeZone), supplier.lead_time_days);
 
   let po;
   try {
@@ -69,7 +72,7 @@ export async function createPurchaseOrder(formData: FormData) {
       data: {
         tenant_id: member.tenantId,
         supplier_id: supplier.id,
-        ref_no: refNo(),
+        ref_no: refNo(member.timeZone),
         expected_on,
         notes: String(formData.get("notes") || "").trim() || null,
         created_by: member.userId,
@@ -137,7 +140,7 @@ export async function placeOrder(formData: FormData) {
 
   await prisma.purchaseOrder.updateMany({
     where: { id: po.id, tenant_id: member.tenantId, status: "draft" },
-    data: { status: "ordered", ordered_on: todayISO() },
+    data: { status: "ordered", ordered_on: todayISO(new Date(), member.timeZone) },
   });
 
   revalidatePath("/purchase-orders");
@@ -215,7 +218,7 @@ export async function receiveLines(formData: FormData) {
 
     await tx.purchaseOrder.updateMany({
       where: { id: po.id, tenant_id: member.tenantId, status: po.status },
-      data: { status: nextStatus, closed_on: closing ? todayISO() : undefined },
+    data: { status: nextStatus, closed_on: closing ? todayISO(new Date(), member.timeZone) : undefined },
     });
 
     if (shouldPostCost(nextStatus, nextLines)) {
@@ -226,7 +229,7 @@ export async function receiveLines(formData: FormData) {
           amount: receivedCost,
           method: "transfer",
           category: "stock",
-          occurred_on: todayISO(),
+          occurred_on: todayISO(new Date(), member.timeZone),
           description: `${po.ref_no} — ${po.supplier?.name ?? "supplier"}`,
           purchase_order_id: po.id,
           created_by: member.userId,
@@ -254,7 +257,7 @@ export async function closeShort(formData: FormData) {
   await prisma.$transaction(async (tx) => {
     const moved = await tx.purchaseOrder.updateMany({
       where: { id: po.id, tenant_id: member.tenantId, status: po.status },
-      data: { status: "received", closed_on: todayISO() },
+    data: { status: "received", closed_on: todayISO(new Date(), member.timeZone) },
     });
     if (moved.count === 0) return;
 
@@ -266,7 +269,7 @@ export async function closeShort(formData: FormData) {
           amount: receivedCost,
           method: "transfer",
           category: "stock",
-          occurred_on: todayISO(),
+          occurred_on: todayISO(new Date(), member.timeZone),
           description: `${po.ref_no} — ${po.supplier?.name ?? "supplier"} (short)`,
           purchase_order_id: po.id,
           created_by: member.userId,
@@ -289,7 +292,7 @@ export async function cancelPurchaseOrder(formData: FormData) {
 
   await prisma.purchaseOrder.updateMany({
     where: { id: po.id, tenant_id: member.tenantId, status: po.status },
-    data: { status: "cancelled", closed_on: todayISO() },
+    data: { status: "cancelled", closed_on: todayISO(new Date(), member.timeZone) },
   });
 
   revalidatePath("/purchase-orders");
