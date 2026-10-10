@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import SignContract from "./sign-contract";
+import { formatPrice } from "@/config/modules";
 
 type Props = { params: Promise<{ token: string }> };
 
@@ -63,7 +64,7 @@ export default async function ContractSignPage({ params }: Props) {
           <h2 className="text-xl font-bold text-gray-900 mb-2">{contract.title}</h2>
           {contract.total_amount > 0 && (
             <div className="inline-flex px-4 py-2 rounded-xl bg-gray-100 text-lg font-bold text-gray-900 mb-6">
-              ${Number(contract.total_amount).toLocaleString()}
+              {formatPrice(Number(contract.total_amount))}
             </div>
           )}
           <div className="prose prose-sm max-w-none text-gray-700 whitespace-pre-wrap leading-relaxed">

@@ -5,6 +5,7 @@ import { createService, deleteService, toggleService } from "./actions";
 import SelectField from "@/components/select-field";
 import ModuleGuard from "@/components/module-guard";
 import ConfirmSubmitButton from "@/components/confirm-submit-button";
+import { formatPrice } from "@/config/modules";
 
 const CATEGORIES = ["Hair", "Nails", "Skin", "Massage", "Makeup", "Tattoo", "Barber", "Lashes", "Waxing", "Other"];
 const DURATIONS = [15, 30, 45, 60, 90, 120, 150, 180];
@@ -112,8 +113,8 @@ export default async function ServicesPage() {
                         <div className="flex items-center gap-4">
                           <div className="text-right">
                             <span className="font-semibold text-gray-900 text-sm">
-                              ${Number(s.price).toFixed(0)}
-                              {s.price_max ? ` - $${Number(s.price_max).toFixed(0)}` : ""}
+                              {formatPrice(Number(s.price))}
+                              {s.price_max ? ` - ${formatPrice(Number(s.price_max))}` : ""}
                             </span>
                           </div>
                           <div className="flex items-center gap-1">

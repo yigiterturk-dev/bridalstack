@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { updateBookingStatus } from "./actions";
+import { formatPrice } from "@/config/modules";
 
 type Booking = {
   id: string;
@@ -182,7 +183,7 @@ export default function BookingsTable({ bookings }: { bookings: Booking[] }) {
                         {b.start_time.slice(0, 5)} – {b.end_time.slice(0, 5)}
                       </div>
                     </td>
-                    <td className="p-4 font-semibold text-gray-900">${b.amount}</td>
+                    <td className="p-4 font-semibold text-gray-900">{formatPrice(b.amount)}</td>
                     <td className="p-4">
                       <span
                         className={`px-2 py-0.5 rounded-full text-xs font-semibold uppercase border ${

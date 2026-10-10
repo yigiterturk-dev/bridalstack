@@ -5,6 +5,7 @@ import { getCurrentTenant } from "@/lib/tenant";
 import PortalLinkButton from "@/components/portal-link-button";
 import { updateCustomer } from "./actions";
 import SelectField from "@/components/select-field";
+import { formatPrice } from "@/config/modules";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -97,7 +98,7 @@ export default async function CustomerDetailPage({ params }: Props) {
                       <span className="font-mono text-sm font-medium text-gray-900">{o.ref_no}</span>
                       <span className="text-xs text-gray-400 ml-2 capitalize">{o.order_type} · {o.status}</span>
                     </div>
-                    <span className="font-semibold text-sm">${Number(o.discounted_total).toLocaleString()}</span>
+                    <span className="font-semibold text-sm">{formatPrice(Number(o.discounted_total))}</span>
                   </Link>
                 ))}
               </div>
