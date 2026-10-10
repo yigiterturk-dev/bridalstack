@@ -51,24 +51,24 @@ export default function DemoSignIn({
   return (
     <main className="mx-auto flex min-h-screen max-w-lg flex-col items-center justify-center gap-4 px-6 text-center">
       {failed ? (
-        <>
+        <div role="alert" aria-live="assertive">
           <h1 className="text-xl font-semibold text-neutral-900">The demo didn&rsquo;t open</h1>
           <p className="text-neutral-600">
             Something on our side went wrong. Email{" "}
-            <a className="underline" href="mailto:hello@bridalstack.com">
+            <a className="underline rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 focus-visible:ring-offset-2" href="mailto:hello@bridalstack.com">
               hello@bridalstack.com
             </a>{" "}
             and we&rsquo;ll walk you through it live.
           </p>
-        </>
+        </div>
       ) : (
-        <>
+        <div role="status" aria-live="polite">
           <div
             aria-hidden
             className="h-8 w-8 animate-spin rounded-full border-2 border-neutral-300 border-t-neutral-900"
           />
           <p className="text-neutral-600">Opening a sample boutique&hellip;</p>
-        </>
+        </div>
       )}
     </main>
   );

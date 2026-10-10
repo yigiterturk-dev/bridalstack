@@ -40,11 +40,11 @@ export default async function DemoPage({
         <div className="flex flex-col gap-3">
           <Link
             href="/dashboard"
-            className="rounded-lg bg-neutral-900 px-5 py-3 font-medium text-white hover:bg-neutral-800"
+            className="rounded-lg bg-neutral-900 px-5 py-3 font-medium text-white hover:bg-neutral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 focus-visible:ring-offset-2"
           >
             Back to my shop
           </Link>
-          <Link href="/demo?switch=1" className="text-sm text-neutral-500 underline">
+          <Link href="/demo?switch=1" className="text-sm text-neutral-500 underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 focus-visible:ring-offset-2 rounded">
             Sign out and open the demo
           </Link>
         </div>
