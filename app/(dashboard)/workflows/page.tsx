@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getCurrentTenant } from "@/lib/tenant";
 import { createWorkflow, toggleWorkflow, deleteWorkflow } from "./actions";
+import ConfirmSubmitButton from "@/components/confirm-submit-button";
 
 const TRIGGERS = [
   { value: "appointment_created", label: "Appointment Created", icon: "event" },
@@ -106,7 +107,13 @@ export default async function WorkflowsPage() {
                         </form>
                         <form action={deleteWorkflow}>
                           <input type="hidden" name="id" value={w.id} />
-                          <button type="submit" className="text-xs text-red-500 hover:text-red-700">Delete</button>
+                          <ConfirmSubmitButton
+                            message={`Delete workflow “${w.name}”? This cannot be undone.`}
+                            ariaLabel={`Delete workflow ${w.name}`}
+                            className="text-xs text-red-500 hover:text-red-700 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 focus-visible:ring-offset-2"
+                          >
+                            Delete
+                          </ConfirmSubmitButton>
                         </form>
                       </div>
                     </div>

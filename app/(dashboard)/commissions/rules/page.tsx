@@ -7,6 +7,7 @@ import ModuleGuard from "@/components/module-guard";
 import SelectField from "@/components/select-field";
 import { LINE_KINDS, kindLabel } from "@/lib/order-lines";
 import { createRule, toggleRule, deleteRule } from "../actions";
+import ConfirmSubmitButton from "@/components/confirm-submit-button";
 
 export const dynamic = "force-dynamic";
 
@@ -231,7 +232,14 @@ async function RulesContent({ tenantId, error }: { tenantId: string; error?: str
                     </form>
                     <form action={deleteRule}>
                       <input type="hidden" name="id" value={r.id} />
-                      <button type="submit" className="text-xs text-stone-300 hover:text-rose-600 px-1.5 py-1">✕</button>
+                      <ConfirmSubmitButton
+                        message={`Delete commission rule “${r.name}”? This cannot be undone.`}
+                        ariaLabel={`Delete commission rule ${r.name}`}
+                        title="Delete commission rule"
+                        className="text-xs text-stone-300 hover:text-rose-600 px-1.5 py-1 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 focus-visible:ring-offset-2"
+                      >
+                        <span aria-hidden="true">✕</span>
+                      </ConfirmSubmitButton>
                     </form>
                   </div>
                 </div>

@@ -20,6 +20,7 @@ import {
 } from "@/lib/cash-session";
 import MovementForm from "./movement-form";
 import { closeCashSession, deleteMovement, openCashSession } from "./actions";
+import ConfirmSubmitButton from "@/components/confirm-submit-button";
 
 export const dynamic = "force-dynamic";
 
@@ -286,7 +287,14 @@ async function CashContent({ tenantId, date, error }: { tenantId: string; date?:
                       <form action={deleteMovement} className="flex-shrink-0">
                         <input type="hidden" name="id" value={m.id} />
                         <input type="hidden" name="back" value="/cash" />
-                        <button type="submit" className="text-xs text-stone-300 hover:text-rose-600 px-1.5">✕</button>
+                        <ConfirmSubmitButton
+                          message="Delete this cash movement? This cannot be undone."
+                          ariaLabel="Delete cash movement"
+                          title="Delete cash movement"
+                          className="text-xs text-stone-300 hover:text-rose-600 px-1.5 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 focus-visible:ring-offset-2"
+                        >
+                          <span aria-hidden="true">✕</span>
+                        </ConfirmSubmitButton>
                       </form>
                     )}
                   </div>

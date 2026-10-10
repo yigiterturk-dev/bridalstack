@@ -4,6 +4,7 @@ import { getCurrentTenant } from "@/lib/tenant";
 import { createService, deleteService, toggleService } from "./actions";
 import SelectField from "@/components/select-field";
 import ModuleGuard from "@/components/module-guard";
+import ConfirmSubmitButton from "@/components/confirm-submit-button";
 
 const CATEGORIES = ["Hair", "Nails", "Skin", "Massage", "Makeup", "Tattoo", "Barber", "Lashes", "Waxing", "Other"];
 const DURATIONS = [15, 30, 45, 60, 90, 120, 150, 180];
@@ -125,7 +126,14 @@ export default async function ServicesPage() {
                             </form>
                             <form action={deleteService}>
                               <input type="hidden" name="id" value={s.id} />
-                              <button type="submit" className="text-xs text-red-400 hover:text-red-600 px-1">✕</button>
+                              <ConfirmSubmitButton
+                                message={`Delete ${s.name}? This cannot be undone.`}
+                                ariaLabel={`Delete ${s.name}`}
+                                title="Delete service"
+                                className="text-xs text-red-400 hover:text-red-600 px-1 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 focus-visible:ring-offset-2"
+                              >
+                                <span aria-hidden="true">✕</span>
+                              </ConfirmSubmitButton>
                             </form>
                           </div>
                         </div>

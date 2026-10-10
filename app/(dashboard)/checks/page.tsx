@@ -13,6 +13,7 @@ import {
   type CheckRow,
 } from "@/lib/finance";
 import { createCheck, moveCheck, deleteCheck } from "./actions";
+import ConfirmSubmitButton from "@/components/confirm-submit-button";
 
 export const dynamic = "force-dynamic";
 
@@ -259,7 +260,14 @@ function Section({
                 {next.length === 0 && (
                   <form action={deleteCheck}>
                     <input type="hidden" name="id" value={c.id} />
-                    <button type="submit" className="text-xs text-stone-300 hover:text-rose-600 px-1.5">✕</button>
+                    <ConfirmSubmitButton
+                      message={`Delete check from ${c.counterparty}? This cannot be undone.`}
+                      ariaLabel={`Delete check from ${c.counterparty}`}
+                      title="Delete check"
+                      className="text-xs text-stone-300 hover:text-rose-600 px-1.5 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 focus-visible:ring-offset-2"
+                    >
+                      <span aria-hidden="true">✕</span>
+                    </ConfirmSubmitButton>
                   </form>
                 )}
               </div>
