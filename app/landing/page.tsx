@@ -163,7 +163,7 @@ export default function LandingPage() {
                 "Cancel any time",
               ].map((line) => (
                 <span key={line} className="inline-flex items-center gap-2">
-                  <span className="material-symbols-outlined text-rose-400 text-[18px]">check_circle</span>
+                  <span aria-hidden="true" className="material-symbols-outlined text-rose-400 text-[18px]">check_circle</span>
                   {line}
                 </span>
               ))}
@@ -225,8 +225,8 @@ export default function LandingPage() {
                       href="/signup"
                       className={`block text-center py-4 rounded-full text-[15px] font-bold transition-all duration-300 ${
                         packId === "sales"
-                          ? "bg-white text-stone-900 hover:bg-stone-200 hover:shadow-xl"
-                          : "bg-stone-700/50 text-white hover:bg-stone-700 border border-stone-600/50"
+                          ? "bg-white text-stone-900 hover:bg-stone-200 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 focus-visible:ring-offset-4 focus-visible:ring-offset-stone-900"
+                          : "bg-stone-700/50 text-white hover:bg-stone-700 border border-stone-600/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 focus-visible:ring-offset-4 focus-visible:ring-offset-stone-900"
                       }`}
                     >
                       {pack.monthlyPrice === 0 ? "Start For Free" : trialOnly ? "Start Free Trial" : "Choose Plan"}
@@ -248,7 +248,7 @@ export default function LandingPage() {
         <div className="max-w-4xl mx-auto text-center relative z-10">
           <h2 className="text-5xl font-extrabold text-stone-900 tracking-tight leading-tight">Ready to modernize your boutique?</h2>
           <p className="text-stone-500 mt-6 text-2xl font-light">Spend less time on admin and more time with every bride.</p>
-          <Link href="/signup" className="inline-block mt-12 px-12 py-5 bg-stone-900 text-white rounded-full text-lg font-bold hover:bg-rose-600 hover:scale-105 transition-all duration-300 shadow-[0_10px_40px_rgba(0,0,0,0.15)] hover:shadow-[0_10px_40px_rgba(225,29,72,0.3)]">
+          <Link href="/signup" className="inline-block mt-12 px-12 py-5 bg-stone-900 text-white rounded-full text-lg font-bold hover:bg-rose-600 hover:scale-105 transition-all duration-300 shadow-[0_10px_40px_rgba(0,0,0,0.15)] hover:shadow-[0_10px_40px_rgba(225,29,72,0.3)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-4">
             Start Free →
           </Link>
         </div>
@@ -264,10 +264,10 @@ export default function LandingPage() {
             <span className="text-sm font-medium text-stone-400">© {new Date().getFullYear()} All rights reserved.</span>
           </div>
           <div className="flex items-center gap-10">
-            <Link href="/guides" className="text-[14px] font-semibold text-stone-400 hover:text-stone-900 uppercase tracking-wider transition-colors">Guides</Link>
-            <Link href="/privacy" className="text-[14px] font-semibold text-stone-400 hover:text-stone-900 uppercase tracking-wider transition-colors">Privacy</Link>
-            <Link href="/terms" className="text-[14px] font-semibold text-stone-400 hover:text-stone-900 uppercase tracking-wider transition-colors">Terms</Link>
-            <a href="mailto:hello@bridalstack.com" className="text-[14px] font-semibold text-stone-400 hover:text-stone-900 uppercase tracking-wider transition-colors">Contact</a>
+            <Link href="/guides" className="text-[14px] font-semibold text-stone-400 hover:text-stone-900 uppercase tracking-wider transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-4 rounded">Guides</Link>
+            <Link href="/privacy" className="text-[14px] font-semibold text-stone-400 hover:text-stone-900 uppercase tracking-wider transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-4 rounded">Privacy</Link>
+            <Link href="/terms" className="text-[14px] font-semibold text-stone-400 hover:text-stone-900 uppercase tracking-wider transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-4 rounded">Terms</Link>
+            <a href="mailto:hello@bridalstack.com" className="text-[14px] font-semibold text-stone-400 hover:text-stone-900 uppercase tracking-wider transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-4 rounded">Contact</a>
           </div>
         </div>
       </footer>
