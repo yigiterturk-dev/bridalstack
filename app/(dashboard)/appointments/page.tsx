@@ -81,7 +81,7 @@ async function AppointmentsContent({ tenantId }: { tenantId: string }) {
           ) : (
             <form action={createAppointment} className="flex flex-col gap-5">
               <div>
-                <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">Customer *</label>
+                <label htmlFor="customer_id-select" className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">Customer *</label>
                 <SelectField
                   name="customer_id"
                   required
@@ -90,22 +90,22 @@ async function AppointmentsContent({ tenantId }: { tenantId: string }) {
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">Title</label>
-                <input name="title" className="w-full px-4 py-3.5 rounded-2xl border border-stone-200 bg-white/50 text-stone-700 text-sm outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-50 transition-all" placeholder="e.g. First Fitting" />
+                <label htmlFor="appointment-title" className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">Title</label>
+                <input id="appointment-title" name="title" className="w-full px-4 py-3.5 rounded-2xl border border-stone-200 bg-white/50 text-stone-700 text-sm outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-50 transition-all" placeholder="e.g. First Fitting" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">Date *</label>
-                  <input name="date" type="date" required defaultValue={today} className="w-full px-4 py-3.5 rounded-2xl border border-stone-200 bg-white/50 text-stone-700 text-sm outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-50 transition-all" />
+                  <label htmlFor="appointment-date" className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">Date *</label>
+                  <input id="appointment-date" name="date" type="date" required defaultValue={today} className="w-full px-4 py-3.5 rounded-2xl border border-stone-200 bg-white/50 text-stone-700 text-sm outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-50 transition-all" />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">Time</label>
-                  <input name="time" type="time" defaultValue="10:00" className="w-full px-4 py-3.5 rounded-2xl border border-stone-200 bg-white/50 text-stone-700 text-sm outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-50 transition-all" />
+                  <label htmlFor="appointment-time" className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">Time</label>
+                  <input id="appointment-time" name="time" type="time" defaultValue="10:00" className="w-full px-4 py-3.5 rounded-2xl border border-stone-200 bg-white/50 text-stone-700 text-sm outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-50 transition-all" />
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">Notes</label>
-                <textarea name="description" rows={2} className="w-full px-4 py-3.5 rounded-2xl border border-stone-200 bg-white/50 text-stone-700 text-sm outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-50 transition-all resize-y" placeholder="Optional notes for stylist..." />
+                <label htmlFor="appointment-notes" className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">Notes</label>
+                <textarea id="appointment-notes" name="description" rows={2} className="w-full px-4 py-3.5 rounded-2xl border border-stone-200 bg-white/50 text-stone-700 text-sm outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-50 transition-all resize-y" placeholder="Optional notes for stylist..." />
               </div>
               <button type="submit" className="mt-2 w-full py-3.5 bg-stone-900 text-white rounded-2xl text-sm font-bold hover:bg-rose-600 hover:shadow-[0_8px_20px_-6px_rgba(225,29,72,0.4)] transition-all duration-300">
                 Schedule Appointment

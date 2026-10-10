@@ -44,12 +44,12 @@ export default async function ServicesPage() {
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Add Service</h2>
           <form action={createService} className="flex flex-col gap-3">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Name *</label>
-              <input name="name" required className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none" placeholder="e.g. Haircut & Style" />
+              <label htmlFor="service-name" className="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+              <input id="service-name" name="name" required className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none" placeholder="e.g. Haircut & Style" />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                <label htmlFor="category-select" className="block text-sm font-medium text-gray-700 mb-1">Category</label>
                 <SelectField
                   name="category"
                   defaultValue={CATEGORIES[0]}
@@ -58,7 +58,7 @@ export default async function ServicesPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Duration</label>
+                <label htmlFor="duration-select" className="block text-sm font-medium text-gray-700 mb-1">Duration</label>
                 <SelectField
                   name="duration"
                   defaultValue={String(DURATIONS[1])}
@@ -72,17 +72,17 @@ export default async function ServicesPage() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Price ($)</label>
-                <input name="price" type="number" step="0.01" min="0" className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none" placeholder="40" />
+                <label htmlFor="service-price" className="block text-sm font-medium text-gray-700 mb-1">Price ($)</label>
+                <input id="service-price" name="price" type="number" step="0.01" min="0" className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none" placeholder="40" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Max Price ($)</label>
-                <input name="price_max" type="number" step="0.01" min="0" className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none" placeholder="Optional" />
+                <label htmlFor="service-max-price" className="block text-sm font-medium text-gray-700 mb-1">Max Price ($)</label>
+                <input id="service-max-price" name="price_max" type="number" step="0.01" min="0" className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none" placeholder="Optional" />
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-              <textarea name="description" rows={2} className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none resize-y" placeholder="Optional..." />
+              <label htmlFor="service-description" className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+              <textarea id="service-description" name="description" rows={2} className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none resize-y" placeholder="Optional..." />
             </div>
             <button type="submit" className="mt-1 py-2.5 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-800">Add Service</button>
           </form>
