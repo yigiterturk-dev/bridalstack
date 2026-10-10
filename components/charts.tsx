@@ -1,6 +1,7 @@
 "use client";
 
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from "recharts";
+import { CURRENCY_SYMBOL, formatPrice } from "@/config/modules";
 
 type RevenueData = { month: string; revenue: number }[];
 type AppointmentData = { day: string; count: number }[];
@@ -19,8 +20,8 @@ export function RevenueChart({ data }: { data: RevenueData }) {
         <BarChart data={data}>
           <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" vertical={false} />
           <XAxis dataKey="month" tick={axisTick} axisLine={false} tickLine={false} />
-          <YAxis tick={axisTick} axisLine={false} tickLine={false} tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} />
-          <Tooltip cursor={{ fill: "#f9fafb" }} contentStyle={tooltipStyle} formatter={(v) => [`$${Number(v).toLocaleString()}`, "Revenue"]} />
+          <YAxis tick={axisTick} axisLine={false} tickLine={false} tickFormatter={(v) => `${CURRENCY_SYMBOL}${(v / 1000).toFixed(0)}k`} />
+          <Tooltip cursor={{ fill: "#f9fafb" }} contentStyle={tooltipStyle} formatter={(v) => [formatPrice(Number(v)), "Revenue"]} />
           <Bar dataKey="revenue" fill={ACCENT} radius={[6, 6, 0, 0]} maxBarSize={48} />
         </BarChart>
       </ResponsiveContainer>

@@ -148,9 +148,9 @@ export default async function OrderDetailPage({ params, searchParams }: Props) {
             <h2 className="font-semibold text-gray-900 mb-4">Order Details</h2>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               {[
-                { label: "Total", value: `$${Number(order.discounted_total).toLocaleString()}`, bold: true },
-                { label: "Deposit", value: `$${Number(order.deposit_amount).toLocaleString()}` },
-                { label: "Balance", value: `$${Number(order.remaining_balance).toLocaleString()}`, color: Number(order.remaining_balance) > 0 ? "text-red-600" : "text-green-600" },
+                { label: "Total", value: formatPrice(Number(order.discounted_total)), bold: true },
+                { label: "Deposit", value: formatPrice(Number(order.deposit_amount)) },
+                { label: "Balance", value: formatPrice(Number(order.remaining_balance)), color: Number(order.remaining_balance) > 0 ? "text-red-600" : "text-green-600" },
                 { label: "Delivery", value: order.delivery_date ? new Date(order.delivery_date).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "TBD" },
               ].map((item) => (
                 <div key={item.label} className="p-4 rounded-xl bg-gray-50">
