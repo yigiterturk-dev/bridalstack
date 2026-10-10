@@ -43,7 +43,7 @@ export default async function ContractsPage() {
           <h2 className="text-lg font-semibold text-gray-900 mb-4">New Contract</h2>
           <form action={createContract} className="flex flex-col gap-3">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Customer *</label>
+              <label htmlFor="customer_id-select" className="block text-sm font-medium text-gray-700 mb-1">Customer *</label>
               <SelectField
                 name="customer_id"
                 required
@@ -52,7 +52,7 @@ export default async function ContractsPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Link to Order</label>
+              <label htmlFor="order_id-select" className="block text-sm font-medium text-gray-700 mb-1">Link to Order</label>
               <SelectField
                 name="order_id"
                 placeholder="None"
@@ -64,16 +64,16 @@ export default async function ContractsPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Title *</label>
-              <input name="title" required className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none" placeholder="Bridal Gown Purchase Agreement" />
+              <label htmlFor="contract-title" className="block text-sm font-medium text-gray-700 mb-1">Title *</label>
+              <input id="contract-title" name="title" required className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none" placeholder="Bridal Gown Purchase Agreement" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Total Amount ({CURRENCY_SYMBOL})</label>
-              <input name="total_amount" type="number" step="0.01" className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none" placeholder="0" />
+              <label htmlFor="contract-total-amount" className="block text-sm font-medium text-gray-700 mb-1">Total Amount ({CURRENCY_SYMBOL})</label>
+              <input id="contract-total-amount" name="total_amount" type="number" step="0.01" className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none" placeholder="0" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Contract Content *</label>
-              <textarea name="content" rows={6} required className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none resize-y" placeholder="Terms and conditions..." />
+              <label htmlFor="contract-content" className="block text-sm font-medium text-gray-700 mb-1">Contract Content *</label>
+              <textarea id="contract-content" name="content" rows={6} required className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none resize-y" placeholder="Terms and conditions..." />
             </div>
             <button type="submit" className="mt-2 py-2.5 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-800">Create & Send</button>
           </form>
