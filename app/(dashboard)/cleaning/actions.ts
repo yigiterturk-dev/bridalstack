@@ -12,6 +12,7 @@ import {
   outcomeStockDelta,
   shouldPostCost,
 } from "@/lib/cleaning";
+import { nonNegativeFloat } from "@/lib/numbers";
 
 async function requireCleaningManager() {
   const member = await getCurrentMember();
@@ -65,7 +66,7 @@ export async function createCleaningJob(formData: FormData) {
         quantity,
         vendor: String(formData.get("vendor") || "").trim() || null,
         expected_on: String(formData.get("expected_on") || "").trim() || null,
-        cost: Math.max(0, parseFloat(String(formData.get("cost") || "0")) || 0),
+        cost: nonNegativeFloat(formData.get("cost")),
         notes: String(formData.get("notes") || "").trim() || null,
         created_by: member.userId,
       },

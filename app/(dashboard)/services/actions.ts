@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getCurrentTenant, getCurrentMember } from "@/lib/tenant";
 import { hasPermission } from "@/lib/rbac";
+import { nonNegativeFloat } from "@/lib/numbers";
 
 // settings.manage izni gerektirir (fail-closed)
 async function requireServiceManager() {
@@ -21,8 +22,9 @@ export async function createService(formData: FormData) {
   const name = String(formData.get("name") || "").trim();
   const category = String(formData.get("category") || "").trim() || null;
   const duration = parseInt(String(formData.get("duration") || "30")) || 30;
-  const price = parseFloat(String(formData.get("price") || "0")) || 0;
-  const price_max = parseFloat(String(formData.get("price_max") || "")) || null;
+  const price = nonNegativeFloat(formData.get("price"));
+  const rawMax = String(formData.get("price_max") || "").trim();
+  const price_max = rawMax ? nonNegativeFloat(rawMax) : null;
   const description = String(formData.get("description") || "").trim() || null;
 
   if (!name) redirect("/services?error=required");

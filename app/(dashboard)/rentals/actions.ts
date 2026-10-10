@@ -15,6 +15,7 @@ import {
   returnRestockUnits,
   stockDelta,
 } from "@/lib/rentals";
+import { nonNegativeFloat } from "@/lib/numbers";
 
 async function requireRentalsManager() {
   const member = await getCurrentMember();
@@ -24,7 +25,7 @@ async function requireRentalsManager() {
 }
 
 function money(value: FormDataEntryValue | null): number {
-  return Math.max(0, parseFloat(String(value ?? "0")) || 0);
+  return nonNegativeFloat(value);
 }
 
 export async function createRental(formData: FormData) {

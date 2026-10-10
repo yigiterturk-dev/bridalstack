@@ -7,6 +7,7 @@ import { getCurrentMember } from "@/lib/tenant";
 import { hasPermission } from "@/lib/rbac";
 import { todayISO } from "@/lib/finance";
 import { ALTERATION_KINDS, canTransition, kindLabel, shouldCharge } from "@/lib/alterations";
+import { nonNegativeFloat } from "@/lib/numbers";
 
 async function requireAlterationsManager() {
   const member = await getCurrentMember();
@@ -58,7 +59,7 @@ export async function createAlteration(formData: FormData) {
       fitting_date: optionalDate(formData.get("fitting_date")),
       promised_date: optionalDate(formData.get("promised_date")),
       seamstress: String(formData.get("seamstress") || "").trim() || null,
-      price: Math.max(0, parseFloat(String(formData.get("price") || "0")) || 0),
+      price: nonNegativeFloat(formData.get("price")),
       notes: String(formData.get("notes") || "").trim() || null,
       created_by: member.userId,
     },

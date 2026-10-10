@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentTenant, getCurrentUserId, getCurrentMember } from "@/lib/tenant";
 import { hasPermission } from "@/lib/rbac";
 import { createPublicToken } from "@/lib/tokens";
+import { nonNegativeFloat } from "@/lib/numbers";
 
 export async function createContract(formData: FormData) {
   const userId = await getCurrentUserId();
@@ -19,7 +20,7 @@ export async function createContract(formData: FormData) {
   const order_id = String(formData.get("order_id") || "").trim() || null;
   const title = String(formData.get("title") || "").trim();
   const content = String(formData.get("content") || "").trim();
-  const total_amount = parseFloat(String(formData.get("total_amount") || "0")) || 0;
+  const total_amount = nonNegativeFloat(formData.get("total_amount"));
 
   if (!customer_id || !title || !content) redirect("/contracts?error=required");
 

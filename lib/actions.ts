@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentTenant, getCurrentMember, getCurrentUserId } from "@/lib/tenant";
 import { hasPermission, type Permission } from "@/lib/rbac";
 import { derivedOrderTotals, parseDraftLines } from "@/lib/order-lines";
+import { nonNegativeFloat } from "@/lib/numbers";
 
 // Auth + tenant + (opsiyonel) izin kapısı. Fail-closed: yetkisiz reddedilir.
 async function requireAuth(permission?: Permission, denyRedirect = "/dashboard?error=forbidden") {
@@ -99,8 +100,8 @@ export async function createProduct(formData: FormData) {
   const name = String(formData.get("name") || "").trim();
   const sku = String(formData.get("sku") || "").trim() || null;
   const category = String(formData.get("category") || "").trim() || null;
-  const price = parseFloat(String(formData.get("price") || "0")) || 0;
-  const cost = parseFloat(String(formData.get("cost") || "0")) || 0;
+  const price = nonNegativeFloat(formData.get("price"));
+  const cost = nonNegativeFloat(formData.get("cost"));
   const stock_quantity = parseInt(String(formData.get("stock_quantity") || "1")) || 1;
   const description = String(formData.get("description") || "").trim() || null;
   const barcodeInput = String(formData.get("barcode") || "").trim();
@@ -155,7 +156,7 @@ export async function createOrder(formData: FormData) {
   const order_date = String(formData.get("order_date") || new Date().toISOString().split("T")[0]).trim();
   const delivery_date = String(formData.get("delivery_date") || "").trim() || null;
   const sales_person = String(formData.get("sales_person") || "").trim() || null;
-  const deposit_amount = parseFloat(String(formData.get("deposit_amount") || "0")) || 0;
+  const deposit_amount = nonNegativeFloat(formData.get("deposit_amount"));
   const notes = String(formData.get("notes") || "").trim() || null;
 
   if (!customer_id) redirect("/orders/new?error=required");
@@ -194,7 +195,7 @@ export async function createOrder(formData: FormData) {
   const derived = derivedOrderTotals(lines);
   const discounted_total = derived
     ? derived.discounted_total
-    : parseFloat(String(formData.get("discounted_total") || "0")) || 0;
+    : nonNegativeFloat(formData.get("discounted_total"));
   const list_total = derived ? derived.list_total : discounted_total;
 
   const y = String(new Date().getFullYear()).slice(2);
