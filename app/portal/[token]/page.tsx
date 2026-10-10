@@ -11,7 +11,7 @@ export default async function ClientPortalPage({ params }: Props) {
     where: { token, OR: [{ expires_at: null }, { expires_at: { gt: new Date() } }] },
     select: {
       tenant_id: true, customer_id: true,
-      tenant: { select: { name: true, logo_url: true, accent_color: true } },
+      tenant: { select: { name: true, slug: true, logo_url: true, accent_color: true } },
     },
   });
 
@@ -65,6 +65,15 @@ export default async function ClientPortalPage({ params }: Props) {
       <header className="bg-white border-b border-gray-100 px-6 py-6 text-center">
         <h1 className="text-2xl font-bold text-gray-900">{shopName}</h1>
         <p className="text-gray-500 mt-1">Welcome, {customer?.name ?? "Bride"} ✨</p>
+        {tenant?.slug && (
+          <Link
+            href={`/book/${tenant.slug}`}
+            className="inline-flex items-center gap-1.5 mt-4 rounded-xl bg-gray-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-rose-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 focus-visible:ring-offset-2 transition-colors"
+          >
+            <span aria-hidden="true" className="material-symbols-outlined text-base">event</span>
+            Book another appointment
+          </Link>
+        )}
       </header>
 
       <div className="max-w-2xl mx-auto px-4 py-8 flex flex-col gap-6">
@@ -164,7 +173,7 @@ export default async function ClientPortalPage({ params }: Props) {
 
         {/* Footer */}
         <footer className="text-center py-6">
-          <p className="text-xs text-gray-400">Powered by <Link href="/landing" className="text-rose-500 hover:underline">BridalStack</Link></p>
+          <p className="text-xs text-gray-400">Powered by <Link href="/landing" className="text-rose-500 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 rounded">BridalStack</Link></p>
         </footer>
       </div>
     </div>
