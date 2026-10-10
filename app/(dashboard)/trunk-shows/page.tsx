@@ -2,8 +2,18 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getCurrentTenant } from "@/lib/tenant";
 import { createTrunkShow } from "./actions";
+import SubmitButton from "@/components/submit-button";
 
-export default async function TrunkShowsPage() {
+const ERRORS: Record<string, string> = {
+  required: "Enter an event name and both dates.",
+  too_long: "Keep the event name and notes within the allowed length.",
+  dates: "The end date must be on or after the start date.",
+};
+
+type Props = { searchParams?: Promise<{ error?: string }> };
+
+export default async function TrunkShowsPage({ searchParams }: Props) {
+  const params = await searchParams;
   const tenant = await getCurrentTenant();
   if (!tenant) redirect("/onboarding");
 
@@ -28,34 +38,39 @@ export default async function TrunkShowsPage() {
         <h1 className="text-2xl font-bold text-gray-900">Trunk Shows</h1>
         <p className="text-sm text-gray-500 mt-1">Manage vendor sample events and gown tracking</p>
       </div>
+      {params?.error && ERRORS[params.error] && (
+        <div role="alert" aria-live="assertive" className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+          {ERRORS[params.error]}
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="bg-white rounded-2xl border border-gray-200 p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">New Trunk Show</h2>
           <form action={createTrunkShow} className="flex flex-col gap-3">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Event Name *</label>
-              <input name="name" required className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none" placeholder="e.g. Pronovias Spring 2026" />
+              <label htmlFor="trunk-show-name" className="block text-sm font-medium text-gray-700 mb-1">Event Name *</label>
+              <input id="trunk-show-name" name="name" required className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none" placeholder="e.g. Pronovias Spring 2026" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Vendor</label>
-              <input name="vendor" className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none" placeholder="Designer / Brand" />
+              <label htmlFor="trunk-show-vendor" className="block text-sm font-medium text-gray-700 mb-1">Vendor</label>
+              <input id="trunk-show-vendor" name="vendor" className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none" placeholder="Designer / Brand" />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Start</label>
-                <input name="start_date" type="date" required className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none" />
+                <label htmlFor="trunk-show-start" className="block text-sm font-medium text-gray-700 mb-1">Start</label>
+                <input id="trunk-show-start" name="start_date" type="date" required className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">End</label>
-                <input name="end_date" type="date" required className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none" />
+                <label htmlFor="trunk-show-end" className="block text-sm font-medium text-gray-700 mb-1">End</label>
+                <input id="trunk-show-end" name="end_date" type="date" required className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none" />
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
-              <textarea name="notes" rows={2} className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none resize-y" />
+              <label htmlFor="trunk-show-notes" className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+              <textarea id="trunk-show-notes" name="notes" rows={2} className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none resize-y" />
             </div>
-            <button type="submit" className="mt-2 py-2.5 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-800">Create Event</button>
+            <SubmitButton pendingLabel="Creating event…" className="mt-2 py-2.5 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-800 disabled:opacity-60 disabled:cursor-wait">Create Event</SubmitButton>
           </form>
         </div>
 

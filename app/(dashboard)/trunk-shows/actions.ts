@@ -21,6 +21,12 @@ export async function createTrunkShow(formData: FormData) {
   const notes = String(formData.get("notes") || "").trim() || null;
 
   if (!name || !start_date || !end_date) redirect("/trunk-shows?error=required");
+  if (name.length > 120 || vendor && vendor.length > 120 || notes && notes.length > 2000) {
+    redirect("/trunk-shows?error=too_long");
+  }
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(start_date) || !/^\d{4}-\d{2}-\d{2}$/.test(end_date) || end_date < start_date) {
+    redirect("/trunk-shows?error=dates");
+  }
 
   await prisma.trunkShow.create({
     data: { tenant_id: tenant.id, name, vendor, start_date, end_date, notes, created_by: userId },
