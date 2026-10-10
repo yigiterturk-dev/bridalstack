@@ -87,9 +87,12 @@ export default function BookingForm({ tenantId, accent, services, staff, schedul
         }
         const label = `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
         const slotEnd = `${String(Math.floor((h * 60 + m + duration) / 60)).padStart(2, "0")}:${String((h * 60 + m + duration) % 60).padStart(2, "0")}`;
+        // A booking without a preferred staff member occupies the time for
+        // every eligible staff member. Keep the picker aligned with the API,
+        // which rejects the same overlap at submission time.
         const isBooked = bookings.some((booking) =>
           booking.bookingDate === date &&
-          (booking.memberId === sched.memberId || (!staffId && booking.memberId === null)) &&
+          (booking.memberId === sched.memberId || booking.memberId === null) &&
           booking.startTime < slotEnd && booking.endTime > label
         );
         if (!isBooked && !slots.includes(label)) slots.push(label);
