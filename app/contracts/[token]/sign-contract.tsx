@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function SignContract({ token, customerName }: { token: string; customerName: string }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -12,6 +12,11 @@ export default function SignContract({ token, customerName }: { token: string; c
   const [hasDrawn, setHasDrawn] = useState(false);
   const [agreed, setAgreed] = useState(false);
   const [error, setError] = useState("");
+  const errorRef = useRef<HTMLParagraphElement>(null);
+
+  useEffect(() => {
+    if (error) errorRef.current?.focus();
+  }, [error]);
 
   function startDraw(e: React.MouseEvent | React.TouchEvent) {
     const canvas = canvasRef.current;
@@ -84,8 +89,8 @@ export default function SignContract({ token, customerName }: { token: string; c
 
   if (signed) {
     return (
-      <div className="bg-green-50 rounded-2xl border border-green-200 p-8 text-center">
-        <span className="material-symbols-outlined text-4xl text-green-600 mb-3 block">check_circle</span>
+      <div role="status" aria-live="polite" className="bg-green-50 rounded-2xl border border-green-200 p-8 text-center">
+        <span aria-hidden="true" className="material-symbols-outlined text-4xl text-green-600 mb-3 block">check_circle</span>
         <h3 className="text-lg font-bold text-gray-900">Contract Signed!</h3>
         <p className="text-sm text-gray-500 mt-1">Thank you, {customerName}. You&apos;ll receive a confirmation email.</p>
       </div>
@@ -97,8 +102,8 @@ export default function SignContract({ token, customerName }: { token: string; c
       <h3 className="font-semibold text-gray-900 mb-4">Sign Below</h3>
 
       <div className="flex gap-2 mb-4">
-        <button type="button" onClick={() => { setMode("draw"); setError(""); }} className={`px-4 py-2 rounded-xl text-sm font-medium ${mode === "draw" ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-700"}`}>Draw</button>
-        <button type="button" onClick={() => { setMode("type"); setError(""); }} className={`px-4 py-2 rounded-xl text-sm font-medium ${mode === "type" ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-700"}`}>Type</button>
+        <button type="button" aria-pressed={mode === "draw"} onClick={() => { setMode("draw"); setError(""); }} className={`px-4 py-2 rounded-xl text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 focus-visible:ring-offset-2 ${mode === "draw" ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-700"}`}>Draw</button>
+        <button type="button" aria-pressed={mode === "type"} onClick={() => { setMode("type"); setError(""); }} className={`px-4 py-2 rounded-xl text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 focus-visible:ring-offset-2 ${mode === "type" ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-700"}`}>Type</button>
       </div>
 
       {mode === "draw" ? (
@@ -118,7 +123,7 @@ export default function SignContract({ token, customerName }: { token: string; c
             onTouchMove={draw}
             onTouchEnd={() => setDrawing(false)}
           />
-          <button type="button" onClick={clear} className="text-xs text-gray-500 hover:text-gray-900 mt-2">Clear</button>
+          <button type="button" onClick={clear} className="text-xs text-gray-500 hover:text-gray-900 mt-2 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2">Clear</button>
         </div>
       ) : (
         <div>
@@ -128,26 +133,27 @@ export default function SignContract({ token, customerName }: { token: string; c
             onChange={(e) => { setTypedName(e.target.value); setError(""); }}
             placeholder="Type your full name"
             aria-label="Full name for signature"
-            className="w-full px-4 py-4 rounded-xl border border-gray-300 text-2xl outline-none"
+            className="w-full px-4 py-4 rounded-xl border border-gray-300 text-2xl outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
             style={{ fontFamily: "cursive" }}
           />
         </div>
       )}
 
       <div className="flex items-center gap-3 mt-4">
-        <label className="flex items-center gap-2 text-sm text-gray-600">
-          <input type="checkbox" checked={agreed} onChange={(e) => { setAgreed(e.target.checked); setError(""); }} className="rounded" />
+        <label htmlFor="contract-agreement" className="flex items-center gap-2 text-sm text-gray-600">
+          <input id="contract-agreement" type="checkbox" checked={agreed} onChange={(e) => { setAgreed(e.target.checked); setError(""); }} className="rounded focus-visible:ring-2 focus-visible:ring-rose-400" />
           I agree to the terms above
         </label>
       </div>
 
-      {error && <p role="alert" className="mt-3 text-sm text-red-600">{error}</p>}
+      {error && <p ref={errorRef} tabIndex={-1} role="alert" aria-live="assertive" className="mt-3 text-sm text-red-600 focus:outline-none">{error}</p>}
 
       <button
         type="button"
         onClick={handleSign}
         disabled={loading || !agreed || (mode === "type" ? !typedName.trim() : !hasDrawn)}
-        className="w-full mt-4 py-3 bg-rose-600 text-white rounded-xl text-base font-medium hover:bg-rose-700 transition-colors disabled:opacity-50"
+        aria-busy={loading}
+        className="w-full mt-4 py-3 bg-rose-600 text-white rounded-xl text-base font-medium hover:bg-rose-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 focus-visible:ring-offset-2 disabled:opacity-50"
       >
         {loading ? "Signing..." : "Sign Contract"}
       </button>
