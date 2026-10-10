@@ -20,6 +20,7 @@ type Props = {
   bookings: ExistingBooking[];
   timeOff: TimeOff[];
   minDate: string;
+  timeZoneLabel: string;
 };
 
 type Step = "service" | "staff" | "datetime" | "info" | "done";
@@ -33,7 +34,7 @@ function formatDuration(minutes: number) {
   return `${minutes}m`;
 }
 
-export default function BookingForm({ tenantId, accent, services, staff, schedules, bookings, timeOff, minDate }: Props) {
+export default function BookingForm({ tenantId, accent, services, staff, schedules, bookings, timeOff, minDate, timeZoneLabel }: Props) {
   const [step, setStep] = useState<Step>("service");
   const [serviceId, setServiceId] = useState<string | null>(null);
   const [staffId, setStaffId] = useState<string | null>(null);
@@ -325,6 +326,7 @@ export default function BookingForm({ tenantId, accent, services, staff, schedul
       {step === "datetime" && (
         <div className="bg-white rounded-2xl border border-gray-200/80 shadow-sm p-6 bs-animate-in">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Choose a date and time</h2>
+          <p className="text-xs text-gray-500 -mt-2 mb-4">Times are shown in the shop&apos;s local time ({timeZoneLabel}).</p>
           <div className="mb-5">
             <label htmlFor="appointment-date" className="block text-sm font-medium text-gray-700 mb-1.5">Date</label>
             <input

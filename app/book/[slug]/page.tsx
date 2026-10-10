@@ -4,7 +4,7 @@ import Image from "next/image";
 import BookingForm from "./booking-form";
 import { DEMO_TENANT_SLUG } from "@/lib/demo-identity";
 import { ensureDemoTenant } from "@/lib/demo-tenant";
-import { dateInTimeZone, normalizeTimeZone } from "@/lib/timezone";
+import { dateInTimeZone, normalizeTimeZone, timeZoneLabel } from "@/lib/timezone";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -102,6 +102,7 @@ export default async function PublicBookingPage({ params }: Props) {
           }))}
           timeOff={(timeOff ?? []).map((entry) => ({ memberId: entry.member_id, date: entry.date }))}
           minDate={today}
+          timeZoneLabel={timeZoneLabel(timeZone)}
         />
       </div>
 

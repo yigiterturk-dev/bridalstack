@@ -27,6 +27,11 @@ export function normalizeTimeZone(value: unknown): string {
   return isValidTimeZone(value) ? String(value).trim() : DEFAULT_TIME_ZONE;
 }
 
+export function timeZoneLabel(value: unknown): string {
+  const normalized = normalizeTimeZone(value);
+  return TIME_ZONE_OPTIONS.find((option) => option.value === normalized)?.label ?? normalized.replaceAll("_", " ");
+}
+
 export function dateInTimeZone(now: Date, timeZone: string): string {
   const parts = new Intl.DateTimeFormat("en-US", {
     timeZone: normalizeTimeZone(timeZone), year: "numeric", month: "2-digit", day: "2-digit",
