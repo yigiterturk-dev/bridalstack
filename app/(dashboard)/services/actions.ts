@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getCurrentTenant, getCurrentMember } from "@/lib/tenant";
 import { hasPermission } from "@/lib/rbac";
-import { nonNegativeFloat } from "@/lib/numbers";
+import { boundedInt, nonNegativeFloat } from "@/lib/numbers";
 
 // settings.manage izni gerektirir (fail-closed)
 async function requireServiceManager() {
@@ -21,7 +21,7 @@ export async function createService(formData: FormData) {
 
   const name = String(formData.get("name") || "").trim();
   const category = String(formData.get("category") || "").trim() || null;
-  const duration = parseInt(String(formData.get("duration") || "30")) || 30;
+  const duration = boundedInt(formData.get("duration"), 5, 24 * 60, 30);
   const price = nonNegativeFloat(formData.get("price"));
   const rawMax = String(formData.get("price_max") || "").trim();
   const price_max = rawMax ? nonNegativeFloat(rawMax) : null;

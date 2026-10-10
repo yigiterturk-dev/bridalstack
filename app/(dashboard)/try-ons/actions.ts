@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getCurrentTenant, getCurrentUserId, getCurrentMember } from "@/lib/tenant";
 import { hasPermission } from "@/lib/rbac";
+import { boundedInt } from "@/lib/numbers";
 
 export async function addTryOn(formData: FormData) {
   const userId = await getCurrentUserId();
@@ -17,7 +18,8 @@ export async function addTryOn(formData: FormData) {
   const customer_id = String(formData.get("customer_id") || "").trim();
   const product_id = String(formData.get("product_id") || "").trim();
   const reaction = String(formData.get("reaction") || "").trim() || null;
-  const rating = parseInt(String(formData.get("rating") || "")) || null;
+  const ratingInput = String(formData.get("rating") || "").trim();
+  const rating = ratingInput ? boundedInt(ratingInput, 1, 5, 0) || null : null;
   const stylist = String(formData.get("stylist") || "").trim() || null;
   const notes = String(formData.get("notes") || "").trim() || null;
   // Sadece kendi Blob alanımızdan gelen adresler kabul edilir.

@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getCurrentTenant, getCurrentUserId, getCurrentMember } from "@/lib/tenant";
 import { hasPermission } from "@/lib/rbac";
+import { boundedInt } from "@/lib/numbers";
 
 export async function createWorkflow(formData: FormData) {
   const userId = await getCurrentUserId();
@@ -17,7 +18,7 @@ export async function createWorkflow(formData: FormData) {
   const name = String(formData.get("name") || "").trim();
   const trigger_type = String(formData.get("trigger_type") || "").trim();
   const action_type = String(formData.get("action_type") || "").trim();
-  const delay_minutes = parseInt(String(formData.get("delay_minutes") || "0")) || 0;
+  const delay_minutes = boundedInt(formData.get("delay_minutes"), 0, 365 * 24 * 60, 0);
 
   if (!name || !trigger_type || !action_type) redirect("/workflows?error=required");
 
