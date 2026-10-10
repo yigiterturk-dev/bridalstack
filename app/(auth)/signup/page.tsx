@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -14,7 +14,12 @@ export default function SignupPage() {
   const [shopName, setShopName] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const errorRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+
+  useEffect(() => {
+    if (error) errorRef.current?.focus();
+  }, [error]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -76,8 +81,8 @@ export default function SignupPage() {
           </p>
 
           {error && (
-            <div role="alert" className="mb-6 p-4 rounded-2xl bg-rose-50/80 text-rose-700 text-sm font-medium border border-rose-100 flex items-center gap-2">
-              <span className="material-symbols-outlined text-[20px]">error</span>
+            <div ref={errorRef} tabIndex={-1} role="alert" aria-live="assertive" className="mb-6 p-4 rounded-2xl bg-rose-50/80 text-rose-700 text-sm font-medium border border-rose-100 flex items-center gap-2 focus:outline-none">
+              <span aria-hidden="true" className="material-symbols-outlined text-[20px]">error</span>
               {error}
             </div>
           )}
@@ -94,7 +99,7 @@ export default function SignupPage() {
                 minLength={2}
                 maxLength={80}
                 autoComplete="organization"
-                className="w-full px-5 py-4 rounded-2xl border border-stone-200 bg-white/50 text-stone-900 text-sm font-medium outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-50 transition-all placeholder:text-stone-300"
+                className="w-full px-5 py-4 rounded-2xl border border-stone-200 bg-white/50 text-stone-900 text-sm font-medium outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-50 focus-visible:outline-none transition-all placeholder:text-stone-300"
                 placeholder="e.g. Elegance Bridal"
               />
             </div>
@@ -107,7 +112,7 @@ export default function SignupPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 autoComplete="email"
-                className="w-full px-5 py-4 rounded-2xl border border-stone-200 bg-white/50 text-stone-900 text-sm font-medium outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-50 transition-all placeholder:text-stone-300"
+                className="w-full px-5 py-4 rounded-2xl border border-stone-200 bg-white/50 text-stone-900 text-sm font-medium outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-50 focus-visible:outline-none transition-all placeholder:text-stone-300"
                 placeholder="you@boutique.com"
               />
             </div>
@@ -122,23 +127,26 @@ export default function SignupPage() {
                   required
                   minLength={8}
                   autoComplete="new-password"
-                  className="w-full px-5 py-4 pr-14 rounded-2xl border border-stone-200 bg-white/50 text-stone-900 text-sm font-medium outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-50 transition-all placeholder:text-stone-300"
+                  aria-describedby="password-hint"
+                  className="w-full px-5 py-4 pr-14 rounded-2xl border border-stone-200 bg-white/50 text-stone-900 text-sm font-medium outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-50 focus-visible:outline-none transition-all placeholder:text-stone-300"
                   placeholder="At least 8 characters"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword((visible) => !visible)}
                   aria-label={showPassword ? "Hide password" : "Show password"}
-                  className="absolute inset-y-0 right-3 px-2 text-stone-400 hover:text-stone-700 transition-colors"
+                  className="absolute inset-y-0 right-3 px-2 text-stone-400 hover:text-stone-700 transition-colors rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
                 >
                   <span className="material-symbols-outlined text-[20px]" aria-hidden="true">{showPassword ? "visibility_off" : "visibility"}</span>
                 </button>
               </div>
+              <p id="password-hint" className="mt-1.5 text-xs text-stone-400">At least 8 characters.</p>
             </div>
             <button
               type="submit"
               disabled={loading}
-              className="w-full mt-4 py-4 px-4 bg-stone-900 text-white rounded-2xl font-bold text-sm hover:bg-rose-600 hover:shadow-[0_8px_20px_-6px_rgba(225,29,72,0.4)] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+              aria-busy={loading}
+              className="w-full mt-4 py-4 px-4 bg-stone-900 text-white rounded-2xl font-bold text-sm hover:bg-rose-600 hover:shadow-[0_8px_20px_-6px_rgba(225,29,72,0.4)] transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
@@ -151,7 +159,7 @@ export default function SignupPage() {
           </form>
 
           <div className="mt-8 pt-8 border-t border-stone-100 text-center">
-            <Link href="/login" className="text-sm font-semibold text-stone-500 hover:text-rose-600 transition-colors">
+            <Link href="/login" className="text-sm font-semibold text-stone-500 hover:text-rose-600 transition-colors rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 focus-visible:ring-offset-2">
               Already have an account? Sign in
             </Link>
           </div>
