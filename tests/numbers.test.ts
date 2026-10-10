@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { boundedInt, finiteFloat, nonNegativeFloat, normalizedUpperPrice } from "../lib/numbers.ts";
-import { dateInTimeZone, normalizeTimeZone, timeZoneLabel } from "../lib/timezone.ts";
+import { addCalendarDays, dateInTimeZone, normalizeTimeZone, timeZoneLabel } from "../lib/timezone.ts";
 
 test("nonNegativeFloat: valid decimals survive and negatives clamp", () => {
   assert.equal(nonNegativeFloat("12.50"), 12.5);
@@ -45,4 +45,5 @@ test("normalizeTimeZone: rejects invalid values safely", () => {
   assert.equal(normalizeTimeZone("America/New_York"), "America/New_York");
   assert.equal(normalizeTimeZone("not/a-timezone"), "UTC");
   assert.equal(timeZoneLabel("America/Los_Angeles"), "Pacific Time (US & Canada)");
+  assert.equal(addCalendarDays("2026-03-08", 1), "2026-03-09");
 });
