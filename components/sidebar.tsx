@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -19,6 +19,15 @@ export default function Sidebar({ groups, tenantName }: { groups: NavGroup[]; te
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [collapsedGroups, setCollapsedGroups] = useState<Record<number, boolean>>({});
+
+  useEffect(() => {
+    if (!open) return;
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") setOpen(false);
+    }
+    document.addEventListener("keydown", closeOnEscape);
+    return () => document.removeEventListener("keydown", closeOnEscape);
+  }, [open]);
 
   const nav = (
     <>
@@ -98,7 +107,7 @@ export default function Sidebar({ groups, tenantName }: { groups: NavGroup[]; te
     <>
       {/* Mobile header */}
       <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white/80 backdrop-blur-xl border-b border-stone-100 flex items-center justify-between px-5 z-50">
-        <button onClick={() => setOpen(true)} className="text-stone-700 -ml-1 p-2 hover:bg-stone-50 rounded-xl transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2" aria-label="Open menu">
+        <button onClick={() => setOpen(true)} aria-expanded={open} aria-controls="dashboard-sidebar" className="text-stone-700 -ml-1 p-2 hover:bg-stone-50 rounded-xl transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2" aria-label="Open menu">
           <span aria-hidden="true" className="material-symbols-outlined">menu</span>
         </button>
         <h1 className="text-lg text-stone-900"><Wordmark /></h1>
@@ -117,6 +126,7 @@ export default function Sidebar({ groups, tenantName }: { groups: NavGroup[]; te
 
       {/* Sidebar */}
       <aside
+        id="dashboard-sidebar"
         className={`fixed inset-y-0 left-0 w-[280px] bg-[#FDFCFB]/95 backdrop-blur-2xl border-r border-stone-100 text-stone-900 flex flex-col z-50 transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] lg:translate-x-0 ${
           open ? "translate-x-0 shadow-2xl" : "-translate-x-full"
         }`}
