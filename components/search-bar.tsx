@@ -35,30 +35,30 @@ export default function SearchBar({ placeholder = "Search...", basePath }: { pla
     <>
       <form onSubmit={handleSubmit} className="flex gap-2 w-full">
         <div className="relative flex-1">
-          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg">search</span>
+          <span aria-hidden="true" className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg">search</span>
           <input
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder={placeholder}
             aria-label={placeholder}
-            className="w-full pl-10 pr-12 py-2.5 rounded-xl border border-gray-200 bg-white text-sm outline-none transition focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent-ring)]"
+            className="w-full pl-10 pr-12 py-2.5 rounded-xl border border-gray-200 bg-white text-sm outline-none transition focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent-ring)] focus-visible:outline-none"
           />
           <button
             type="button"
             onClick={() => setShowScanner(true)}
             aria-label="Scan barcode with camera"
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[var(--accent)] transition-colors flex items-center justify-center"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[var(--accent)] transition-colors flex items-center justify-center rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-ring)]"
             title="Scan barcode with camera"
           >
-            <span className="material-symbols-outlined text-lg">barcode_scanner</span>
+            <span aria-hidden="true" className="material-symbols-outlined text-lg">barcode_scanner</span>
           </button>
         </div>
         {query && (
           <button
             type="button"
             onClick={() => { setQuery(""); router.push(basePath); }}
-            className="px-3 py-2 text-sm text-gray-500 hover:text-gray-900 shrink-0"
+            className="px-3 py-2 text-sm text-gray-500 hover:text-gray-900 shrink-0 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-ring)]"
           >
             Clear
           </button>
