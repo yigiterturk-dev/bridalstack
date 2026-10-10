@@ -7,7 +7,7 @@ import { getCurrentTenant, getCurrentMember, getCurrentUserId } from "@/lib/tena
 import { hasPermission, type Permission } from "@/lib/rbac";
 import { derivedOrderTotals, parseDraftLines } from "@/lib/order-lines";
 import { boundedInt, nonNegativeFloat } from "@/lib/numbers";
-import { dateTimeInTimeZone, normalizeTimeZone } from "@/lib/timezone";
+import { dateInTimeZone, dateTimeInTimeZone, normalizeTimeZone } from "@/lib/timezone";
 
 // Auth + tenant + (opsiyonel) izin kapısı. Fail-closed: yetkisiz reddedilir.
 async function requireAuth(permission?: Permission, denyRedirect = "/dashboard?error=forbidden") {
@@ -154,7 +154,8 @@ export async function createOrder(formData: FormData) {
 
   const customer_id = String(formData.get("customer_id") || "").trim();
   const order_type = String(formData.get("order_type") || "sale").trim();
-  const order_date = String(formData.get("order_date") || new Date().toISOString().split("T")[0]).trim();
+  const shopToday = dateInTimeZone(new Date(), normalizeTimeZone(tenant.settings.time_zone));
+  const order_date = String(formData.get("order_date") || shopToday).trim();
   const delivery_date = String(formData.get("delivery_date") || "").trim() || null;
   const sales_person = String(formData.get("sales_person") || "").trim() || null;
   const deposit_amount = nonNegativeFloat(formData.get("deposit_amount"));
@@ -199,9 +200,8 @@ export async function createOrder(formData: FormData) {
     : nonNegativeFloat(formData.get("discounted_total"));
   const list_total = derived ? derived.list_total : discounted_total;
 
-  const y = String(new Date().getFullYear()).slice(2);
-  const m = String(new Date().getMonth() + 1).padStart(2, "0");
-  const d = String(new Date().getDate()).padStart(2, "0");
+  const [yFull, m, d] = shopToday.split("-");
+  const y = yFull.slice(2);
   const rand = Math.random().toString(36).substring(2, 6).toUpperCase();
   const ref_no = `S${y}${m}${d}-${rand}`;
 

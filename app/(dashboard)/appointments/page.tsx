@@ -5,6 +5,7 @@ import { createAppointment, updateAppointmentStatus } from "@/lib/actions";
 import ModuleGuard from "@/components/module-guard";
 import SelectField from "@/components/select-field";
 import SubmitButton from "@/components/submit-button";
+import { dateInTimeZone, normalizeTimeZone } from "@/lib/timezone";
 
 function statusStyle(status: string) {
   switch (status) {
@@ -27,12 +28,12 @@ export default async function AppointmentsPage() {
 
   return (
     <ModuleGuard moduleId="appointments" enabledModules={tenant.enabled_modules}>
-      <AppointmentsContent tenantId={tenant.id} />
+      <AppointmentsContent tenantId={tenant.id} timeZone={normalizeTimeZone(tenant.settings.time_zone)} />
     </ModuleGuard>
   );
 }
 
-async function AppointmentsContent({ tenantId }: { tenantId: string }) {
+async function AppointmentsContent({ tenantId, timeZone }: { tenantId: string; timeZone: string }) {
   const [list, customers] = await Promise.all([
     prisma.appointment.findMany({
       where: { tenant_id: tenantId },
@@ -51,7 +52,7 @@ async function AppointmentsContent({ tenantId }: { tenantId: string }) {
   ]);
 
   const now = new Date();
-  const today = now.toISOString().split("T")[0];
+  const today = dateInTimeZone(now, timeZone);
 
   return (
     <div className="animate-fade-in-up">

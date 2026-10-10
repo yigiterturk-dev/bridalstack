@@ -7,6 +7,7 @@ import SelectField from "@/components/select-field";
 import OrderLineEditor from "@/components/order-line-editor";
 import SubmitButton from "@/components/submit-button";
 import { CURRENCY_SYMBOL } from "@/config/modules";
+import { dateInTimeZone, normalizeTimeZone } from "@/lib/timezone";
 
 export default async function NewOrderPage() {
   const tenant = await getCurrentTenant();
@@ -56,7 +57,7 @@ export default async function NewOrderPage() {
           </div>
           <div>
             <label htmlFor="order-date" className="block text-sm font-medium text-gray-700 mb-1">Order Date</label>
-            <input id="order-date" name="order_date" type="date" defaultValue={new Date().toISOString().split("T")[0]} className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none" />
+            <input id="order-date" name="order_date" type="date" defaultValue={dateInTimeZone(new Date(), normalizeTimeZone(tenant.settings.time_zone))} className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none" />
           </div>
         </div>
         <div className="grid grid-cols-2 gap-4">
