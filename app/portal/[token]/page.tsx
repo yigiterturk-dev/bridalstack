@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import Image from "next/image";
+import { formatPrice } from "@/config/modules";
 
 type Props = { params: Promise<{ token: string }> };
 
@@ -121,9 +122,9 @@ export default async function ClientPortalPage({ params }: Props) {
                     {o.delivery_date && <div className="text-xs text-gray-500">Delivery: {new Date(o.delivery_date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</div>}
                   </div>
                   <div className="text-right">
-                    <div className="font-semibold text-gray-900 text-sm">${Number(o.discounted_total).toLocaleString()}</div>
+                    <div className="font-semibold text-gray-900 text-sm">{formatPrice(Number(o.discounted_total))}</div>
                     {Number(o.remaining_balance) > 0 && (
-                      <div className="text-xs text-red-600">Balance: ${Number(o.remaining_balance).toLocaleString()}</div>
+                      <div className="text-xs text-red-600">Balance: {formatPrice(Number(o.remaining_balance))}</div>
                     )}
                   </div>
                 </div>

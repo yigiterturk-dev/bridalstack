@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getCurrentTenant } from "@/lib/tenant";
 import { RevenueBars, FillLine, StaffBars, DistributionPie } from "@/components/analytics-charts";
+import { formatPrice } from "@/config/modules";
 import RangeFilter from "./range-filter";
 
 export const dynamic = "force-dynamic";
@@ -184,10 +185,10 @@ export default async function AnalyticsPage({ searchParams }: Props) {
     .sort((a, b) => b.value - a.value);
 
   const kpis = [
-    hasSales && { label: "Total Revenue", value: `$${totalRevenue.toLocaleString()}`, sub: `from orders · last ${rangeDays} days` },
-    hasBooking && { label: "Styling Fees", value: `$${bookingRevenue.toLocaleString()}`, sub: "completed bookings" },
+    hasSales && { label: "Total Revenue", value: formatPrice(totalRevenue), sub: `from orders · last ${rangeDays} days` },
+    hasBooking && { label: "Styling Fees", value: formatPrice(bookingRevenue), sub: "completed bookings" },
     hasAppointments && { label: "Completion Rate", value: `${fillRate}%`, sub: `${apptDone}/${apptTotal} appointments` },
-    hasInventory && { label: "Inventory Value", value: `$${stockValue.toLocaleString()}`, sub: `${lowStock} low stock items` },
+    hasInventory && { label: "Inventory Value", value: formatPrice(stockValue), sub: `${lowStock} low stock items` },
   ].filter(Boolean) as { label: string; value: string; sub: string }[];
 
   const hasRevenueData = revenueSeries.some((r) => r.value > 0);

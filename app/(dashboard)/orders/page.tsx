@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentTenant } from "@/lib/tenant";
 import ModuleGuard from "@/components/module-guard";
 import SearchBar from "@/components/search-bar";
+import { formatPrice } from "@/config/modules";
 
 type PageProps = { searchParams?: Promise<{ q?: string }> };
 
@@ -92,7 +93,7 @@ async function OrdersContent({ tenantId, query }: { tenantId: string; query: str
           <p className="text-stone-500 mt-2 font-medium">
             {orderCount === 0
               ? "No orders yet"
-              : `${orderCount} active ${orderCount === 1 ? "order" : "orders"} · $${totalRevenue.toLocaleString()} total revenue`}
+              : `${orderCount} active ${orderCount === 1 ? "order" : "orders"} · ${formatPrice(totalRevenue)} total revenue`}
           </p>
         </div>
         <div className="flex gap-3">
@@ -142,11 +143,11 @@ async function OrdersContent({ tenantId, query }: { tenantId: string; query: str
                         {shownDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                       </td>
                       <td className="px-8 py-6 text-right text-sm font-bold text-stone-900 tabular-nums">
-                        ${o.discounted_total.toLocaleString()}
+                        {formatPrice(o.discounted_total)}
                       </td>
                       <td className="px-8 py-6 text-right tabular-nums">
                         <span className={`text-sm font-bold ${o.remaining_balance > 0 ? "text-rose-600" : "text-emerald-600"}`}>
-                          ${o.remaining_balance.toLocaleString()}
+                          {formatPrice(o.remaining_balance)}
                         </span>
                       </td>
                       <td className="px-8 py-6">

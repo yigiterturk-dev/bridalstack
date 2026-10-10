@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentTenant } from "@/lib/tenant";
 import ModuleGuard from "@/components/module-guard";
 import SearchBar from "@/components/search-bar";
+import { formatPrice } from "@/config/modules";
 
 type PageProps = { searchParams?: Promise<{ q?: string }> };
 
@@ -63,7 +64,7 @@ async function ProductsContent({ tenantId, query }: { tenantId: string; query: s
           <p className="text-stone-500 mt-2 font-medium">
             {count === 0
               ? "No pieces in the collection yet"
-              : `${count} exclusive ${count === 1 ? "piece" : "pieces"} · $${totalValue.toLocaleString()} total retail value`}
+              : `${count} exclusive ${count === 1 ? "piece" : "pieces"} · ${formatPrice(totalValue)} total retail value`}
           </p>
         </div>
         <div className="flex gap-3">
@@ -126,7 +127,7 @@ async function ProductsContent({ tenantId, query }: { tenantId: string; query: s
                         ) : "—"}
                       </td>
                       <td className="px-8 py-6 text-right text-sm font-bold text-stone-900 tabular-nums">
-                        ${p.price.toLocaleString()}
+                        {formatPrice(p.price)}
                       </td>
                       <td className="px-8 py-6 text-right tabular-nums">
                         {margin !== null ? (
