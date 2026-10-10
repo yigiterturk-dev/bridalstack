@@ -5,6 +5,7 @@ import { getCurrentTenant } from "@/lib/tenant";
 import { formatPrice } from "@/config/modules";
 import ModuleGuard from "@/components/module-guard";
 import { todayISO } from "@/lib/finance";
+import { normalizeTimeZone } from "@/lib/timezone";
 import { isLate, summarize } from "@/lib/purchasing";
 import { createSupplier, toggleSupplier, deleteSupplier } from "./actions";
 
@@ -16,12 +17,12 @@ export default async function SuppliersPage() {
 
   return (
     <ModuleGuard moduleId="inventory" enabledModules={tenant.enabled_modules}>
-      <SuppliersContent tenantId={tenant.id} />
+      <SuppliersContent tenantId={tenant.id} timeZone={normalizeTimeZone(tenant.settings.time_zone)} />
     </ModuleGuard>
   );
 }
 
-async function SuppliersContent({ tenantId }: { tenantId: string }) {
+async function SuppliersContent({ tenantId, timeZone }: { tenantId: string; timeZone: string }) {
   const [suppliers, products, openOrders] = await Promise.all([
     prisma.supplier.findMany({
       where: { tenant_id: tenantId },
@@ -54,7 +55,7 @@ async function SuppliersContent({ tenantId }: { tenantId: string }) {
   const unassigned = products.filter((p) => !p.supplier_id).length;
 
   // Tedarikçi başına açık sipariş: kaç adet yolda ve parası ne kadar.
-  const today = todayISO();
+  const today = todayISO(new Date(), timeZone);
   const ordersBySupplier = new Map<string, typeof openOrders>();
   for (const o of openOrders) {
     const rows = ordersBySupplier.get(o.supplier_id) ?? [];

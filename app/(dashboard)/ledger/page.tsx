@@ -15,6 +15,7 @@ import {
 } from "@/lib/finance";
 import { summarizeSessions, variance, verdict } from "@/lib/cash-session";
 import LedgerPeriodPicker from "./period-picker";
+import { normalizeTimeZone } from "@/lib/timezone";
 
 export const dynamic = "force-dynamic";
 
@@ -27,13 +28,13 @@ export default async function LedgerPage({ searchParams }: Props) {
 
   return (
     <ModuleGuard moduleId="finance" enabledModules={tenant.enabled_modules}>
-      <LedgerContent tenantId={tenant.id} period={params?.period} />
+      <LedgerContent tenantId={tenant.id} timeZone={normalizeTimeZone(tenant.settings.time_zone)} period={params?.period} />
     </ModuleGuard>
   );
 }
 
-async function LedgerContent({ tenantId, period }: { tenantId: string; period?: string }) {
-  const thisMonth = todayISO().slice(0, 7);
+async function LedgerContent({ tenantId, timeZone, period }: { tenantId: string; timeZone: string; period?: string }) {
+  const thisMonth = todayISO(new Date(), timeZone).slice(0, 7);
   const active = /^\d{4}-\d{2}$/.test(period ?? "") ? (period as string) : thisMonth;
   const { from, to } = monthRange(active);
 

@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentTenant } from "@/lib/tenant";
 import { formatPrice } from "@/config/modules";
 import { todayISO } from "@/lib/finance";
+import { normalizeTimeZone } from "@/lib/timezone";
 import ModuleGuard from "@/components/module-guard";
 import SelectField from "@/components/select-field";
 import SubmitButton from "@/components/submit-button";
@@ -52,13 +53,13 @@ export default async function AlterationsPage({ searchParams }: Props) {
 
   return (
     <ModuleGuard moduleId="inventory" enabledModules={tenant.enabled_modules}>
-      <AlterationsContent tenantId={tenant.id} error={params?.error} />
+      <AlterationsContent tenantId={tenant.id} timeZone={normalizeTimeZone(tenant.settings.time_zone)} error={params?.error} />
     </ModuleGuard>
   );
 }
 
-async function AlterationsContent({ tenantId, error }: { tenantId: string; error?: string }) {
-  const today = todayISO();
+async function AlterationsContent({ tenantId, timeZone, error }: { tenantId: string; timeZone: string; error?: string }) {
+  const today = todayISO(new Date(), timeZone);
 
   const [jobs, customers, products, orders] = await Promise.all([
     prisma.alteration.findMany({

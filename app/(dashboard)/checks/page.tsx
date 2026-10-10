@@ -14,6 +14,7 @@ import {
 } from "@/lib/finance";
 import { createCheck, moveCheck, deleteCheck } from "./actions";
 import ConfirmSubmitButton from "@/components/confirm-submit-button";
+import { normalizeTimeZone } from "@/lib/timezone";
 
 export const dynamic = "force-dynamic";
 
@@ -51,12 +52,12 @@ export default async function ChecksPage({ searchParams }: Props) {
 
   return (
     <ModuleGuard moduleId="finance" enabledModules={tenant.enabled_modules}>
-      <ChecksContent tenantId={tenant.id} error={params?.error} />
+      <ChecksContent tenantId={tenant.id} timeZone={normalizeTimeZone(tenant.settings.time_zone)} error={params?.error} />
     </ModuleGuard>
   );
 }
 
-async function ChecksContent({ tenantId, error }: { tenantId: string; error?: string }) {
+async function ChecksContent({ tenantId, timeZone, error }: { tenantId: string; timeZone: string; error?: string }) {
   const [checks, customers] = await Promise.all([
     prisma.check.findMany({
       where: { tenant_id: tenantId },
@@ -72,7 +73,7 @@ async function ChecksContent({ tenantId, error }: { tenantId: string; error?: st
   ]);
 
   const summary = summarizeChecks(checks as CheckRow[]);
-  const today = todayISO();
+  const today = todayISO(new Date(), timeZone);
 
   const outstanding = checks.filter((c) => isOutstandingCheck(c.status));
   const settled = checks.filter((c) => !isOutstandingCheck(c.status));

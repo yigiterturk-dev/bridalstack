@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentTenant } from "@/lib/tenant";
 import { formatPrice } from "@/config/modules";
 import { todayISO } from "@/lib/finance";
+import { normalizeTimeZone } from "@/lib/timezone";
 import ModuleGuard from "@/components/module-guard";
 import SelectField from "@/components/select-field";
 import SubmitButton from "@/components/submit-button";
@@ -48,13 +49,13 @@ export default async function CleaningPage({ searchParams }: Props) {
 
   return (
     <ModuleGuard moduleId="inventory" enabledModules={tenant.enabled_modules}>
-      <CleaningContent tenantId={tenant.id} error={params?.error} />
+      <CleaningContent tenantId={tenant.id} timeZone={normalizeTimeZone(tenant.settings.time_zone)} error={params?.error} />
     </ModuleGuard>
   );
 }
 
-async function CleaningContent({ tenantId, error }: { tenantId: string; error?: string }) {
-  const today = todayISO();
+async function CleaningContent({ tenantId, timeZone, error }: { tenantId: string; timeZone: string; error?: string }) {
+  const today = todayISO(new Date(), timeZone);
 
   const [jobs, products] = await Promise.all([
     prisma.cleaningJob.findMany({
