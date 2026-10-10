@@ -48,8 +48,14 @@ export function addCalendarDays(date: string, days: number): string {
 
 /** Convert a local calendar midnight to the corresponding UTC instant. */
 export function startOfDayInTimeZone(date: string, timeZone: string): Date {
+  return dateTimeInTimeZone(date, "00:00", timeZone);
+}
+
+/** Convert a local shop date/time to the corresponding UTC instant. */
+export function dateTimeInTimeZone(date: string, time: string, timeZone: string): Date {
   const [year, month, day] = date.split("-").map(Number);
-  let candidate = new Date(Date.UTC(year, month - 1, day));
+  const [hour, minute, second = 0] = time.split(":").map(Number);
+  let candidate = new Date(Date.UTC(year, month - 1, day, hour, minute, second));
   for (let i = 0; i < 2; i++) {
     const parts = new Intl.DateTimeFormat("en-US", {
       timeZone: normalizeTimeZone(timeZone), year: "numeric", month: "2-digit", day: "2-digit",
@@ -57,7 +63,7 @@ export function startOfDayInTimeZone(date: string, timeZone: string): Date {
     }).formatToParts(candidate);
     const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
     const displayedAsUtc = Date.UTC(Number(values.year), Number(values.month) - 1, Number(values.day), Number(values.hour), Number(values.minute), Number(values.second));
-    const targetAsUtc = Date.UTC(year, month - 1, day);
+    const targetAsUtc = Date.UTC(year, month - 1, day, hour, minute, second);
     candidate = new Date(candidate.getTime() + targetAsUtc - displayedAsUtc);
   }
   return candidate;

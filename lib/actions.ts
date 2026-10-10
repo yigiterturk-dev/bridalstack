@@ -7,6 +7,7 @@ import { getCurrentTenant, getCurrentMember, getCurrentUserId } from "@/lib/tena
 import { hasPermission, type Permission } from "@/lib/rbac";
 import { derivedOrderTotals, parseDraftLines } from "@/lib/order-lines";
 import { boundedInt, nonNegativeFloat } from "@/lib/numbers";
+import { dateTimeInTimeZone, normalizeTimeZone } from "@/lib/timezone";
 
 // Auth + tenant + (opsiyonel) izin kapısı. Fail-closed: yetkisiz reddedilir.
 async function requireAuth(permission?: Permission, denyRedirect = "/dashboard?error=forbidden") {
@@ -65,7 +66,7 @@ export async function createAppointment(formData: FormData) {
         customer_id,
         title,
         description,
-        appointment_date: new Date(`${date}T${time}`),
+        appointment_date: dateTimeInTimeZone(date, time, normalizeTimeZone(tenant.settings.time_zone)),
         created_by: userId,
       },
     });
