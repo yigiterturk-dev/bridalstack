@@ -16,7 +16,7 @@ export default function DemoBanner() {
       </p>
       <Link
         href="/signup"
-        className="shrink-0 rounded-lg bg-rose-900 px-4 py-2 text-center font-medium text-white hover:bg-rose-800"
+        className="shrink-0 rounded-lg bg-rose-900 px-4 py-2 text-center font-medium text-white hover:bg-rose-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2"
       >
         Start your own shop — free
       </Link>

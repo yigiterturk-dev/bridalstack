@@ -23,7 +23,7 @@ export default function UpgradeCta({ daysLeft, expired }: Props) {
       }`}
     >
       <div className="flex items-center gap-3">
-        <span className={`flex items-center justify-center w-9 h-9 rounded-lg shrink-0 material-symbols-outlined ${expired ? "bg-red-100 text-red-600" : "bg-white text-[var(--accent)]"}`}>
+        <span aria-hidden="true" className={`flex items-center justify-center w-9 h-9 rounded-lg shrink-0 material-symbols-outlined ${expired ? "bg-red-100 text-red-600" : "bg-white text-[var(--accent)]"}`}>
           {expired ? "lock_clock" : "rocket_launch"}
         </span>
         <div>
@@ -45,18 +45,18 @@ export default function UpgradeCta({ daysLeft, expired }: Props) {
           onClick={() => {
             void trackFunnelEvent("upgrade_cta_clicked", { expired, daysLeft });
           }}
-          className="inline-flex items-center gap-1.5 px-4 py-2 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors"
+          className="inline-flex items-center gap-1.5 px-4 py-2 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 focus-visible:ring-offset-2"
         >
-          <span className="material-symbols-outlined text-base">upgrade</span>
+          <span aria-hidden="true" className="material-symbols-outlined text-base">upgrade</span>
           Upgrade plan
         </Link>
         {!expired && (
           <button
             onClick={() => setDismissed(true)}
-            className="text-gray-400 hover:text-gray-600"
+            className="text-gray-400 hover:text-gray-600 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-500 focus-visible:ring-offset-2"
             aria-label="Dismiss trial banner"
           >
-            <span className="material-symbols-outlined text-lg">close</span>
+            <span aria-hidden="true" className="material-symbols-outlined text-lg">close</span>
           </button>
         )}
       </div>
