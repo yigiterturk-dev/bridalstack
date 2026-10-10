@@ -88,18 +88,23 @@ export async function POST(req: Request) {
     // görüp ikisi de kaydolabilir.
     if (member_id) {
       // Personel bu butiğe ait mi? (başka kiracının personeline rezervasyon yazılmasın)
-      const staff = await prisma.tenantMember.findFirst({ where: { id: member_id, tenant_id }, select: { id: true } });
-      if (!staff) {
+      const staff = await prisma.tenantMember.findFirst({
+        where: { id: member_id, tenant_id },
+        select: { id: true, is_bookable: true },
+      });
+      if (!staff || !staff.is_bookable) {
         return NextResponse.json({ error: "Staff member not found." }, { status: 404 });
       }
-      const [schedules, timeOff] = await Promise.all([
+      const [serviceLinks, schedules, timeOff] = await Promise.all([
+        prisma.staffService.findMany({ where: { member_id, service_id }, select: { service_id: true } }),
         prisma.staffSchedule.findMany({
           where: { tenant_id, member_id, day_of_week: dayOfWeek },
           select: { start_time: true, end_time: true, break_start: true, break_end: true, is_off: true },
         }),
         prisma.staffTimeOff.findFirst({ where: { tenant_id, member_id, date: booking_date }, select: { id: true } }),
       ]);
-      if (timeOff || !fitsSchedule(start_time, end_time, schedules)) {
+      const hasServiceLinks = await prisma.staffService.count({ where: { member_id } });
+      if ((hasServiceLinks > 0 && serviceLinks.length === 0) || timeOff || !fitsSchedule(start_time, end_time, schedules)) {
         return NextResponse.json({ error: "That time is not available." }, { status: 409 });
       }
     }
