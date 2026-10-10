@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { boundedInt, finiteFloat, nonNegativeFloat } from "../lib/numbers.ts";
+import { boundedInt, finiteFloat, nonNegativeFloat, normalizedUpperPrice } from "../lib/numbers.ts";
 
 test("nonNegativeFloat: valid decimals survive and negatives clamp", () => {
   assert.equal(nonNegativeFloat("12.50"), 12.5);
@@ -25,4 +25,11 @@ test("boundedInt: preserves zero, clamps bounds, and uses fallback for blank inp
   assert.equal(boundedInt("999", 0, 100, 1), 100);
   assert.equal(boundedInt("", 0, 100, 1), 1);
   assert.equal(boundedInt("not-a-number", 0, 100, 1), 1);
+});
+
+test("normalizedUpperPrice: avoids inverted ranges and keeps blank optional", () => {
+  assert.equal(normalizedUpperPrice("80", 100), 100);
+  assert.equal(normalizedUpperPrice("125.50", 100), 125.5);
+  assert.equal(normalizedUpperPrice("", 100), null);
+  assert.equal(normalizedUpperPrice("not-a-number", 100), 100);
 });

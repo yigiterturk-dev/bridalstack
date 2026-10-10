@@ -16,3 +16,10 @@ export function boundedInt(raw: unknown, min: number, max: number, fallback: num
   if (!Number.isFinite(value)) return fallback;
   return Math.min(max, Math.max(min, value));
 }
+
+/** Keep an optional displayed upper price from falling below the base price. */
+export function normalizedUpperPrice(raw: unknown, lowerPrice: number): number | null {
+  const text = String(raw ?? "").trim();
+  if (!text) return null;
+  return Math.max(lowerPrice, nonNegativeFloat(text));
+}
