@@ -214,6 +214,11 @@ export function monthRange(period: string): { from: string; to: string } {
   return { from: `${year}-${mm}-01`, to: `${year}-${mm}-${String(last).padStart(2, "0")}` };
 }
 
-export function todayISO(now: Date = new Date()): string {
+export function todayISO(now: Date = new Date(), timeZone?: string): string {
+  if (timeZone) {
+    const parts = new Intl.DateTimeFormat("en-US", { timeZone, year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(now);
+    const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+    return `${values.year}-${values.month}-${values.day}`;
+  }
   return now.toISOString().slice(0, 10);
 }

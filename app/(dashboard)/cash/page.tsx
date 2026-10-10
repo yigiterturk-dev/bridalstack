@@ -21,6 +21,7 @@ import {
 import MovementForm from "./movement-form";
 import { closeCashSession, deleteMovement, openCashSession } from "./actions";
 import ConfirmSubmitButton from "@/components/confirm-submit-button";
+import { normalizeTimeZone } from "@/lib/timezone";
 
 export const dynamic = "force-dynamic";
 
@@ -44,13 +45,13 @@ export default async function CashPage({ searchParams }: Props) {
 
   return (
     <ModuleGuard moduleId="finance" enabledModules={tenant.enabled_modules}>
-      <CashContent tenantId={tenant.id} date={params?.date} error={params?.error} />
+      <CashContent tenantId={tenant.id} timeZone={normalizeTimeZone(tenant.settings.time_zone)} date={params?.date} error={params?.error} />
     </ModuleGuard>
   );
 }
 
-async function CashContent({ tenantId, date, error }: { tenantId: string; date?: string; error?: string }) {
-  const today = /^\d{4}-\d{2}-\d{2}$/.test(date ?? "") ? (date as string) : todayISO();
+async function CashContent({ tenantId, timeZone, date, error }: { tenantId: string; timeZone: string; date?: string; error?: string }) {
+  const today = /^\d{4}-\d{2}-\d{2}$/.test(date ?? "") ? (date as string) : todayISO(new Date(), timeZone);
 
   const [movements, session, previous] = await Promise.all([
     prisma.cashMovement.findMany({

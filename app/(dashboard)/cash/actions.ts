@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { getCurrentMember } from "@/lib/tenant";
+import { getCurrentMember, getCurrentTenant } from "@/lib/tenant";
 import { hasPermission } from "@/lib/rbac";
 import { CASH_METHODS, INCOME_CATEGORIES, EXPENSE_CATEGORIES, todayISO } from "@/lib/finance";
 import {
@@ -14,13 +14,16 @@ import {
   varianceMovement,
 } from "@/lib/cash-session";
 import { finiteFloat, nonNegativeFloat } from "@/lib/numbers";
+import { normalizeTimeZone } from "@/lib/timezone";
 
 // Kasa para işidir: billing.manage (owner) gerekir — fail-closed.
 async function requireFinanceManager(back: string) {
   const member = await getCurrentMember();
   if (!member) redirect("/login");
   if (!hasPermission(member.role, "billing.manage")) redirect(`${back}?error=forbidden`);
-  return member;
+  const tenant = await getCurrentTenant();
+  if (!tenant) redirect("/onboarding");
+  return { ...member, timeZone: normalizeTimeZone(tenant.settings.time_zone) };
 }
 
 const METHOD_IDS = CASH_METHODS.map((m) => m.id) as string[];
@@ -42,7 +45,7 @@ export async function createMovement(formData: FormData) {
   if (!categories.some((c) => c.id === category)) redirect(`${back}?error=invalid`);
 
   const occurredInput = String(formData.get("occurred_on") || "").trim();
-  const occurred_on = DATE_RE.test(occurredInput) ? occurredInput : todayISO();
+  const occurred_on = DATE_RE.test(occurredInput) ? occurredInput : todayISO(new Date(), member.timeZone);
 
   // Sipariş verildiyse bu kiracıya ait olduğunu doğrula.
   const orderInput = String(formData.get("order_id") || "").trim();
@@ -117,7 +120,7 @@ export async function openCashSession(formData: FormData) {
   const member = await requireFinanceManager("/cash");
 
   const typed = String(formData.get("business_date") || "").trim();
-  const business_date = DATE_RE.test(typed) ? typed : todayISO();
+  const business_date = DATE_RE.test(typed) ? typed : todayISO(new Date(), member.timeZone);
 
   const previous = await prisma.cashSession.findFirst({
     where: { tenant_id: member.tenantId, business_date: { lt: business_date } },
