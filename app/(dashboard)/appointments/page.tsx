@@ -4,6 +4,7 @@ import { getCurrentTenant } from "@/lib/tenant";
 import { createAppointment, updateAppointmentStatus } from "@/lib/actions";
 import ModuleGuard from "@/components/module-guard";
 import SelectField from "@/components/select-field";
+import SubmitButton from "@/components/submit-button";
 
 function statusStyle(status: string) {
   switch (status) {
@@ -107,9 +108,9 @@ async function AppointmentsContent({ tenantId }: { tenantId: string }) {
                 <label htmlFor="appointment-notes" className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">Notes</label>
                 <textarea id="appointment-notes" name="description" rows={2} className="w-full px-4 py-3.5 rounded-2xl border border-stone-200 bg-white/50 text-stone-700 text-sm outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-50 transition-all resize-y" placeholder="Optional notes for stylist..." />
               </div>
-              <button type="submit" className="mt-2 w-full py-3.5 bg-stone-900 text-white rounded-2xl text-sm font-bold hover:bg-rose-600 hover:shadow-[0_8px_20px_-6px_rgba(225,29,72,0.4)] transition-all duration-300">
+              <SubmitButton pendingLabel="Scheduling…" className="mt-2 w-full py-3.5 bg-stone-900 text-white rounded-2xl text-sm font-bold hover:bg-rose-600 hover:shadow-[0_8px_20px_-6px_rgba(225,29,72,0.4)] transition-all duration-300 disabled:opacity-60 disabled:cursor-wait">
                 Schedule Appointment
-              </button>
+              </SubmitButton>
             </form>
           )}
         </div>

@@ -5,6 +5,7 @@ import { getCurrentTenant } from "@/lib/tenant";
 import { createOrder } from "@/lib/actions";
 import SelectField from "@/components/select-field";
 import OrderLineEditor from "@/components/order-line-editor";
+import SubmitButton from "@/components/submit-button";
 
 export default async function NewOrderPage() {
   const tenant = await getCurrentTenant();
@@ -77,7 +78,7 @@ export default async function NewOrderPage() {
           <textarea id="order-notes" name="notes" rows={2} className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none resize-y" placeholder="Order details..." />
         </div>
         <div className="flex gap-3 pt-2">
-          <button type="submit" className="px-6 py-2.5 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors">Create Order</button>
+          <SubmitButton pendingLabel="Creating order…" className="px-6 py-2.5 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors disabled:opacity-60 disabled:cursor-wait">Create Order</SubmitButton>
           <Link href="/orders" className="px-6 py-2.5 border border-gray-300 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">Cancel</Link>
         </div>
       </form>

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createCustomer } from "@/lib/actions";
+import SubmitButton from "@/components/submit-button";
 
 export default function NewCustomerPage() {
   return (
@@ -27,7 +28,7 @@ export default function NewCustomerPage() {
           <textarea id="customer-notes" name="notes" rows={3} className="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none text-sm resize-y" placeholder="Wedding date, preferences..." />
         </div>
         <div className="flex gap-3 pt-2">
-          <button type="submit" className="px-6 py-2.5 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors">Save Customer</button>
+          <SubmitButton pendingLabel="Saving customer…" className="px-6 py-2.5 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors disabled:opacity-60 disabled:cursor-wait">Save Customer</SubmitButton>
           <Link href="/customers" className="px-6 py-2.5 border border-gray-300 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">Cancel</Link>
         </div>
       </form>

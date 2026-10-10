@@ -6,6 +6,7 @@ import { createProduct } from "@/lib/actions";
 import BarcodeScanner from "@/components/barcode-scanner";
 import ImageUpload from "@/components/image-upload";
 import SelectField from "@/components/select-field";
+import SubmitButton from "@/components/submit-button";
 
 const CATEGORIES = ["Bridal Gown", "Veil", "Tiara", "Accessories", "Bridesmaid", "Evening", "Other"];
 
@@ -114,7 +115,7 @@ export default function NewProductForm({
         </div>
 
         <div className="flex gap-3 pt-2">
-          <button type="submit" className="px-6 py-2.5 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors">Save Product</button>
+          <SubmitButton pendingLabel="Saving product…" className="px-6 py-2.5 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors disabled:opacity-60 disabled:cursor-wait">Save Product</SubmitButton>
           <Link href="/products" className="px-6 py-2.5 border border-gray-300 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">Cancel</Link>
         </div>
       </form>
