@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentMember } from "@/lib/tenant";
 import { hasPermission } from "@/lib/rbac";
 import { canMoveCheck, todayISO } from "@/lib/finance";
+import { finiteFloat } from "@/lib/numbers";
 
 async function requireFinanceManager() {
   const member = await getCurrentMember();
@@ -22,7 +23,7 @@ export async function createCheck(formData: FormData) {
   const counterparty = String(formData.get("counterparty") || "").trim();
   if (!counterparty) redirect("/checks?error=required");
 
-  const amount = Math.abs(parseFloat(String(formData.get("amount") || "0")) || 0);
+  const amount = Math.abs(finiteFloat(formData.get("amount")));
   if (amount <= 0) redirect("/checks?error=amount");
 
   const due_date = String(formData.get("due_date") || "").trim();

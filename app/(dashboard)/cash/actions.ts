@@ -13,6 +13,7 @@ import {
   expectedClose,
   varianceMovement,
 } from "@/lib/cash-session";
+import { finiteFloat, nonNegativeFloat } from "@/lib/numbers";
 
 // Kasa para işidir: billing.manage (owner) gerekir — fail-closed.
 async function requireFinanceManager(back: string) {
@@ -30,7 +31,7 @@ export async function createMovement(formData: FormData) {
   const member = await requireFinanceManager(back);
 
   const direction = String(formData.get("direction") || "in") === "out" ? "out" : "in";
-  const amount = Math.abs(parseFloat(String(formData.get("amount") || "0")) || 0);
+  const amount = Math.abs(finiteFloat(formData.get("amount")));
   if (amount <= 0) redirect(`${back}?error=amount`);
 
   const method = String(formData.get("method") || "cash");
@@ -127,7 +128,7 @@ export async function openCashSession(formData: FormData) {
   const rawFloat = String(formData.get("opening_float") || "").trim();
   const opening_float = rawFloat === ""
     ? carryOver(previous)
-    : Math.max(0, parseFloat(rawFloat) || 0);
+    : nonNegativeFloat(rawFloat);
 
   try {
     await prisma.cashSession.create({
@@ -172,7 +173,7 @@ export async function closeCashSession(formData: FormData) {
 
   const rawCount = String(formData.get("counted_close") || "").trim();
   if (rawCount === "") redirect("/cash?error=count");
-  const counted_close = Math.max(0, parseFloat(rawCount) || 0);
+  const counted_close = nonNegativeFloat(rawCount);
 
   const movements = await drawerMovementsFor(member.tenantId, session.business_date);
   const expected = expectedClose(session.opening_float, movements);

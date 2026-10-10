@@ -7,6 +7,7 @@ import { getCurrentMember } from "@/lib/tenant";
 import { hasPermission } from "@/lib/rbac";
 import { summarizeByStaff, periodOf, UNASSIGNED, type CommissionOrder } from "@/lib/commissions";
 import { LINE_KINDS } from "@/lib/order-lines";
+import { nonNegativeFloat } from "@/lib/numbers";
 
 // Prim para işidir: billing.manage (yalnız owner) gerekir.
 async function requireCommissionManager(back: string) {
@@ -49,9 +50,9 @@ export async function createRule(formData: FormData) {
   const line_kind = LINE_KINDS.some((k) => k.id === rawKind) ? rawKind : null;
   if (applies_to === "kind" && !line_kind) redirect("/commissions/rules?error=kind");
 
-  const rate_percent = Math.min(100, Math.max(0, parseFloat(String(formData.get("rate_percent") || "0")) || 0));
-  const flat_amount = Math.max(0, parseFloat(String(formData.get("flat_amount") || "0")) || 0);
-  const min_order_total = Math.max(0, parseFloat(String(formData.get("min_order_total") || "0")) || 0);
+  const rate_percent = Math.min(100, nonNegativeFloat(formData.get("rate_percent")));
+  const flat_amount = nonNegativeFloat(formData.get("flat_amount"));
+  const min_order_total = nonNegativeFloat(formData.get("min_order_total"));
   const priority = Math.max(0, parseInt(String(formData.get("priority") || "0"), 10) || 0);
 
   if (rate_percent === 0 && flat_amount === 0) redirect("/commissions/rules?error=empty");

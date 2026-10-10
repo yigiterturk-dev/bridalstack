@@ -18,6 +18,7 @@ import {
   summarize,
   weightedCost,
 } from "@/lib/purchasing";
+import { nonNegativeFloat } from "@/lib/numbers";
 
 async function requirePurchasingManager() {
   const member = await getCurrentMember();
@@ -100,7 +101,7 @@ export async function addLine(formData: FormData) {
 
   const ordered_qty = Math.max(1, parseInt(String(formData.get("ordered_qty") || "1"), 10) || 1);
   const rawCost = String(formData.get("unit_cost") || "").trim();
-  const unit_cost = rawCost === "" ? product.cost : Math.max(0, parseFloat(rawCost) || 0);
+  const unit_cost = rawCost === "" ? product.cost : nonNegativeFloat(rawCost);
 
   await prisma.purchaseOrderLine.upsert({
     where: { po_id_product_id: { po_id: po.id, product_id: product.id } },
