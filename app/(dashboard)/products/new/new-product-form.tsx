@@ -84,6 +84,7 @@ export default function NewProductForm({
             <button
               type="button"
               onClick={() => setShowScanner(true)}
+              aria-label="Scan barcode with camera"
               className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-rose-500 transition-colors flex items-center justify-center"
               title="Scan barcode with camera"
             >

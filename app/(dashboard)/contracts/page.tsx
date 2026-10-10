@@ -59,7 +59,7 @@ export default async function ContractsPage() {
                 options={(orders ?? []).map((o) => ({
                   value: o.id,
                   label: o.ref_no,
-                  hint: `$${Number(o.discounted_total).toLocaleString()}`,
+                  hint: formatPrice(Number(o.discounted_total)),
                 }))}
               />
             </div>
