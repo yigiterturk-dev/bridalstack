@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { validateBookingInput, intervalsOverlap, hasConflict, fitsSchedule, type BookingInput } from "../lib/booking-validation.ts";
+import { validateBookingInput, intervalsOverlap, hasConflict, fitsSchedule, canStaffBookService, type BookingInput } from "../lib/booking-validation.ts";
 
 const VALID: BookingInput = {
   tenant_id: "11111111-1111-1111-1111-111111111111",
@@ -74,4 +74,13 @@ test("fitsSchedule: mesai dışı, mola ve izinli gün slotları reddedilir", ()
   assert.equal(fitsSchedule("08:00", "09:00", [schedule]), false);
   assert.equal(fitsSchedule("12:30", "13:30", [schedule]), false);
   assert.equal(fitsSchedule("10:00", "11:00", [{ ...schedule, is_off: true }]), false);
+});
+
+test("canStaffBookService: linksiz staff tüm servisleri yapabilir", () => {
+  assert.equal(canStaffBookService([], VALID.service_id), true);
+});
+
+test("canStaffBookService: linkli staff yalnız bağlı servisi yapabilir", () => {
+  assert.equal(canStaffBookService([VALID.service_id], VALID.service_id), true);
+  assert.equal(canStaffBookService(["33333333-3333-3333-3333-333333333333"], VALID.service_id), false);
 });

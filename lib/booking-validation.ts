@@ -105,3 +105,9 @@ export function fitsSchedule(
     return true;
   });
 }
+
+// An empty service-link list means the staff member can perform every service.
+// Once links exist, the requested service must be explicitly included.
+export function canStaffBookService(linkedServiceIds: string[], serviceId: string): boolean {
+  return linkedServiceIds.length === 0 || linkedServiceIds.includes(serviceId);
+}

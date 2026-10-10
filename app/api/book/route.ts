@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { rateLimit, clientIp } from "@/lib/ratelimit";
-import { UUID_RE, fitsSchedule, validateBookingInput } from "@/lib/booking-validation";
+import { UUID_RE, canStaffBookService, fitsSchedule, validateBookingInput } from "@/lib/booking-validation";
 import { bookingRequestEmail, sendEmail } from "@/lib/email";
 
 export const dynamic = "force-dynamic";
@@ -103,8 +103,7 @@ export async function POST(req: Request) {
         }),
         prisma.staffTimeOff.findFirst({ where: { tenant_id, member_id, date: booking_date }, select: { id: true } }),
       ]);
-      const hasServiceLinks = await prisma.staffService.count({ where: { member_id } });
-      if ((hasServiceLinks > 0 && serviceLinks.length === 0) || timeOff || !fitsSchedule(start_time, end_time, schedules)) {
+      if (!canStaffBookService(serviceLinks.map((link) => link.service_id), service_id) || timeOff || !fitsSchedule(start_time, end_time, schedules)) {
         return NextResponse.json({ error: "That time is not available." }, { status: 409 });
       }
     }
@@ -202,7 +201,7 @@ export async function POST(req: Request) {
 
           for (const candidate of candidates) {
             const services = linkedServices.get(candidate.id) ?? [];
-            if (services.length > 0 && !services.includes(service_id)) continue;
+            if (!canStaffBookService(services, service_id)) continue;
             if (timeOffMembers.has(candidate.id) || !fitsSchedule(start_time, end_time, schedulesByMember.get(candidate.id) ?? [])) continue;
 
             const lockKey = `${tenant_id}:${candidate.id}:${booking_date}`;
