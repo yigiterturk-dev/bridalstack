@@ -3,6 +3,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { sendEmail, installmentReminderEmail } from "@/lib/email";
 import { deriveStatus, reminderFor, type InstallmentStatus } from "@/lib/installments";
+import { formatPrice } from "@/config/modules";
 
 export const dynamic = "force-dynamic";
 
@@ -61,7 +62,7 @@ export async function GET(req: NextRequest) {
 
     const customer = row.customer;
     if (customer?.email) {
-      const amountStr = `$${Number(row.amount || 0).toLocaleString("en-US")}`;
+      const amountStr = formatPrice(Number(row.amount || 0));
       const dueStr = new Date(row.due_date + "T12:00:00").toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" });
       const mail = installmentReminderEmail(customer.name, row.tenant?.name ?? "Your boutique", amountStr, dueStr, kind);
       try {
