@@ -89,6 +89,12 @@ export default function LandingPage() {
             </Link>
           </div>
           <p className="text-sm text-stone-400 mt-8 font-medium tracking-wide">{TRIAL_DAYS}-DAY TRIAL OF EVERY MODULE · FREE PLAN AFTER THAT · NO CREDIT CARD · DEMO NEEDS NO SIGN-UP</p>
+          <a
+            href="mailto:hello@bridalstack.com?subject=BridalStack%20paid%20plans"
+            className="inline-flex mt-4 text-sm font-semibold text-stone-600 underline underline-offset-4 hover:text-rose-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 focus-visible:ring-offset-4 rounded"
+          >
+            Talk to us about paid plans
+          </a>
         </div>
       </section>
 
@@ -131,7 +137,7 @@ export default function LandingPage() {
             ].map((f) => (
               <div key={f.title} className="bg-white/70 backdrop-blur-sm p-10 rounded-[2.5rem] border border-stone-100 transition-all duration-500 group hover:border-rose-200 hover:shadow-[0_20px_40px_-15px_rgba(225,29,72,0.1)] hover:-translate-y-1">
                 <div className="w-16 h-16 rounded-2xl bg-stone-50 flex items-center justify-center mb-8 transition-all duration-500 group-hover:bg-rose-500 group-hover:shadow-lg group-hover:shadow-rose-500/30">
-                  <span className="material-symbols-outlined text-3xl text-stone-800 transition-colors duration-300 group-hover:text-white">{f.icon}</span>
+                  <span aria-hidden="true" className="material-symbols-outlined text-3xl text-stone-800 transition-colors duration-300 group-hover:text-white">{f.icon}</span>
                 </div>
                 <div className="flex items-center gap-3 mb-3">
                   <h3 className="text-xl font-bold text-stone-900">{f.title}</h3>
