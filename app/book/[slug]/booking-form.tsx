@@ -357,7 +357,7 @@ export default function BookingForm({ tenantId, accent, services, staff, schedul
                   })}
                 </div>
               ) : (
-                <div className="rounded-xl bg-gray-50 border border-gray-100 p-4 text-center">
+                <div role="status" aria-live="polite" className="rounded-xl bg-gray-50 border border-gray-100 p-4 text-center">
                   <p className="text-sm text-gray-500">{hasPublishedAvailability ? "No times available on this date. Please try another day." : "The boutique has not published availability yet. Please contact them directly to arrange an appointment."}</p>
                 </div>
               )}
