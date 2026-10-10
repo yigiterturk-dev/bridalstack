@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect, useRef } from "react";
 import Image from "next/image";
+import { formatPrice } from "@/config/modules";
 
 type Service = { id: string; name: string; category: string | null; duration: number; price: number; price_max: number | null; description: string | null };
 type Staff = { id: string; name: string; title: string | null; photo: string | null; serviceIds: string[] };
@@ -252,7 +253,7 @@ export default function BookingForm({ tenantId, accent, services, staff, schedul
                           </div>
                         </div>
                         <span className="font-semibold text-gray-900 text-sm whitespace-nowrap tabular-nums">
-                          ${Number(s.price).toFixed(0)}{s.price_max ? `–$${Number(s.price_max).toFixed(0)}` : ""}
+                            {formatPrice(Number(s.price))}{s.price_max ? `–${formatPrice(Number(s.price_max))}` : ""}
                         </span>
                       </div>
                     </button>
@@ -310,7 +311,7 @@ export default function BookingForm({ tenantId, accent, services, staff, schedul
               ))}
             </div>
           )}
-          <button onClick={() => setStep("service")} className="mt-4 inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2 rounded"><span aria-hidden="true" className="material-symbols-outlined text-base">arrow_back</span>Back</button>
+          <button type="button" onClick={() => setStep("service")} className="mt-4 inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2 rounded"><span aria-hidden="true" className="material-symbols-outlined text-base">arrow_back</span>Back</button>
         </div>
       )}
 
@@ -361,7 +362,7 @@ export default function BookingForm({ tenantId, accent, services, staff, schedul
             </div>
           )}
           <div className="flex items-center gap-3 mt-5">
-            <button onClick={() => setStep("staff")} className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2 rounded"><span aria-hidden="true" className="material-symbols-outlined text-base">arrow_back</span>Back</button>
+            <button type="button" onClick={() => setStep("staff")} className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2 rounded"><span aria-hidden="true" className="material-symbols-outlined text-base">arrow_back</span>Back</button>
             {time && (
               <button
                 onClick={() => setStep("info")}
@@ -407,7 +408,7 @@ export default function BookingForm({ tenantId, accent, services, staff, schedul
               {selectedStaff ? ` · ${selectedStaff.name}` : ""}
               {" · "}{selectedService ? formatDuration(selectedService.duration) : ""}
             </div>
-            <div className="text-sm font-semibold text-gray-900 mt-1.5 tabular-nums">${Number(selectedService?.price ?? 0).toFixed(0)}</div>
+            <div className="text-sm font-semibold text-gray-900 mt-1.5 tabular-nums">{formatPrice(Number(selectedService?.price ?? 0))}</div>
           </div>
 
           <p id="booking-contact-help" className="text-xs text-gray-400 mt-3">Please give us either a phone number or an email address.</p>
