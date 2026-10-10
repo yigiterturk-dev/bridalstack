@@ -45,3 +45,20 @@ export function addCalendarDays(date: string, days: number): string {
   value.setUTCDate(value.getUTCDate() + days);
   return `${value.getUTCFullYear()}-${String(value.getUTCMonth() + 1).padStart(2, "0")}-${String(value.getUTCDate()).padStart(2, "0")}`;
 }
+
+/** Convert a local calendar midnight to the corresponding UTC instant. */
+export function startOfDayInTimeZone(date: string, timeZone: string): Date {
+  const [year, month, day] = date.split("-").map(Number);
+  let candidate = new Date(Date.UTC(year, month - 1, day));
+  for (let i = 0; i < 2; i++) {
+    const parts = new Intl.DateTimeFormat("en-US", {
+      timeZone: normalizeTimeZone(timeZone), year: "numeric", month: "2-digit", day: "2-digit",
+      hour: "2-digit", minute: "2-digit", second: "2-digit", hourCycle: "h23",
+    }).formatToParts(candidate);
+    const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+    const displayedAsUtc = Date.UTC(Number(values.year), Number(values.month) - 1, Number(values.day), Number(values.hour), Number(values.minute), Number(values.second));
+    const targetAsUtc = Date.UTC(year, month - 1, day);
+    candidate = new Date(candidate.getTime() + targetAsUtc - displayedAsUtc);
+  }
+  return candidate;
+}

@@ -2,14 +2,18 @@ import { prisma } from "@/lib/prisma";
 import { buildFollowUps } from "@/lib/follow-ups";
 import { buildBriefing, type BriefingItem } from "@/lib/briefing";
 import { deriveStatus } from "@/lib/installments";
+import { addCalendarDays, dateInTimeZone, normalizeTimeZone, startOfDayInTimeZone } from "@/lib/timezone";
 
 const LOW_STOCK_THRESHOLD = 3;
 
 /** Kiracının bugünkü durumunu tek sorgu turunda toplayıp brifinge çevirir. */
 export async function loadBriefing(tenantId: string): Promise<BriefingItem[]> {
   const now = new Date();
-  const dayStart = new Date(now); dayStart.setHours(0, 0, 0, 0);
-  const dayEnd = new Date(dayStart); dayEnd.setDate(dayEnd.getDate() + 1);
+  const tenant = await prisma.tenant.findUnique({ where: { id: tenantId }, select: { settings: true } });
+  const timeZone = normalizeTimeZone((tenant?.settings as Record<string, unknown> | null)?.time_zone);
+  const today = dateInTimeZone(now, timeZone);
+  const dayStart = startOfDayInTimeZone(today, timeZone);
+  const dayEnd = startOfDayInTimeZone(addCalendarDays(today, 1), timeZone);
 
   const [
     tryOns, orders, installments, pendingBookings,

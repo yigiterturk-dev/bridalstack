@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sendEmail, dailyBriefingEmail } from "@/lib/email";
 import { loadBriefing } from "@/app/(dashboard)/ai-stylist/briefing";
+import { dateInTimeZone, normalizeTimeZone } from "@/lib/timezone";
 
 /**
  * Günlük brifing e-postası.
@@ -17,26 +18,27 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const today = new Date().toISOString().split("T")[0];
+  const now = new Date();
   const baseUrl = (process.env.NEXTAUTH_URL ?? "https://bridalstack.com").replace(/\/$/, "");
 
   // Cron tüm kiracılar için çalışır — bilinçli olarak tenant filtresi yok.
-  // NULL'a dikkat: SQL'de `NOT (kolon = 'x')` kolon NULL iken TRUE dönmez,
-  // yani hiç gönderim yapılmamış kiracılar sessizce elenir. Bu yüzden
-  // "hiç gönderilmedi" durumunu ayrıca yazıyoruz.
   const tenants = await prisma.tenant.findMany({
     where: {
       briefing_emails: true,
-      OR: [{ briefing_sent_on: null }, { briefing_sent_on: { not: today } }],
     },
-    select: { id: true, name: true, owner: { select: { email: true } } },
+    select: { id: true, name: true, settings: true, briefing_sent_on: true, owner: { select: { email: true } } },
+  });
+
+  const eligibleTenants = tenants.filter((tenant) => {
+    const timeZone = normalizeTimeZone((tenant.settings as Record<string, unknown> | null)?.time_zone);
+    return tenant.briefing_sent_on !== dateInTimeZone(now, timeZone);
   });
 
   let sent = 0;
   let skippedEmpty = 0;
   const failures: string[] = [];
 
-  for (const tenant of tenants) {
+  for (const tenant of eligibleTenants) {
     const to = tenant.owner?.email;
     if (!to) continue;
 
@@ -48,7 +50,11 @@ export async function GET(req: NextRequest) {
       }
 
       const mail = dailyBriefingEmail(tenant.name, items, baseUrl);
-      await sendEmail({ to, subject: mail.subject, html: mail.html });
+      const delivery = await sendEmail({ to, subject: mail.subject, html: mail.html });
+      if (!delivery.sent) continue;
+
+      const timeZone = normalizeTimeZone((tenant.settings as Record<string, unknown> | null)?.time_zone);
+      const today = dateInTimeZone(now, timeZone);
 
       // Damgayı gönderimden SONRA atıyoruz: gönderim patlarsa yarın tekrar denenir.
       await prisma.tenant.update({
@@ -63,8 +69,8 @@ export async function GET(req: NextRequest) {
   }
 
   return NextResponse.json({
-    date: today,
-    considered: tenants.length,
+    date: now.toISOString().slice(0, 10),
+    considered: eligibleTenants.length,
     sent,
     skippedEmpty,
     failed: failures.length,
