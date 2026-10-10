@@ -7,6 +7,8 @@ import { hasPermission } from "@/lib/rbac";
 import { formatPrice } from "@/config/modules";
 import { deriveStatus } from "@/lib/installments";
 import SelectField from "@/components/select-field";
+import SubmitButton from "@/components/submit-button";
+import ConfirmSubmitButton from "@/components/confirm-submit-button";
 import { LINE_KINDS, kindLabel, lineNet, totals } from "@/lib/order-lines";
 import {
   updateOrderStatus,
@@ -208,13 +210,14 @@ export default async function OrderDetailPage({ params, searchParams }: Props) {
                             <form action={removeOrderLine}>
                               <input type="hidden" name="order_id" value={order.id} />
                               <input type="hidden" name="line_id" value={line.id} />
-                              <button
-                                type="submit"
-                                aria-label={`Remove ${line.description}`}
-                                className="text-gray-300 hover:text-red-600 transition-colors material-symbols-outlined text-[18px] align-middle"
+                              <ConfirmSubmitButton
+                                message={`Remove ${line.description} from this order?`}
+                                ariaLabel={`Remove ${line.description}`}
+                                title="Remove order item"
+                                className="text-gray-300 hover:text-red-600 transition-colors material-symbols-outlined text-[18px] align-middle disabled:opacity-50"
                               >
                                 close
-                              </button>
+                              </ConfirmSubmitButton>
                             </form>
                           </td>
                         )}
@@ -285,12 +288,12 @@ export default async function OrderDetailPage({ params, searchParams }: Props) {
                     Leave the price empty to use the catalogue price. Adding the first item takes the
                     order total over from whatever was typed in.
                   </p>
-                  <button
-                    type="submit"
-                    className="px-4 py-2 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-rose-600 transition-colors"
+                  <SubmitButton
+                    pendingLabel="Adding…"
+                    className="px-4 py-2 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-rose-600 transition-colors disabled:opacity-60 disabled:cursor-wait"
                   >
                     Add item
-                  </button>
+                  </SubmitButton>
                 </div>
               </form>
             )}
@@ -411,16 +414,18 @@ export default async function OrderDetailPage({ params, searchParams }: Props) {
                           <form action={r.liveStatus === "paid" ? markInstallmentUnpaid : markInstallmentPaid}>
                             <input type="hidden" name="order_id" value={order.id} />
                             <input type="hidden" name="id" value={r.id} />
-                            <button
-                              type="submit"
-                              className={`px-3 py-1 rounded-lg text-xs font-semibold transition-colors ${
+                            <ConfirmSubmitButton
+                              message={r.liveStatus === "paid" ? "Undo this installment payment?" : "Mark this installment as paid?"}
+                              pendingLabel="Saving…"
+                              ariaLabel={r.liveStatus === "paid" ? "Undo installment payment" : "Mark installment paid"}
+                              className={`px-3 py-1 rounded-lg text-xs font-semibold transition-colors disabled:opacity-60 disabled:cursor-wait ${
                                 r.liveStatus === "paid"
                                   ? "border border-gray-200 text-gray-600 hover:bg-gray-50"
                                   : "bg-green-600 text-white hover:bg-green-700"
                               }`}
                             >
                               {r.liveStatus === "paid" ? "Undo" : "Mark paid"}
-                            </button>
+                            </ConfirmSubmitButton>
                           </form>
                         )}
                       </td>
@@ -433,9 +438,14 @@ export default async function OrderDetailPage({ params, searchParams }: Props) {
             {canManage && (
               <form action={cancelInstallmentPlan} className="mt-5">
                 <input type="hidden" name="order_id" value={order.id} />
-                <button type="submit" className="text-sm font-medium text-red-600 hover:text-red-700">
+                <ConfirmSubmitButton
+                  message="Cancel all unpaid installments on this order?"
+                  ariaLabel="Cancel unpaid installments"
+                  pendingLabel="Cancelling…"
+                  className="text-sm font-medium text-red-600 hover:text-red-700 disabled:opacity-60 disabled:cursor-wait"
+                >
                   Cancel unpaid installments
-                </button>
+                </ConfirmSubmitButton>
               </form>
             )}
           </>
@@ -479,9 +489,9 @@ export default async function OrderDetailPage({ params, searchParams }: Props) {
               />
             </div>
             <div className="sm:col-span-4">
-              <button type="submit" className="px-5 py-2.5 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-800">
+              <SubmitButton pendingLabel="Creating plan…" className="px-5 py-2.5 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-800 disabled:opacity-60 disabled:cursor-wait">
                 Create payment plan
-              </button>
+              </SubmitButton>
             </div>
           </form>
         ) : (
