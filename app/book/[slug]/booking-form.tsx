@@ -208,7 +208,7 @@ export default function BookingForm({ tenantId, accent, services, staff, schedul
           const isDone = i < currentIdx;
           return (
             <div key={s} className="flex items-center">
-              <div className="flex flex-col items-center gap-1.5">
+              <div className="flex flex-col items-center gap-1.5" aria-current={isCurrent ? "step" : undefined}>
                 <div
                   className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold transition-all ${
                     isCurrent ? "text-white shadow-sm" : isDone ? "text-white" : "bg-gray-100 text-gray-400"
