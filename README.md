@@ -83,7 +83,7 @@ Open `http://localhost:3000`. Every environment variable is documented in `.env.
 
 - Never expose the database URL, Stripe secrets, cron secrets, storage tokens, or AI keys to browser code.
 - `NEXTAUTH_SECRET` is mandatory in production; the server refuses to start without it.
-- The built-in public-route rate limiter is process-local; a distributed deployment should use a shared store such as Redis.
+- The built-in public-route rate limiter uses Upstash Redis when `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` are configured. Without them it is process-local, so a distributed deployment must not treat it as a global abuse-control boundary.
 - Password reset and staff invitations issue single-use tokens; only the SHA-256 digest is stored, never the raw token.
 - Installment reminders are implemented; automatic recurring card charging is explicitly not implemented.
 

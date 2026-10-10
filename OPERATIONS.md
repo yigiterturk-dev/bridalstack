@@ -49,6 +49,7 @@ Required for the core application:
 - `DIRECT_URL`
 - `NEXTAUTH_SECRET`
 - `NEXTAUTH_URL=https://bridalstack.com`
+- `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` for distributed public-route rate limiting
 
 Required before enabling the related feature:
 
@@ -101,6 +102,6 @@ The repository cannot prove these hosted controls:
 - Vercel alert routing and log retention.
 - Successful delivery of every scheduled cron invocation.
 - Stripe webhook replay/failed-event alerting.
-- A distributed rate-limit store for multi-instance public routes; the current limiter is process-local.
+- A configured distributed rate-limit store for multi-instance public routes. If the Upstash variables above are absent, the limiter is process-local and should not be described as a global abuse-control boundary.
 
 Confirm these before promising a service-level guarantee to a paying boutique. Until then, describe BridalStack as production-deployed with provider-level operational controls still requiring owner verification.
