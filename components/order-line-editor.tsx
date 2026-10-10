@@ -3,7 +3,7 @@
 import { useState } from "react";
 import SelectField from "@/components/select-field";
 import { LINE_KINDS, lineNet, totals } from "@/lib/order-lines";
-import { formatPrice } from "@/config/modules";
+import { CURRENCY_SYMBOL, formatPrice } from "@/config/modules";
 
 /**
  * Sipariş kurulurken kalem girme.
@@ -83,7 +83,7 @@ export default function OrderLineEditor({ products }: { products: LineProduct[] 
 
       {rows.length === 0 ? (
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Total Amount ($)</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Total Amount ({CURRENCY_SYMBOL})</label>
           <input name="discounted_total" type="number" step="0.01" min="0" className={INPUT} placeholder="0" />
           <p className="text-xs text-gray-400 mt-1">
             Add items to build the total from them instead of typing one figure.

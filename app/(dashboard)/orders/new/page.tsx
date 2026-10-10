@@ -6,6 +6,7 @@ import { createOrder } from "@/lib/actions";
 import SelectField from "@/components/select-field";
 import OrderLineEditor from "@/components/order-line-editor";
 import SubmitButton from "@/components/submit-button";
+import { CURRENCY_SYMBOL } from "@/config/modules";
 
 export default async function NewOrderPage() {
   const tenant = await getCurrentTenant();
@@ -70,7 +71,7 @@ export default async function NewOrderPage() {
         </div>
         <OrderLineEditor products={products} />
         <div>
-          <label htmlFor="deposit-amount" className="block text-sm font-medium text-gray-700 mb-1">Deposit ($)</label>
+          <label htmlFor="deposit-amount" className="block text-sm font-medium text-gray-700 mb-1">Deposit ({CURRENCY_SYMBOL})</label>
           <input id="deposit-amount" name="deposit_amount" type="number" step="0.01" min="0" className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none" placeholder="0" />
         </div>
         <div>

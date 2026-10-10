@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { formatPrice } from "@/config/modules";
+import { CURRENCY_SYMBOL, formatPrice } from "@/config/modules";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getCurrentTenant } from "@/lib/tenant";
@@ -68,7 +68,7 @@ export default async function ContractsPage() {
               <input name="title" required className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none" placeholder="Bridal Gown Purchase Agreement" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Total Amount ($)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Total Amount ({CURRENCY_SYMBOL})</label>
               <input name="total_amount" type="number" step="0.01" className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none" placeholder="0" />
             </div>
             <div>
