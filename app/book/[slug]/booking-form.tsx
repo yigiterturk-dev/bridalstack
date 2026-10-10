@@ -332,7 +332,6 @@ export default function BookingForm({ tenantId, accent, services, staff, schedul
               onChange={(e) => { setDate(e.currentTarget.value); setTime(""); }}
               onInput={(e) => { setDate(e.currentTarget.value); setTime(""); }}
               className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none transition focus:border-gray-400 focus:ring-2 focus-visible:outline-none"
-              aria-describedby="booking-contact-help"
               style={{ ["--tw-ring-color" as string]: accent + "33" }}
             />
           </div>
@@ -386,19 +385,19 @@ export default function BookingForm({ tenantId, accent, services, staff, schedul
           <div className="flex flex-col gap-3.5">
             <div>
               <label htmlFor="booking-name" className="block text-sm font-medium text-gray-700 mb-1.5">Full name *</label>
-              <input id="booking-name" value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" aria-required="true" className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none transition focus:border-gray-400 focus:ring-2 focus-visible:outline-none" style={{ ["--tw-ring-color" as string]: accent + "33" }} placeholder="Your name" />
+              <input id="booking-name" value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" aria-required="true" maxLength={120} className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none transition focus:border-gray-400 focus:ring-2 focus-visible:outline-none" style={{ ["--tw-ring-color" as string]: accent + "33" }} placeholder="Your name" />
             </div>
             <div>
               <label htmlFor="booking-phone" className="block text-sm font-medium text-gray-700 mb-1.5">Phone</label>
-              <input id="booking-phone" value={phone} onChange={(e) => setPhone(e.target.value)} type="tel" autoComplete="tel" aria-describedby="booking-contact-help" className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none transition focus:border-gray-400 focus:ring-2 focus-visible:outline-none" style={{ ["--tw-ring-color" as string]: accent + "33" }} placeholder="(555) 123-4567" />
+              <input id="booking-phone" value={phone} onChange={(e) => setPhone(e.target.value)} type="tel" autoComplete="tel" aria-describedby="booking-contact-help" maxLength={40} className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none transition focus:border-gray-400 focus:ring-2 focus-visible:outline-none" style={{ ["--tw-ring-color" as string]: accent + "33" }} placeholder="(555) 123-4567" />
             </div>
             <div>
               <label htmlFor="booking-email" className="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
-              <input id="booking-email" value={email} onChange={(e) => setEmail(e.target.value)} type="email" autoComplete="email" aria-describedby="booking-contact-help" className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none transition focus:border-gray-400 focus:ring-2 focus-visible:outline-none" style={{ ["--tw-ring-color" as string]: accent + "33" }} placeholder="you@example.com" />
+              <input id="booking-email" value={email} onChange={(e) => setEmail(e.target.value)} type="email" autoComplete="email" aria-describedby="booking-contact-help" maxLength={160} className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none transition focus:border-gray-400 focus:ring-2 focus-visible:outline-none" style={{ ["--tw-ring-color" as string]: accent + "33" }} placeholder="you@example.com" />
             </div>
             <div>
               <label htmlFor="booking-notes" className="block text-sm font-medium text-gray-700 mb-1.5">Notes</label>
-              <textarea id="booking-notes" value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none resize-y transition focus:border-gray-400 focus:ring-2 focus-visible:outline-none" style={{ ["--tw-ring-color" as string]: accent + "33" }} placeholder="Anything we should know..." />
+              <textarea id="booking-notes" value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} maxLength={500} className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none resize-y transition focus:border-gray-400 focus:ring-2 focus-visible:outline-none" style={{ ["--tw-ring-color" as string]: accent + "33" }} placeholder="Anything we should know..." />
             </div>
           </div>
 
