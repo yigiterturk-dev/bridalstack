@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { getCurrentMember } from "@/lib/tenant";
+import { getCurrentMember, getCurrentTenant } from "@/lib/tenant";
 import { hasPermission } from "@/lib/rbac";
 import { todayISO } from "@/lib/finance";
 import {
@@ -13,12 +13,15 @@ import {
   shouldPostCost,
 } from "@/lib/cleaning";
 import { nonNegativeFloat } from "@/lib/numbers";
+import { normalizeTimeZone } from "@/lib/timezone";
 
 async function requireCleaningManager() {
   const member = await getCurrentMember();
   if (!member) redirect("/login");
   if (!hasPermission(member.role, "products.manage")) redirect("/cleaning?error=forbidden");
-  return member;
+  const tenant = await getCurrentTenant();
+  if (!tenant || tenant.id !== member.tenantId) redirect("/cleaning?error=forbidden");
+  return { ...member, timeZone: normalizeTimeZone(tenant.settings.time_zone) };
 }
 
 /**
@@ -98,7 +101,7 @@ export async function updateCleaningStatus(formData: FormData) {
   if (!row) redirect("/cleaning?error=notfound");
   if (!canTransition(row.status, next)) redirect("/cleaning?error=transition");
 
-  const today = todayISO();
+  const today = todayISO(new Date(), member.timeZone);
   const units = outcomeStockDelta(next, row.quantity);
 
   await prisma.$transaction(async (tx) => {

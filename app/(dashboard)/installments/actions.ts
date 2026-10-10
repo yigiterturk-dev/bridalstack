@@ -3,17 +3,20 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { getCurrentMember } from "@/lib/tenant";
+import { getCurrentMember, getCurrentTenant } from "@/lib/tenant";
 import { hasPermission } from "@/lib/rbac";
 import { deriveStatus } from "@/lib/installments";
 import { syncOrderBalance } from "@/lib/order-balance";
 import { todayISO } from "@/lib/finance";
+import { normalizeTimeZone } from "@/lib/timezone";
 
 async function requireFinanceManager() {
   const member = await getCurrentMember();
   if (!member) redirect("/login");
   if (!hasPermission(member.role, "orders.manage")) redirect("/installments?error=forbidden");
-  return member;
+  const tenant = await getCurrentTenant();
+  if (!tenant || tenant.id !== member.tenantId) redirect("/installments?error=forbidden");
+  return { ...member, timeZone: normalizeTimeZone(tenant.settings.time_zone) };
 }
 
 /**
@@ -48,7 +51,7 @@ export async function payInstallment(formData: FormData) {
         amount: row.amount,
         method,
         category: "installment",
-        occurred_on: todayISO(),
+        occurred_on: todayISO(new Date(), member.timeZone),
         description: "Installment payment",
         order_id: row.order_id,
         customer_id: row.customer_id,

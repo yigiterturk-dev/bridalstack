@@ -3,16 +3,19 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { getCurrentMember } from "@/lib/tenant";
+import { getCurrentMember, getCurrentTenant } from "@/lib/tenant";
 import { hasPermission } from "@/lib/rbac";
 import { canMoveCheck, todayISO } from "@/lib/finance";
 import { finiteFloat } from "@/lib/numbers";
+import { normalizeTimeZone } from "@/lib/timezone";
 
 async function requireFinanceManager() {
   const member = await getCurrentMember();
   if (!member) redirect("/login");
   if (!hasPermission(member.role, "billing.manage")) redirect("/checks?error=forbidden");
-  return member;
+  const tenant = await getCurrentTenant();
+  if (!tenant || tenant.id !== member.tenantId) redirect("/checks?error=forbidden");
+  return { ...member, timeZone: normalizeTimeZone(tenant.settings.time_zone) };
 }
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -93,7 +96,7 @@ export async function moveCheck(formData: FormData) {
         amount: row.amount,
         method: "check",
         category: "other",
-        occurred_on: todayISO(),
+        occurred_on: todayISO(new Date(), member.timeZone),
         description: `Check ${row.check_no ?? ""} — ${row.counterparty}`.trim(),
         check_id: row.id,
         created_by: member.userId,
