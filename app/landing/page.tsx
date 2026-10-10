@@ -175,9 +175,17 @@ export default function LandingPage() {
                 for your whole shop.
               </p>
             ) : (
-              <p className="text-stone-500 mt-8 text-sm">
-                Every paid module starts with your {TRIAL_DAYS}-day trial. <strong className="text-white">No card required.</strong>
-              </p>
+              <div className="mt-8 flex flex-col items-center gap-2 text-sm">
+                <p className="text-stone-500">
+                  Every paid module starts with your {TRIAL_DAYS}-day trial. <strong className="text-white">No card required.</strong>
+                </p>
+                <a
+                  href="mailto:hello@bridalstack.com?subject=BridalStack%20paid%20plans"
+                  className="font-semibold text-rose-300 underline underline-offset-4 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-300 focus-visible:ring-offset-4 focus-visible:ring-offset-stone-900 rounded"
+                >
+                  Talk to us about paid plans
+                </a>
+              </div>
             )}
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

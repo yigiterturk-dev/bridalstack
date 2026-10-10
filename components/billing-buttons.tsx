@@ -62,6 +62,12 @@ export function UpgradeButton({
         <p className="text-xs text-gray-500" role="status">
           Paid checkout is being connected. Your current plan and any active trial continue to work.
         </p>
+        <a
+          href="mailto:hello@bridalstack.com?subject=BridalStack%20paid%20plans"
+          className="text-xs font-semibold text-gray-700 underline underline-offset-2 hover:text-rose-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 focus-visible:ring-offset-2 rounded"
+        >
+          Talk to us about paid plans
+        </a>
       </div>
     );
   }
