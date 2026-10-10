@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { formatPrice } from "@/config/modules";
 
 export default function StylistChat() {
   const [query, setQuery] = useState("");
@@ -8,7 +9,7 @@ export default function StylistChat() {
   const [loading, setLoading] = useState(false);
 
   const presets = [
-    "Recommend gowns under $3,000 for a beach wedding",
+    `Recommend gowns under ${formatPrice(3000)} for a beach wedding`,
     "Which gowns have the highest try-on ratings?",
     "What should I suggest for a plus-size bride who likes lace?",
     "Show me our best-selling styles this month",

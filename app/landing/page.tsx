@@ -104,7 +104,7 @@ export default function LandingPage() {
           {[
             { value: "10+", label: "Tailored Modules" },
             { value: "5 min", label: "Setup Time" },
-            { value: "$0", label: "To Get Started" },
+            { value: formatPrice(0), label: "To Get Started" },
           ].map((s) => (
             <div key={s.label} className="pt-8 md:pt-0">
               <div className="text-5xl font-extrabold text-stone-900 tracking-tight drop-shadow-sm">{s.value}</div>
@@ -129,7 +129,7 @@ export default function LandingPage() {
               { icon: "checkroom", title: "Gown Inventory", desc: "Manage gowns, veils, and accessories. Barcode scanning and real-time stock availability." },
               { icon: "calendar_month", title: "Online Booking", desc: "A public booking page your brides use themselves, with staff schedules and confirmations." },
               { icon: "favorite", title: "Try-On Tracking", desc: "Record how every bride reacted to every gown, so you know what she loved but did not buy." },
-              { icon: "auto_awesome", title: "AI Stylist", desc: "Ask your AI assistant: 'What are the best-selling A-line gowns under $3,000 this month?'" },
+              { icon: "auto_awesome", title: "AI Stylist", desc: `Ask your AI assistant: 'What are the best-selling A-line gowns under ${formatPrice(3000)} this month?'` },
               { icon: "draw", title: "Digital Contracts", desc: "Send a signing link, capture the signature, and keep the signed agreement on the order." },
               { icon: "analytics", title: "Advanced Analytics", desc: "Deep insights into monthly revenue, top-performing categories, and conversion rates." },
               { icon: "account_balance", title: "Finance & Ledger", desc: "Installment plans, cash register, and daily revenue collection." },
