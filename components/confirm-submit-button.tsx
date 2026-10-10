@@ -9,6 +9,7 @@ type ConfirmSubmitButtonProps = {
   className?: string;
   ariaLabel?: string;
   title?: string;
+  pendingLabel?: ReactNode;
 };
 
 export default function ConfirmSubmitButton({
@@ -17,6 +18,7 @@ export default function ConfirmSubmitButton({
   className,
   ariaLabel,
   title,
+  pendingLabel,
 }: ConfirmSubmitButtonProps) {
   const { pending } = useFormStatus();
 
@@ -32,7 +34,7 @@ export default function ConfirmSubmitButton({
         if (!window.confirm(message)) event.preventDefault();
       }}
     >
-      {children}
+      {pending && pendingLabel ? pendingLabel : children}
     </button>
   );
 }

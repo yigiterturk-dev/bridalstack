@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentTenant } from "@/lib/tenant";
 import { formatPrice } from "@/config/modules";
 import ModuleGuard from "@/components/module-guard";
+import ConfirmSubmitButton from "@/components/confirm-submit-button";
 import { deriveStatus, daysUntilDue } from "@/lib/installments";
 import { payInstallment, unpayInstallment } from "./actions";
 
@@ -176,9 +177,14 @@ async function InstallmentsContent({
                 {r.derived === "paid" ? (
                   <form action={unpayInstallment}>
                     <input type="hidden" name="id" value={r.id} />
-                    <button type="submit" className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-stone-200 text-stone-500 hover:bg-stone-50">
+                    <ConfirmSubmitButton
+                      message="Undo this payment? The cash entry and order balance will be reversed."
+                      pendingLabel="Undoing…"
+                      ariaLabel="Undo payment"
+                      className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-stone-200 text-stone-500 hover:bg-stone-50 disabled:opacity-60 disabled:cursor-wait"
+                    >
                       Undo
-                    </button>
+                    </ConfirmSubmitButton>
                   </form>
                 ) : r.derived === "cancelled" ? (
                   <span className="text-xs text-stone-400 px-3">Cancelled</span>
@@ -186,9 +192,14 @@ async function InstallmentsContent({
                   <form action={payInstallment} className="flex items-center gap-1.5">
                     <input type="hidden" name="id" value={r.id} />
                     <input type="hidden" name="method" value="cash" />
-                    <button type="submit" className="text-xs font-semibold px-3.5 py-2 rounded-lg bg-stone-900 text-white hover:bg-rose-600">
+                    <ConfirmSubmitButton
+                      message={`Mark ${formatPrice(Math.round(r.amount))} as collected in cash?`}
+                      pendingLabel="Saving…"
+                      ariaLabel={`Mark ${formatPrice(Math.round(r.amount))} as collected`}
+                      className="text-xs font-semibold px-3.5 py-2 rounded-lg bg-stone-900 text-white hover:bg-rose-600 disabled:opacity-60 disabled:cursor-wait"
+                    >
                       Mark collected
-                    </button>
+                    </ConfirmSubmitButton>
                   </form>
                 )}
               </div>
