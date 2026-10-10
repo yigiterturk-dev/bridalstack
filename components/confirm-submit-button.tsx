@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { useFormStatus } from "react-dom";
 
 type ConfirmSubmitButtonProps = {
   children: ReactNode;
@@ -17,9 +18,13 @@ export default function ConfirmSubmitButton({
   ariaLabel,
   title,
 }: ConfirmSubmitButtonProps) {
+  const { pending } = useFormStatus();
+
   return (
     <button
       type="submit"
+      disabled={pending}
+      aria-busy={pending}
       className={className}
       aria-label={ariaLabel}
       title={title}
