@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentTenant } from "@/lib/tenant";
 import { createWorkflow, toggleWorkflow, deleteWorkflow } from "./actions";
 import ConfirmSubmitButton from "@/components/confirm-submit-button";
+import SubmitButton from "@/components/submit-button";
 
 const TRIGGERS = [
   { value: "appointment_created", label: "Appointment Created", icon: "event" },
@@ -42,11 +43,11 @@ export default async function WorkflowsPage() {
           <h2 className="text-lg font-semibold text-gray-900 mb-4">New Workflow</h2>
           <form action={createWorkflow} className="flex flex-col gap-3">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-              <input name="name" required className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none" placeholder="e.g. Send reminder before appointment" />
+              <label htmlFor="workflow-name" className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+              <input id="workflow-name" name="name" required className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none focus-visible:ring-2 focus-visible:ring-gray-500 focus-visible:ring-offset-1" placeholder="e.g. Send reminder before appointment" />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">When this happens...</label>
+            <fieldset>
+              <legend className="block text-sm font-medium text-gray-700 mb-2">When this happens...</legend>
               <div className="flex flex-col gap-1.5">
                 {TRIGGERS.map((t) => (
                   <label key={t.value} className="flex items-center gap-2 p-2.5 rounded-xl border border-gray-200 cursor-pointer has-[:checked]:border-gray-900 has-[:checked]:bg-gray-50">
@@ -56,9 +57,9 @@ export default async function WorkflowsPage() {
                   </label>
                 ))}
               </div>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Do this...</label>
+            </fieldset>
+            <fieldset>
+              <legend className="block text-sm font-medium text-gray-700 mb-2">Do this...</legend>
               <div className="flex flex-col gap-1.5">
                 {ACTIONS.map((a) => (
                   <label key={a.value} className="flex items-center gap-2 p-2.5 rounded-xl border border-gray-200 cursor-pointer has-[:checked]:border-gray-900 has-[:checked]:bg-gray-50">
@@ -68,12 +69,12 @@ export default async function WorkflowsPage() {
                   </label>
                 ))}
               </div>
-            </div>
+            </fieldset>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Delay (minutes)</label>
-              <input name="delay_minutes" type="number" min="0" defaultValue="0" className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none" />
+              <label htmlFor="workflow-delay" className="block text-sm font-medium text-gray-700 mb-1">Delay (minutes)</label>
+              <input id="workflow-delay" name="delay_minutes" type="number" min="0" max={365 * 24 * 60} defaultValue="0" className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none focus-visible:ring-2 focus-visible:ring-gray-500 focus-visible:ring-offset-1" />
             </div>
-            <button type="submit" className="mt-2 py-2.5 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-800">Create Workflow</button>
+            <SubmitButton pendingLabel="Creating…" className="mt-2 py-2.5 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-800 disabled:opacity-60 disabled:cursor-wait focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-500 focus-visible:ring-offset-2">Create Workflow</SubmitButton>
           </form>
         </div>
 
