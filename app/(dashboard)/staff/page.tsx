@@ -72,8 +72,9 @@ export default async function StaffPage({ searchParams }: PageProps) {
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Invite a team member</h2>
             <form action={addMember} className="flex flex-col gap-3">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <label htmlFor="staff-email" className="block text-sm font-medium text-gray-700 mb-1">Email</label>
                 <input
+                  id="staff-email"
                   name="email"
                   type="email"
                   required
@@ -82,7 +83,7 @@ export default async function StaffPage({ searchParams }: PageProps) {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
+                <label htmlFor="role-select" className="block text-sm font-medium text-gray-700 mb-1">Role</label>
                 <SelectField
                   name="role"
                   defaultValue="stylist"

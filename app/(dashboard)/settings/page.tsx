@@ -106,8 +106,9 @@ export default async function SettingsPage({ searchParams }: Props) {
             <form action={updateShopProfile} className="grid gap-4">
               <div className="grid sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Shop Name</label>
+                  <label htmlFor="shop-name" className="block text-sm font-medium text-gray-700 mb-1">Shop Name</label>
                   <input
+                    id="shop-name"
                     name="name"
                     required
                     defaultValue={tenant.name}
@@ -115,12 +116,13 @@ export default async function SettingsPage({ searchParams }: Props) {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Booking Address</label>
+                  <label htmlFor="booking-slug" className="block text-sm font-medium text-gray-700 mb-1">Booking Address</label>
                   <div className="flex items-center rounded-xl border border-gray-300 overflow-hidden focus-within:border-gray-900">
                     <span className="px-3 py-2.5 text-xs text-gray-400 bg-gray-50 border-r border-gray-200 whitespace-nowrap font-mono">
                       /book/
                     </span>
                     <input
+                      id="booking-slug"
                       name="slug"
                       required
                       pattern="[a-z0-9]+(-[a-z0-9]+)*"
@@ -135,8 +137,9 @@ export default async function SettingsPage({ searchParams }: Props) {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Logo URL</label>
+                <label htmlFor="logo-url" className="block text-sm font-medium text-gray-700 mb-1">Logo URL</label>
                 <input
+                  id="logo-url"
                   name="logo_url"
                   type="url"
                   defaultValue={tenant.logo_url ?? ""}
@@ -147,9 +150,10 @@ export default async function SettingsPage({ searchParams }: Props) {
 
               <div className="grid sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Primary Color</label>
+                  <label htmlFor="primary-color" className="block text-sm font-medium text-gray-700 mb-1">Primary Color</label>
                   <div className="flex items-center gap-3">
                     <input
+                      id="primary-color"
                       name="primary_color"
                       type="color"
                       defaultValue={tenant.primary_color ?? "#0A0A0C"}
@@ -159,9 +163,10 @@ export default async function SettingsPage({ searchParams }: Props) {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Accent Color</label>
+                  <label htmlFor="accent-color" className="block text-sm font-medium text-gray-700 mb-1">Accent Color</label>
                   <div className="flex items-center gap-3">
                     <input
+                      id="accent-color"
                       name="accent_color"
                       type="color"
                       defaultValue={tenant.accent_color ?? "#2563EB"}
