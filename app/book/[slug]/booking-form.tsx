@@ -16,6 +16,7 @@ type Props = {
   staff: Staff[];
   schedules: Schedule[];
   bookings: ExistingBooking[];
+  minDate: string;
 };
 
 type Step = "service" | "staff" | "datetime" | "info" | "done";
@@ -29,7 +30,7 @@ function formatDuration(minutes: number) {
   return `${minutes}m`;
 }
 
-export default function BookingForm({ tenantId, accent, services, staff, schedules, bookings }: Props) {
+export default function BookingForm({ tenantId, accent, services, staff, schedules, bookings, minDate }: Props) {
   const [step, setStep] = useState<Step>("service");
   const [serviceId, setServiceId] = useState<string | null>(null);
   const [staffId, setStaffId] = useState<string | null>(null);
@@ -112,7 +113,6 @@ export default function BookingForm({ tenantId, accent, services, staff, schedul
     }, {} as Record<string, Service[]>);
   }, [services]);
 
-  const minDate = new Date().toISOString().split("T")[0];
   const hasPublishedAvailability = schedules.some((schedule) => !schedule.isOff);
 
   async function handleSubmit() {

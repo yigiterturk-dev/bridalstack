@@ -11,6 +11,7 @@ import CopyField from "@/components/copy-field";
 import SubmitButton from "@/components/submit-button";
 import { updateShopProfile, startPackTrial, seedDemoData, clearDemoData } from "./actions";
 import { canStartTrial, TRIAL_DAYS } from "@/lib/trial";
+import { normalizeTimeZone, TIME_ZONE_OPTIONS } from "@/lib/timezone";
 
 type Props = { searchParams?: Promise<{ success?: string; error?: string }> };
 
@@ -21,6 +22,7 @@ const ERRORS: Record<string, string> = {
   slug_taken: "That booking address is already in use. Try another one.",
   logo_invalid: "The logo address must start with http:// or https://.",
   color_invalid: "Colors must be six-digit hex values, for example #B4496A.",
+  timezone_invalid: "Choose a valid shop time zone.",
   update_failed: "Could not save your changes. Please try again.",
   trial_unavailable: "That free trial is not available for this workspace.",
 };
@@ -61,6 +63,7 @@ export default async function SettingsPage({ searchParams }: Props) {
   const hasDemoData = tenant.settings?.demo_data === true;
   const bookingUrl = `${origin}/book/${tenant.slug}`;
   const stripeCustomerId = (tenant.settings as Record<string, unknown>)?.stripe_customer_id;
+  const timeZone = normalizeTimeZone((tenant.settings as Record<string, unknown>)?.time_zone);
 
   return (
     <div>
@@ -176,6 +179,20 @@ export default async function SettingsPage({ searchParams }: Props) {
                     <span className="text-xs text-gray-500">Booking page highlights</span>
                   </div>
                 </div>
+              </div>
+
+              <div>
+                <label htmlFor="shop-time-zone" className="block text-sm font-medium text-gray-700 mb-1">Shop time zone</label>
+                <select
+                  id="shop-time-zone"
+                  name="time_zone"
+                  defaultValue={timeZone}
+                  className="w-full px-4 py-2.5 rounded-xl border border-gray-300 bg-white text-sm outline-none focus:border-gray-900 focus-visible:ring-2 focus-visible:ring-gray-500 focus-visible:ring-offset-1"
+                >
+                  {TIME_ZONE_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+                  {!TIME_ZONE_OPTIONS.some((option) => option.value === timeZone) && <option value={timeZone}>{timeZone}</option>}
+                </select>
+                <p className="text-xs text-gray-500 mt-1">Used for the public booking calendar and date validation.</p>
               </div>
 
               <label className="flex items-start gap-3 p-4 rounded-xl border border-gray-100 cursor-pointer hover:border-gray-300 transition-colors">

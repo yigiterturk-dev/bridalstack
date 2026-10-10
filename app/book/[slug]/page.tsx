@@ -4,6 +4,7 @@ import Image from "next/image";
 import BookingForm from "./booking-form";
 import { DEMO_TENANT_SLUG } from "@/lib/demo-identity";
 import { ensureDemoTenant } from "@/lib/demo-tenant";
+import { dateInTimeZone, normalizeTimeZone } from "@/lib/timezone";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -31,7 +32,8 @@ export default async function PublicBookingPage({ params }: Props) {
   ]);
 
   const memberIds = members.map((m) => m.id);
-  const today = new Date().toISOString().slice(0, 10);
+  const timeZone = normalizeTimeZone((tenant.settings as Record<string, unknown>)?.time_zone);
+  const today = dateInTimeZone(new Date(), timeZone);
   // Eski sorgu staff_services'i kiracı filtresiz çekiyordu — sadece bu butiğin personeli.
   const [staffServices, schedules, bookings] = await Promise.all([
     prisma.staffService.findMany({ where: { member_id: { in: memberIds } }, select: { member_id: true, service_id: true } }),
@@ -94,6 +96,7 @@ export default async function PublicBookingPage({ params }: Props) {
             startTime: b.start_time,
             endTime: b.end_time,
           }))}
+          minDate={today}
         />
       </div>
 

@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { boundedInt, finiteFloat, nonNegativeFloat, normalizedUpperPrice } from "../lib/numbers.ts";
+import { dateInTimeZone, normalizeTimeZone } from "../lib/timezone.ts";
 
 test("nonNegativeFloat: valid decimals survive and negatives clamp", () => {
   assert.equal(nonNegativeFloat("12.50"), 12.5);
@@ -32,4 +33,15 @@ test("normalizedUpperPrice: avoids inverted ranges and keeps blank optional", ()
   assert.equal(normalizedUpperPrice("125.50", 100), 125.5);
   assert.equal(normalizedUpperPrice("", 100), null);
   assert.equal(normalizedUpperPrice("not-a-number", 100), 100);
+});
+
+test("dateInTimeZone: uses the shop's local calendar date", () => {
+  const instant = new Date("2026-10-10T01:30:00.000Z");
+  assert.equal(dateInTimeZone(instant, "America/Los_Angeles"), "2026-10-09");
+  assert.equal(dateInTimeZone(instant, "Europe/Istanbul"), "2026-10-10");
+});
+
+test("normalizeTimeZone: rejects invalid values safely", () => {
+  assert.equal(normalizeTimeZone("America/New_York"), "America/New_York");
+  assert.equal(normalizeTimeZone("not/a-timezone"), "UTC");
 });

@@ -8,6 +8,7 @@ import { hasPermission } from "@/lib/rbac";
 import { canStartTrial, startTrial, TRIAL_DAYS } from "@/lib/trial";
 import type { PackId } from "@/config/modules";
 import { clearDemoRecords, insertDemoRecords } from "@/lib/demo-seed";
+import { isValidTimeZone } from "@/lib/timezone";
 
 const HEX = /^#[0-9a-fA-F]{6}$/;
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -29,6 +30,7 @@ export async function updateShopProfile(formData: FormData) {
   const logo_url = String(formData.get("logo_url") || "").trim() || null;
   const primary_color = String(formData.get("primary_color") || "").trim();
   const accent_color = String(formData.get("accent_color") || "").trim();
+  const time_zone = String(formData.get("time_zone") || "UTC").trim();
   const briefing_emails = formData.get("briefing_emails") === "on";
 
   if (!name) redirect("/settings?error=name_required");
@@ -36,6 +38,7 @@ export async function updateShopProfile(formData: FormData) {
   if (logo_url && !/^https?:\/\//i.test(logo_url)) redirect("/settings?error=logo_invalid");
   if (primary_color && !HEX.test(primary_color)) redirect("/settings?error=color_invalid");
   if (accent_color && !HEX.test(accent_color)) redirect("/settings?error=color_invalid");
+  if (!isValidTimeZone(time_zone)) redirect("/settings?error=timezone_invalid");
 
   // Slug herkese açık randevu adresinin parçası; başka kiracıda kullanılıyorsa reddet.
   if (slug !== tenant.slug) {
@@ -53,6 +56,7 @@ export async function updateShopProfile(formData: FormData) {
         primary_color: primary_color || null,
         accent_color: accent_color || null,
         briefing_emails,
+        settings: { ...tenant.settings, time_zone },
       },
     });
   } catch {

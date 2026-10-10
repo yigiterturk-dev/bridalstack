@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { rateLimit, clientIp } from "@/lib/ratelimit";
 import { UUID_RE, canStaffBookService, fitsSchedule, validateBookingInput } from "@/lib/booking-validation";
 import { bookingRequestEmail, sendEmail } from "@/lib/email";
+import { dateInTimeZone, normalizeTimeZone } from "@/lib/timezone";
 
 export const dynamic = "force-dynamic";
 
@@ -46,6 +47,13 @@ export async function POST(req: Request) {
     const end_time = clean(body.end_time, 5);
     const notes = clean(body.notes, 500) || null;
 
+    const tenantForDate = await prisma.tenant.findUnique({
+      where: { id: tenant_id },
+      select: { settings: true },
+    });
+    const timeZone = normalizeTimeZone((tenantForDate?.settings as Record<string, unknown> | null)?.time_zone);
+    const today = dateInTimeZone(new Date(), timeZone);
+
     // 2. Şema doğrulaması (fail-closed) — saf çekirdek lib/booking-validation.ts
     const valid = validateBookingInput({
       tenant_id,
@@ -56,7 +64,7 @@ export async function POST(req: Request) {
       booking_date,
       start_time,
       end_time,
-    });
+    }, today);
     if (!valid.ok) {
       return NextResponse.json({ error: valid.error }, { status: 400 });
     }
