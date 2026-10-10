@@ -76,7 +76,7 @@ export default function ImageUpload({
 
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+      <label htmlFor={`${name}-upload`} className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
 
       {urls.map((u) => (
         <input key={u} type="hidden" name={name} value={u} />
@@ -87,7 +87,7 @@ export default function ImageUpload({
           {urls.map((u) => (
             <div key={u} className="relative group">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={u} alt="" className="w-full aspect-square object-cover rounded-xl border border-gray-200" />
+              <img src={u} alt={`${label} preview`} className="w-full aspect-square object-cover rounded-xl border border-gray-200" />
               <button
                 type="button"
                 onClick={() => setUrls((prev) => prev.filter((x) => x !== u))}
@@ -103,6 +103,7 @@ export default function ImageUpload({
 
       <input
         ref={inputRef}
+        id={`${name}-upload`}
         type="file"
         accept={ALLOWED_IMAGE_TYPES.join(",")}
         multiple={multiple}
@@ -111,10 +112,10 @@ export default function ImageUpload({
         className="block w-full text-sm text-gray-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-medium file:bg-gray-900 file:text-white hover:file:bg-gray-800 file:cursor-pointer disabled:opacity-50"
       />
 
-      <p className="text-xs text-gray-400 mt-1.5">
+      <p className="text-xs text-gray-400 mt-1.5" role="status" aria-live="polite">
         {busy ? "Uploading…" : `JPG, PNG, WebP, AVIF or HEIC. Up to 10 MB${multiple ? " each" : ""}.`}
       </p>
-      {error && <p className="text-sm text-red-600 mt-1">{error}</p>}
+      {error && <p role="alert" className="text-sm text-red-600 mt-1">{error}</p>}
     </div>
   );
 }
