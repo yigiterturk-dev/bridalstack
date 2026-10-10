@@ -29,8 +29,8 @@ export default function Sidebar({ groups, tenantName }: { groups: NavGroup[]; te
           </h1>
           <p className="text-xs font-semibold tracking-wider text-stone-400 uppercase mt-1 truncate">{tenantName}</p>
         </div>
-        <button onClick={() => setOpen(false)} className="lg:hidden text-stone-400 hover:text-rose-500 transition-colors" aria-label="Close menu">
-          <span className="material-symbols-outlined">close</span>
+        <button onClick={() => setOpen(false)} className="lg:hidden text-stone-400 hover:text-rose-500 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2 rounded-lg" aria-label="Close menu">
+          <span aria-hidden="true" className="material-symbols-outlined">close</span>
         </button>
       </div>
 
@@ -46,10 +46,10 @@ export default function Sidebar({ groups, tenantName }: { groups: NavGroup[]; te
                 onClick={() => setCollapsedGroups((current) => ({ ...current, [gi]: !current[gi] }))}
                 aria-expanded={!groupCollapsed}
                 aria-controls={`nav-group-${gi}`}
-                className="w-full flex items-center justify-between px-4 mb-3 text-[11px] font-bold uppercase tracking-[0.15em] text-stone-400 hover:text-stone-700 transition-colors"
+                className="w-full flex items-center justify-between px-4 mb-3 text-[11px] font-bold uppercase tracking-[0.15em] text-stone-400 hover:text-stone-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2 rounded"
               >
                 {group.section}
-                <span className="material-symbols-outlined text-[16px]">{groupCollapsed ? "chevron_right" : "expand_more"}</span>
+                <span aria-hidden="true" className="material-symbols-outlined text-[16px]">{groupCollapsed ? "chevron_right" : "expand_more"}</span>
               </button>
             )}
             <div id={`nav-group-${gi}`} className={`flex flex-col gap-1 ${groupCollapsed ? "hidden" : ""}`}>
@@ -61,14 +61,14 @@ export default function Sidebar({ groups, tenantName }: { groups: NavGroup[]; te
                     href={item.href}
                     onClick={() => setOpen(false)}
                     aria-current={active ? "page" : undefined}
-                    className={`group relative flex items-center gap-3.5 px-4 py-2.5 rounded-2xl text-[14px] font-medium transition-all duration-300 ${
+                    className={`group relative flex items-center gap-3.5 px-4 py-2.5 rounded-2xl text-[14px] font-medium transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2 ${
                       active
                         ? "bg-rose-50/80 text-rose-700 shadow-sm border border-rose-100/50"
                         : "text-stone-500 hover:text-stone-900 hover:bg-stone-50 border border-transparent"
                     }`}
                   >
-                    {active && <span className="absolute left-0 top-2 bottom-2 w-1 rounded-full bg-rose-400 shadow-[0_0_8px_rgba(251,113,133,0.8)]" />}
-                    <span className={`material-symbols-outlined text-[20px] transition-transform duration-300 ${active ? "text-rose-500 scale-110" : "text-stone-400 group-hover:text-stone-600 group-hover:scale-110"}`}>
+                    {active && <span aria-hidden="true" className="absolute left-0 top-2 bottom-2 w-1 rounded-full bg-rose-400 shadow-[0_0_8px_rgba(251,113,133,0.8)]" />}
+                    <span aria-hidden="true" className={`material-symbols-outlined text-[20px] transition-transform duration-300 ${active ? "text-rose-500 scale-110" : "text-stone-400 group-hover:text-stone-600 group-hover:scale-110"}`}>
                       {item.icon}
                     </span>
                     {item.label}
@@ -85,9 +85,9 @@ export default function Sidebar({ groups, tenantName }: { groups: NavGroup[]; te
         <Link
           href="/settings"
           onClick={() => setOpen(false)}
-          className="flex items-center gap-3.5 px-4 py-3 rounded-2xl text-[14px] font-medium text-stone-500 hover:text-stone-900 hover:bg-white hover:shadow-sm border border-transparent hover:border-stone-200 transition-all duration-300"
+          className="flex items-center gap-3.5 px-4 py-3 rounded-2xl text-[14px] font-medium text-stone-500 hover:text-stone-900 hover:bg-white hover:shadow-sm border border-transparent hover:border-stone-200 transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2"
         >
-          <span className="material-symbols-outlined text-[20px] text-stone-400">settings</span>
+          <span aria-hidden="true" className="material-symbols-outlined text-[20px] text-stone-400">settings</span>
           Settings
         </Link>
       </div>
@@ -98,8 +98,8 @@ export default function Sidebar({ groups, tenantName }: { groups: NavGroup[]; te
     <>
       {/* Mobile header */}
       <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white/80 backdrop-blur-xl border-b border-stone-100 flex items-center justify-between px-5 z-50">
-        <button onClick={() => setOpen(true)} className="text-stone-700 -ml-1 p-2 hover:bg-stone-50 rounded-xl transition-colors" aria-label="Open menu">
-          <span className="material-symbols-outlined">menu</span>
+        <button onClick={() => setOpen(true)} className="text-stone-700 -ml-1 p-2 hover:bg-stone-50 rounded-xl transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2" aria-label="Open menu">
+          <span aria-hidden="true" className="material-symbols-outlined">menu</span>
         </button>
         <h1 className="text-lg text-stone-900"><Wordmark /></h1>
         <div className="w-8" />
@@ -109,7 +109,7 @@ export default function Sidebar({ groups, tenantName }: { groups: NavGroup[]; te
       {open && (
         <button
           type="button"
-          className="lg:hidden fixed inset-0 bg-stone-900/20 backdrop-blur-sm z-40 transition-opacity cursor-default"
+          className="lg:hidden fixed inset-0 bg-stone-900/20 backdrop-blur-sm z-40 transition-opacity cursor-default focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
           onClick={() => setOpen(false)}
           aria-label="Close menu"
         />
