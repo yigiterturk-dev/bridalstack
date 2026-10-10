@@ -31,7 +31,7 @@ export default async function NewOrderPage() {
 
       <form action={createOrder} className="bg-white rounded-2xl border border-gray-200 p-6 flex flex-col gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Customer *</label>
+          <label htmlFor="customer_id-select" className="block text-sm font-medium text-gray-700 mb-1">Customer *</label>
           <SelectField
             name="customer_id"
             required
@@ -41,7 +41,7 @@ export default async function NewOrderPage() {
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
+            <label htmlFor="order_type-select" className="block text-sm font-medium text-gray-700 mb-1">Type</label>
             <SelectField
               name="order_type"
               defaultValue="sale"
@@ -53,28 +53,28 @@ export default async function NewOrderPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Order Date</label>
-            <input name="order_date" type="date" defaultValue={new Date().toISOString().split("T")[0]} className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none" />
+            <label htmlFor="order-date" className="block text-sm font-medium text-gray-700 mb-1">Order Date</label>
+            <input id="order-date" name="order_date" type="date" defaultValue={new Date().toISOString().split("T")[0]} className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none" />
           </div>
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Delivery Date</label>
-            <input name="delivery_date" type="date" className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none" />
+            <label htmlFor="delivery-date" className="block text-sm font-medium text-gray-700 mb-1">Delivery Date</label>
+            <input id="delivery-date" name="delivery_date" type="date" className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Sales Person</label>
-            <input name="sales_person" className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none" placeholder="Name" />
+            <label htmlFor="sales-person" className="block text-sm font-medium text-gray-700 mb-1">Sales Person</label>
+            <input id="sales-person" name="sales_person" className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none" placeholder="Name" />
           </div>
         </div>
         <OrderLineEditor products={products} />
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Deposit ($)</label>
-          <input name="deposit_amount" type="number" step="0.01" min="0" className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none" placeholder="0" />
+          <label htmlFor="deposit-amount" className="block text-sm font-medium text-gray-700 mb-1">Deposit ($)</label>
+          <input id="deposit-amount" name="deposit_amount" type="number" step="0.01" min="0" className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none" placeholder="0" />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
-          <textarea name="notes" rows={2} className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none resize-y" placeholder="Order details..." />
+          <label htmlFor="order-notes" className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+          <textarea id="order-notes" name="notes" rows={2} className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none resize-y" placeholder="Order details..." />
         </div>
         <div className="flex gap-3 pt-2">
           <button type="submit" className="px-6 py-2.5 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors">Create Order</button>

@@ -9,22 +9,22 @@ export default function NewCustomerPage() {
 
       <form action={createCustomer} className="bg-white rounded-2xl border border-gray-200 p-6 flex flex-col gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Name *</label>
-          <input name="name" required className="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none text-sm" placeholder="Jane Smith" />
+          <label htmlFor="customer-name" className="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+          <input id="customer-name" name="name" required className="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none text-sm" placeholder="Jane Smith" />
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-            <input name="phone" className="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none text-sm" placeholder="+1 (555) 000-0000" />
+            <label htmlFor="customer-phone" className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+            <input id="customer-phone" name="phone" className="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none text-sm" placeholder="+1 (555) 000-0000" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-            <input name="email" type="email" className="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none text-sm" placeholder="jane@example.com" />
+            <label htmlFor="customer-email" className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+            <input id="customer-email" name="email" type="email" className="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none text-sm" placeholder="jane@example.com" />
           </div>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
-          <textarea name="notes" rows={3} className="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none text-sm resize-y" placeholder="Wedding date, preferences..." />
+          <label htmlFor="customer-notes" className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+          <textarea id="customer-notes" name="notes" rows={3} className="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none text-sm resize-y" placeholder="Wedding date, preferences..." />
         </div>
         <div className="flex gap-3 pt-2">
           <button type="submit" className="px-6 py-2.5 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors">Save Customer</button>

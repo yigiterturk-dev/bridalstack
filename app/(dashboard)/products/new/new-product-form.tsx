@@ -39,13 +39,13 @@ export default function NewProductForm({
         />
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Product Name *</label>
-          <input name="name" required className="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none text-sm" placeholder="e.g. Princess A-Line Gown" />
+          <label htmlFor="product-name" className="block text-sm font-medium text-gray-700 mb-1">Product Name *</label>
+          <input id="product-name" name="name" required className="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none text-sm" placeholder="e.g. Princess A-Line Gown" />
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+            <label htmlFor="category-select" className="block text-sm font-medium text-gray-700 mb-1">Category</label>
             <SelectField
               name="category"
               placeholder="Select…"
@@ -54,13 +54,13 @@ export default function NewProductForm({
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">SKU</label>
-            <input name="sku" className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none" placeholder="BG-001" />
+            <label htmlFor="sku" className="block text-sm font-medium text-gray-700 mb-1">SKU</label>
+            <input id="sku" name="sku" className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none" placeholder="BG-001" />
           </div>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Supplier</label>
+          <label htmlFor="supplier_id-select" className="block text-sm font-medium text-gray-700 mb-1">Supplier</label>
           {suppliers.length > 0 ? (
             <SelectField name="supplier_id" placeholder="Who do you order this from?" options={suppliers.map((s) => ({ value: s.id, label: s.name }))} />
           ) : (
@@ -72,7 +72,7 @@ export default function NewProductForm({
 
         {/* Barcode Scanner Input */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Barcode (Optional)</label>
+          <label htmlFor="barcode" className="block text-sm font-medium text-gray-700 mb-1">Barcode (Optional)</label>
           <div className="relative">
             <input
               name="barcode"
@@ -94,22 +94,22 @@ export default function NewProductForm({
 
         <div className="grid grid-cols-3 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Price ($)</label>
-            <input name="price" type="number" step="0.01" className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none" placeholder="0" />
+            <label htmlFor="product-price" className="block text-sm font-medium text-gray-700 mb-1">Price ($)</label>
+            <input id="product-price" name="price" type="number" step="0.01" className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none" placeholder="0" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Cost ($)</label>
-            <input name="cost" type="number" step="0.01" className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none" placeholder="0" />
+            <label htmlFor="product-cost" className="block text-sm font-medium text-gray-700 mb-1">Cost ($)</label>
+            <input id="product-cost" name="cost" type="number" step="0.01" className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none" placeholder="0" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Stock</label>
-            <input name="stock_quantity" type="number" defaultValue="1" min="0" className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none" />
+            <label htmlFor="stock-quantity" className="block text-sm font-medium text-gray-700 mb-1">Stock</label>
+            <input id="stock-quantity" name="stock_quantity" type="number" defaultValue="1" min="0" className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none" />
           </div>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-          <textarea name="description" rows={2} className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none resize-y" placeholder="Optional details..." />
+          <label htmlFor="product-description" className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+          <textarea id="product-description" name="description" rows={2} className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none resize-y" placeholder="Optional details..." />
         </div>
 
         <div className="flex gap-3 pt-2">
