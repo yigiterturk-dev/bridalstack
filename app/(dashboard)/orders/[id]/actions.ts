@@ -8,6 +8,7 @@ import { hasPermission } from "@/lib/rbac";
 import { buildInstallmentPlan, deriveStatus } from "@/lib/installments";
 import { syncOrderBalance as recalcOrderBalance, syncOrderTotals } from "@/lib/order-balance";
 import { LINE_KINDS } from "@/lib/order-lines";
+import { nonNegativeFloat } from "@/lib/numbers";
 
 export async function updateOrderStatus(formData: FormData) {
   const tenant = await getCurrentTenant();
@@ -61,7 +62,7 @@ export async function createInstallmentPlan(formData: FormData) {
   if (!order) redirect("/orders");
 
   // Tutar verilmezse siparişin kalan bakiyesi bölünür.
-  const total = amountRaw ? parseFloat(amountRaw) : order.remaining_balance;
+  const total = amountRaw ? nonNegativeFloat(amountRaw) : order.remaining_balance;
   if (!Number.isFinite(total) || total <= 0) redirect(`/orders/${orderId}?error=amount`);
 
   // Aynı sipariş için ikinci bir plan kurulmasın; önce mevcudu iptal et.
@@ -158,7 +159,7 @@ async function syncOrderBalance(tenantId: string, orderId: string) {
 const LINE_KIND_IDS = LINE_KINDS.map((k) => k.id) as string[];
 
 function money(value: FormDataEntryValue | null): number {
-  return Math.max(0, parseFloat(String(value ?? "0")) || 0);
+  return nonNegativeFloat(value);
 }
 
 export async function addOrderLine(formData: FormData) {

@@ -12,6 +12,7 @@ import {
   RETURN_REASONS,
   RETURN_CONDITIONS,
 } from "@/lib/inventory";
+import { nonNegativeFloat } from "@/lib/numbers";
 
 async function requireReturnsManager() {
   const member = await getCurrentMember();
@@ -39,7 +40,7 @@ export async function createReturn(formData: FormData) {
   }
 
   const quantity = Math.max(1, parseInt(String(formData.get("quantity") || "1"), 10) || 1);
-  const refund_amount = Math.max(0, parseFloat(String(formData.get("refund_amount") || "0")) || 0);
+  const refund_amount = nonNegativeFloat(formData.get("refund_amount"));
 
   // Referans verilen kayıtlar gerçekten bu kiracıya mı ait? RLS yok.
   const [customer, product, order] = await Promise.all([
