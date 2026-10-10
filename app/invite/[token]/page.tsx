@@ -44,7 +44,7 @@ export default async function InvitePage({ params, searchParams }: Props) {
         <p className="text-stone-500 mb-8">
           This invitation has expired or has already been used. Ask the shop owner to send a new one.
         </p>
-        <Link href="/login" className="inline-block py-4 px-6 bg-stone-900 text-white rounded-2xl font-bold hover:bg-rose-600 transition-all">
+        <Link href="/login" className="inline-block py-4 px-6 bg-stone-900 text-white rounded-2xl font-bold hover:bg-rose-600 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 focus-visible:ring-offset-2">
           Go to sign in
         </Link>
       </>
@@ -59,7 +59,7 @@ export default async function InvitePage({ params, searchParams }: Props) {
   ]);
 
   const error = sp?.error ? (
-    <div role="alert" className="rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700 mb-4">
+    <div role="alert" aria-live="assertive" className="rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700 mb-4">
       {ERRORS[sp.error] ?? "Something went wrong."}
     </div>
   ) : null;
@@ -82,7 +82,7 @@ export default async function InvitePage({ params, searchParams }: Props) {
         {error}
         <form action={acceptInvite}>
           <input type="hidden" name="token" value={token} />
-          <button type="submit" className="w-full py-4 bg-stone-900 text-white rounded-2xl font-bold hover:bg-rose-600 transition-all duration-300">
+          <button type="submit" className="w-full py-4 bg-stone-900 text-white rounded-2xl font-bold hover:bg-rose-600 transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 focus-visible:ring-offset-2">
             Accept invitation
           </button>
         </form>
@@ -99,7 +99,7 @@ export default async function InvitePage({ params, searchParams }: Props) {
         <p className="text-stone-500 mb-6">You already have an account. Sign in to accept.</p>
         <Link
           href={`/login?callbackUrl=/invite/${token}`}
-          className="block text-center py-4 bg-stone-900 text-white rounded-2xl font-bold hover:bg-rose-600 transition-all duration-300"
+          className="block text-center py-4 bg-stone-900 text-white rounded-2xl font-bold hover:bg-rose-600 transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 focus-visible:ring-offset-2"
         >
           Sign in to accept
         </Link>
@@ -119,7 +119,7 @@ export default async function InvitePage({ params, searchParams }: Props) {
           <input
             id="invite-name"
             name="name" required autoComplete="name"
-            className="w-full px-5 py-4 rounded-2xl border border-stone-200 bg-white/50 text-stone-900 outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-50 transition-all"
+            className="w-full px-5 py-4 rounded-2xl border border-stone-200 bg-white/50 text-stone-900 outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-50 focus-visible:outline-none transition-all"
           />
         </div>
         <div>
@@ -127,18 +127,20 @@ export default async function InvitePage({ params, searchParams }: Props) {
           <input
             id="invite-password"
             name="password" type="password" required minLength={8} autoComplete="new-password"
-            className="w-full px-5 py-4 rounded-2xl border border-stone-200 bg-white/50 text-stone-900 outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-50 transition-all"
+            aria-describedby="invite-password-hint"
+            className="w-full px-5 py-4 rounded-2xl border border-stone-200 bg-white/50 text-stone-900 outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-50 focus-visible:outline-none transition-all"
           />
+          <p id="invite-password-hint" className="mt-1.5 text-xs text-stone-400">At least 8 characters.</p>
         </div>
         <div>
           <label htmlFor="invite-confirm-password" className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">Confirm password</label>
           <input
             id="invite-confirm-password"
             name="confirm" type="password" required minLength={8} autoComplete="new-password"
-            className="w-full px-5 py-4 rounded-2xl border border-stone-200 bg-white/50 text-stone-900 outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-50 transition-all"
+            className="w-full px-5 py-4 rounded-2xl border border-stone-200 bg-white/50 text-stone-900 outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-50 focus-visible:outline-none transition-all"
           />
         </div>
-        <button type="submit" className="w-full py-4 bg-stone-900 text-white rounded-2xl font-bold hover:bg-rose-600 transition-all duration-300">
+        <button type="submit" className="w-full py-4 bg-stone-900 text-white rounded-2xl font-bold hover:bg-rose-600 transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 focus-visible:ring-offset-2">
           Create account and join
         </button>
       </form>
