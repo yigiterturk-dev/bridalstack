@@ -27,9 +27,17 @@ export async function POST(req: NextRequest) {
   if (event.type === "checkout.session.completed") {
     const session = event.data.object;
     const tenantId = session.metadata?.tenant_id;
-    const packs = JSON.parse(
-      session.metadata?.packs || JSON.stringify(FREE_PACK_IDS)
-    ) as PackId[];
+    let packs: PackId[];
+    try {
+      const parsed = JSON.parse(session.metadata?.packs || JSON.stringify(FREE_PACK_IDS));
+      if (!Array.isArray(parsed) || parsed.some((pack) => typeof pack !== "string" || !(pack in PACKS))) {
+        throw new Error("invalid pack metadata");
+      }
+      packs = parsed as PackId[];
+    } catch (error) {
+      console.error("Invalid Stripe checkout metadata:", error);
+      return NextResponse.json({ error: "Invalid checkout metadata" }, { status: 400 });
+    }
 
     if (tenantId) {
       // Ücretsiz paketler artık plana dahil geldiği için "base dışı" ölçüsü

@@ -139,10 +139,10 @@ export function __resetRateLimitForTests() {
   buckets.clear();
 }
 
-// İstekten istemci IP'sini en iyi çabayla çıkarır (proxy başlıkları dahil).
+// İstekten istemci IP'sini güvenilir proxy başlığından çıkarır. X-Forwarded-For
+// istemcinin taşıyabileceği bir liste olduğu için rate-limit anahtarını onun
+// ilk elemanına bağlamıyoruz; aksi halde saldırgan IP rotasyonu yapabilir.
 export function clientIp(req: Request): string {
   const h = req.headers;
-  const fwd = h.get("x-forwarded-for");
-  if (fwd) return fwd.split(",")[0].trim();
-  return h.get("x-real-ip") || "unknown";
+  return h.get("x-real-ip")?.trim() || "unknown";
 }

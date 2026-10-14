@@ -6,6 +6,7 @@ import { stripe, STRIPE_PRICE_IDS } from "@/lib/stripe";
 import { getCurrentTenant } from "@/lib/tenant";
 import { PackId, PACKS, isPackSellable } from "@/config/modules";
 import { resolveCheckoutPlan } from "@/lib/billing";
+import { clientIp, rateLimit } from "@/lib/ratelimit";
 
 export async function POST(req: NextRequest) {
   const origin = req.headers.get("origin");
@@ -15,6 +16,14 @@ export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
   const user = session?.user;
   if (!user?.id || !user.email) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const limit = await rateLimit(`checkout:${user.id}:${clientIp(req)}`, 10, 60_000);
+  if (!limit.allowed) {
+    return NextResponse.json(
+      { error: "Too many checkout attempts. Please try again shortly." },
+      { status: 429, headers: { "Retry-After": String(limit.retryAfter) } },
+    );
+  }
 
   const tenant = await getCurrentTenant();
   if (!tenant) return NextResponse.json({ error: "No tenant" }, { status: 400 });
