@@ -220,5 +220,5 @@ export function todayISO(now: Date = new Date(), timeZone?: string): string {
     const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
     return `${values.year}-${values.month}-${values.day}`;
   }
-  return now.toISOString().slice(0, 10);
+  return `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}-${String(now.getUTCDate()).padStart(2, "0")}`;
 }

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
@@ -9,9 +10,11 @@ export const dynamic = "force-dynamic";
  * state. Dependency readiness is verified through deployment logs and the
  * authenticated smoke checks described in OPERATIONS.md.
  */
-export function GET() {
-  return NextResponse.json(
-    { status: "ok", service: "bridalstack" },
-    { headers: { "Cache-Control": "no-store" } },
-  );
+export async function GET() {
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    return NextResponse.json({ status: "ok", service: "bridalstack", dependencies: { database: "ok" } }, { headers: { "Cache-Control": "no-store" } });
+  } catch {
+    return NextResponse.json({ status: "degraded", service: "bridalstack", dependencies: { database: "unavailable" } }, { status: 503, headers: { "Cache-Control": "no-store" } });
+  }
 }

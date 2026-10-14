@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { notFound, redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getCurrentTenant } from "@/lib/tenant";
@@ -125,8 +126,7 @@ async function Sheet({ tenantId, countId, notice }: { tenantId: string; countId:
                       <td className="px-6 py-3">
                         <div className="flex items-center gap-3">
                           {item.product.image_url ? (
-                            /* eslint-disable-next-line @next/next/no-img-element */
-                            <img src={item.product.image_url} alt={item.product.name} className="w-9 h-9 rounded-lg object-cover border border-stone-200" />
+                            <Image unoptimized src={item.product.image_url} alt={item.product.name} width={36} height={36} className="w-9 h-9 rounded-lg object-cover border border-stone-200" />
                           ) : (
                             <div className="w-9 h-9 rounded-lg bg-stone-100 flex items-center justify-center">
                               <span className="material-symbols-outlined text-stone-400 text-[18px]">checkroom</span>

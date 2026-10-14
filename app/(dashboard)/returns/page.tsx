@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import Image from "next/image";
 import { prisma } from "@/lib/prisma";
 import { getCurrentTenant } from "@/lib/tenant";
 import { formatPrice } from "@/config/modules";
@@ -194,8 +195,7 @@ async function ReturnsContent({ tenantId, error }: { tenantId: string; error?: s
                   <div key={r.id} className="bg-white/70 backdrop-blur-xl rounded-2xl border border-stone-200/60 shadow-sm p-5">
                     <div className="flex items-start gap-4">
                       {r.product?.image_url ? (
-                        /* eslint-disable-next-line @next/next/no-img-element */
-                        <img src={r.product.image_url} alt={r.product.name} className="w-12 h-12 rounded-xl object-cover border border-stone-200 flex-shrink-0" />
+                        <Image unoptimized src={r.product.image_url} alt={r.product.name} width={48} height={48} className="w-12 h-12 rounded-xl object-cover border border-stone-200 flex-shrink-0" />
                       ) : (
                         <div className="w-12 h-12 rounded-xl bg-stone-100 flex items-center justify-center flex-shrink-0">
                           <span className="material-symbols-outlined text-stone-400 text-[20px]">swap_horiz</span>

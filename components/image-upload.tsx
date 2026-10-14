@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import Image from "next/image";
 import { upload } from "@vercel/blob/client";
 import { ALLOWED_IMAGE_TYPES, MAX_IMAGE_BYTES } from "@/lib/uploads";
 
@@ -86,8 +87,7 @@ export default function ImageUpload({
         <div className={`grid gap-2 mb-3 ${multiple ? "grid-cols-4" : "grid-cols-1 max-w-[160px]"}`}>
           {urls.map((u) => (
             <div key={u} className="relative group">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={u} alt={`${label} preview`} className="w-full aspect-square object-cover rounded-xl border border-gray-200" />
+              <Image unoptimized src={u} alt={`${label} preview`} width={800} height={800} className="w-full aspect-square object-cover rounded-xl border border-gray-200" />
               <button
                 type="button"
                 onClick={() => setUrls((prev) => prev.filter((x) => x !== u))}

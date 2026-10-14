@@ -1,4 +1,5 @@
 import { getCurrentTenant } from "@/lib/tenant";
+import Image from "next/image";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import ImageUpload from "@/components/image-upload";
@@ -174,10 +175,12 @@ async function TryOnsContent({ tenantId }: { tenantId: string }) {
                         <div className="flex gap-2 mt-2.5">
                           {t.photo_urls.slice(0, 5).map((url: string) => (
                             <a key={url} href={url} target="_blank" rel="noreferrer" className="block">
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img
+                              <Image
+                                unoptimized
                                 src={url}
                                 alt="Fitting photo"
+                                width={400}
+                                height={300}
                                 className="w-14 h-14 rounded-lg object-cover border border-gray-200 hover:border-rose-300 transition-colors"
                               />
                             </a>

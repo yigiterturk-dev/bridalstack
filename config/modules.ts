@@ -290,9 +290,11 @@ export function isRouteAllowed(path: string, enabledModules: ModuleId[]): boolea
   for (const moduleId of enabledModules) {
     const mod = MODULES[moduleId];
     for (const route of mod.routes) {
-      const pattern = route.replace(/\[.*?\]/g, "[^/]+");
-      const regex = new RegExp(`^${pattern}(/|$)`);
-      if (regex.test(path)) return true;
+      const routeParts = route.split("/").filter(Boolean);
+      const pathParts = path.split("/").filter(Boolean);
+      if (pathParts.length < routeParts.length) continue;
+      const matches = routeParts.every((part, index) => part.startsWith("[") && part.endsWith("]") || part === pathParts[index]);
+      if (matches) return true;
     }
   }
   return false;

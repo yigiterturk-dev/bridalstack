@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getCurrentTenant } from "@/lib/tenant";
@@ -138,8 +139,7 @@ async function FollowUpsContent({ tenantId }: { tenantId: string }) {
                     className="bg-white/70 backdrop-blur-xl rounded-2xl border border-stone-200/60 shadow-sm p-5 flex items-start gap-4"
                   >
                     {p?.image_url ? (
-                      /* eslint-disable-next-line @next/next/no-img-element */
-                      <img src={p.image_url} alt={p.name} className="w-14 h-14 rounded-xl object-cover border border-stone-200 flex-shrink-0" />
+                      <Image unoptimized src={p.image_url} alt={p.name} width={56} height={56} className="w-14 h-14 rounded-xl object-cover border border-stone-200 flex-shrink-0" />
                     ) : (
                       <div className="w-14 h-14 rounded-xl bg-rose-50 flex items-center justify-center text-2xl flex-shrink-0">
                         {f.bestReaction ? REACTION_EMOJI[f.bestReaction] : "👗"}
@@ -215,8 +215,7 @@ async function FollowUpsContent({ tenantId }: { tenantId: string }) {
                 return (
                   <div key={g.product_id} className="flex items-center gap-3">
                     {p.image_url ? (
-                      /* eslint-disable-next-line @next/next/no-img-element */
-                      <img src={p.image_url} alt={p.name} className="w-10 h-10 rounded-lg object-cover border border-stone-200 flex-shrink-0" />
+                      <Image unoptimized src={p.image_url} alt={p.name} width={40} height={40} className="w-10 h-10 rounded-lg object-cover border border-stone-200 flex-shrink-0" />
                     ) : (
                       <div className="w-10 h-10 rounded-lg bg-stone-100 flex items-center justify-center flex-shrink-0">
                         <span className="material-symbols-outlined text-stone-400 text-[18px]">checkroom</span>

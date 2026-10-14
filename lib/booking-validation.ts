@@ -22,11 +22,15 @@ export type BookingInput = {
 
 export type ValidationResult = { ok: true } | { ok: false; error: string };
 
+function utcDateOnly(now: Date = new Date()): string {
+  return `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}-${String(now.getUTCDate()).padStart(2, "0")}`;
+}
+
 // Genel rezervasyon girdisini doğrular (fail-closed). `today` enjekte edilebilir
 // (test edilebilirlik için); varsayılan bugünün UTC tarihidir.
 export function validateBookingInput(
   input: BookingInput,
-  today: string = new Date().toISOString().slice(0, 10)
+  today: string = utcDateOnly()
 ): ValidationResult {
   const { tenant_id, service_id, customer_name, customer_phone, customer_email, booking_date, start_time, end_time } = input;
 

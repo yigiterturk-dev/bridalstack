@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getCurrentTenant } from "@/lib/tenant";
@@ -101,10 +102,12 @@ async function ProductsContent({ tenantId, query }: { tenantId: string; query: s
                       <td className="px-8 py-6">
                         <div className="flex items-center gap-4">
                           {p.image_url ? (
-                            /* eslint-disable-next-line @next/next/no-img-element */
-                            <img
+                            <Image
+                              unoptimized
                               src={p.image_url}
                               alt={p.name}
+                              width={48}
+                              height={48}
                               className="w-12 h-12 rounded-2xl object-cover border border-stone-200"
                             />
                           ) : (

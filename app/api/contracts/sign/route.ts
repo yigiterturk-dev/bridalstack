@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
+// NOCTURN_PUBLIC_ENDPOINT: contract signing is authorized by the capability token in the request body, not by a dashboard session.
+
 export async function POST(req: NextRequest) {
   let body: unknown;
   try {

@@ -7,6 +7,8 @@ import { dateInTimeZone, normalizeTimeZone } from "@/lib/timezone";
 
 export const dynamic = "force-dynamic";
 
+// NOCTURN_PUBLIC_ENDPOINT: public booking is protected by tenant/service/slot validation and IP rate limiting; it does not use a user session.
+
 class BookingConflictError extends Error {}
 
 function clean(v: unknown, max = 200): string {

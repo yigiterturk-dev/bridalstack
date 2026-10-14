@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import Image from "next/image";
 
 /**
  * A4 için yazdırılabilir belge kabuğu.
@@ -32,8 +33,7 @@ export default function PrintDocument({
       <header className="flex items-start justify-between gap-8 pb-6 border-b" style={{ borderColor: accent + "33" }}>
         <div className="min-w-0">
           {logoUrl ? (
-            /* eslint-disable-next-line @next/next/no-img-element */
-            <img src={logoUrl} alt={shopName} className="h-12 mb-3 object-contain" />
+            <Image unoptimized src={logoUrl} alt={shopName} width={240} height={72} className="h-12 mb-3 object-contain" />
           ) : (
             <div className="text-xl font-extrabold tracking-tight mb-1" style={{ color: accent }}>
               {shopName}

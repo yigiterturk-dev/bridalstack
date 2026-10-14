@@ -126,7 +126,8 @@ export function shouldPostCost(status: string, lines: PoLine[]): boolean {
 export function expectedFromLeadTime(today: string, leadTimeDays: number | null | undefined): string | null {
   if (!leadTimeDays || leadTimeDays <= 0) return null;
   const base = Date.UTC(+today.slice(0, 4), +today.slice(5, 7) - 1, +today.slice(8, 10));
-  return new Date(base + leadTimeDays * 86_400_000).toISOString().slice(0, 10);
+  const result = new Date(base + leadTimeDays * 86_400_000);
+  return `${result.getUTCFullYear()}-${String(result.getUTCMonth() + 1).padStart(2, "0")}-${String(result.getUTCDate()).padStart(2, "0")}`;
 }
 
 /** Beklenen gün geçti ve mal hâlâ eksik mi? */
