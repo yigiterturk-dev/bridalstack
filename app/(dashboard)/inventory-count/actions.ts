@@ -36,30 +36,40 @@ export async function startCount(formData: FormData) {
     `Count ${dateInTimeZone(new Date(), member.timeZone)}`;
 
   // Aynı anda iki açık sayım, iki farklı "doğru" demektir. Tek açık sayım kuralı.
-  const open = await prisma.stockCount.findFirst({
-    where: { tenant_id: member.tenantId, status: "open" },
-    select: { id: true },
-  });
-  if (open) redirect(`/inventory-count/${open.id}?error=already_open`);
+  const count = await prisma.$transaction(async (tx) => {
+    // PostgreSQL advisory lock makes the open-check + create one critical
+    // section; two browser tabs cannot open competing counts for one tenant.
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtextextended(${`stock-count:${member.tenantId}`}, 0))`;
+    const open = await tx.stockCount.findFirst({
+      where: { tenant_id: member.tenantId, status: "open" },
+      select: { id: true },
+    });
+    if (open) throw new Error(`OPEN_COUNT:${open.id}`);
 
-  const products = await prisma.product.findMany({
-    where: { tenant_id: member.tenantId },
-    select: { id: true, stock_quantity: true },
-  });
-  if (products.length === 0) redirect("/inventory-count?error=noproducts");
+    const products = await tx.product.findMany({
+      where: { tenant_id: member.tenantId },
+      select: { id: true, stock_quantity: true },
+    });
+    if (products.length === 0) throw new Error("NO_PRODUCTS");
 
-  // Beklenen adet sayım açılırken dondurulur; sonra stok değişse de fark bozulmaz.
-  const count = await prisma.stockCount.create({
-    data: {
-      tenant_id: member.tenantId,
-      reference,
-      notes: String(formData.get("notes") || "").trim() || null,
-      started_by: member.userId,
-      items: {
-        create: products.map((p) => ({ product_id: p.id, expected_qty: p.stock_quantity })),
+    // Beklenen adet sayım açılırken dondurulur; sonra stok değişse de fark bozulmaz.
+    return tx.stockCount.create({
+      data: {
+        tenant_id: member.tenantId,
+        reference,
+        notes: String(formData.get("notes") || "").trim() || null,
+        started_by: member.userId,
+        items: {
+          create: products.map((p) => ({ product_id: p.id, expected_qty: p.stock_quantity })),
+        },
       },
-    },
-    select: { id: true },
+      select: { id: true },
+    });
+  }).catch((error: unknown) => {
+    const message = error instanceof Error ? error.message : String(error);
+    if (message.startsWith("OPEN_COUNT:")) redirect(`/inventory-count/${message.slice("OPEN_COUNT:".length)}?error=already_open`);
+    if (message === "NO_PRODUCTS") redirect("/inventory-count?error=noproducts");
+    throw error;
   });
 
   revalidatePath("/inventory-count");

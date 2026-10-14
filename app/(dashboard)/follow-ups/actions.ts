@@ -43,16 +43,6 @@ export async function sendFollowUpEmail(
   if (!customer.email) return { ok: false, error: "This bride has no email address on file." };
 
   const cutoff = followUpCooldownCutoff();
-  const recent = await prisma.followUpEmail.findFirst({
-    where: { tenant_id: member.tenantId, customer_id: customer.id, sent_at: { gte: cutoff } },
-    select: { sent_at: true },
-  });
-  if (recent) {
-    return {
-      ok: false,
-      error: `Already emailed ${recent.sent_at.toLocaleDateString("en-US")}. Wait ${FOLLOW_UP_COOLDOWN_DAYS} days between follow-ups.`,
-    };
-  }
 
   const [tenant, product] = await Promise.all([
     prisma.tenant.findUnique({ where: { id: member.tenantId }, select: { name: true } }),
@@ -83,21 +73,39 @@ export async function sendFollowUpEmail(
     portalUrl
   );
 
+  // Reserve the cooldown row under a tenant/customer advisory lock before
+  // sending. This prevents two concurrent clicks from both passing the check.
+  const record = await prisma.$transaction(async (tx) => {
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtextextended(${`follow-up:${member.tenantId}:${customer.id}`}, 0))`;
+    const recent = await tx.followUpEmail.findFirst({
+      where: { tenant_id: member.tenantId, customer_id: customer.id, sent_at: { gte: cutoff } },
+      select: { sent_at: true },
+    });
+    if (recent) return { duplicate: true as const, sentAt: recent.sent_at };
+    const created = await tx.followUpEmail.create({
+      data: {
+        tenant_id: member.tenantId,
+        customer_id: customer.id,
+        product_id: product?.id ?? null,
+        sent_by: member.userId,
+      },
+      select: { id: true, sent_at: true },
+    });
+    return { duplicate: false as const, ...created };
+  });
+  if (record.duplicate) {
+    return {
+      ok: false,
+      error: `Already emailed ${record.sentAt.toLocaleDateString("en-US")}. Wait ${FOLLOW_UP_COOLDOWN_DAYS} days between follow-ups.`,
+    };
+  }
+
   try {
     await sendEmail({ to: customer.email, subject: mail.subject, html: mail.html });
   } catch {
+    await prisma.followUpEmail.deleteMany({ where: { id: record.id, tenant_id: member.tenantId } });
     return { ok: false, error: "Email provider rejected the message. Try again later." };
   }
-
-  const record = await prisma.followUpEmail.create({
-    data: {
-      tenant_id: member.tenantId,
-      customer_id: customer.id,
-      product_id: product?.id ?? null,
-      sent_by: member.userId,
-    },
-    select: { sent_at: true },
-  });
 
   revalidatePath("/follow-ups");
   return { ok: true, sentAt: record.sent_at.toISOString() };

@@ -194,24 +194,26 @@ export async function addOrderLine(formData: FormData) {
   const rawPrice = String(formData.get("unit_price") || "").trim();
   const unit_price = rawPrice === "" ? (product?.price ?? 0) : money(formData.get("unit_price"));
 
-  const last = await prisma.orderLine.findFirst({
-    where: { order_id: order.id },
-    orderBy: { position: "desc" },
-    select: { position: true },
-  });
-
-  await prisma.orderLine.create({
-    data: {
-      order_id: order.id,
-      product_id: product?.id ?? null,
-      description,
-      kind,
-      quantity: Math.max(1, parseInt(String(formData.get("quantity") || "1"), 10) || 1),
-      unit_price,
-      discount: money(formData.get("discount")),
-      position: (last?.position ?? 0) + 1,
-      note: String(formData.get("note") || "").trim() || null,
-    },
+  await prisma.$transaction(async (tx) => {
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtextextended(${`order-lines:${order.id}`}, 0))`;
+    const last = await tx.orderLine.findFirst({
+      where: { order_id: order.id },
+      orderBy: { position: "desc" },
+      select: { position: true },
+    });
+    await tx.orderLine.create({
+      data: {
+        order_id: order.id,
+        product_id: product?.id ?? null,
+        description,
+        kind,
+        quantity: Math.max(1, parseInt(String(formData.get("quantity") || "1"), 10) || 1),
+        unit_price,
+        discount: money(formData.get("discount")),
+        position: (last?.position ?? 0) + 1,
+        note: String(formData.get("note") || "").trim() || null,
+      },
+    });
   });
 
   await syncOrderTotals(tenant.id, order.id);

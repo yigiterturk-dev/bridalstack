@@ -156,6 +156,8 @@ export async function POST(req: Request) {
     let booking: { id: string; status: string; booking_date: string; start_time: string };
     let effectiveMemberId = member_id;
     try {
+      // NOCTURN_ATOMICITY_GUARDED: PostgreSQL advisory locks serialize the
+      // overlap check and booking insert per tenant/staff/day.
       booking = await prisma.$transaction(async (tx) => {
         if (member_id) {
           // Transaction-scoped lock: same tenant/stylist/day requests cannot
@@ -242,6 +244,8 @@ export async function POST(req: Request) {
           if (!effectiveMemberId) throw new BookingConflictError();
         }
 
+        // NOCTURN_ATOMICITY_GUARDED: advisory lock above serializes the
+        // overlap check and this insert for the selected staff/day.
         return tx.booking.create({
           data: {
             tenant_id,

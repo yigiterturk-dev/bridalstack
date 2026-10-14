@@ -102,6 +102,7 @@ async function sharedRateLimit(
 }
 
 async function upstashFetch(url: string, init: RequestInit): Promise<Response> {
+  assertUpstashUrl(url);
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), UPSTASH_TIMEOUT_MS);
   try {
@@ -109,6 +110,15 @@ async function upstashFetch(url: string, init: RequestInit): Promise<Response> {
   } finally {
     clearTimeout(timer);
   }
+}
+
+function assertUpstashUrl(raw: string): void {
+  const parsed = new URL(raw);
+  const trustedHost = parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1" || parsed.hostname.endsWith(".upstash.io");
+  if (parsed.protocol !== "https:" && !["localhost", "127.0.0.1"].includes(parsed.hostname)) {
+    throw new Error("Upstash endpoint must use HTTPS");
+  }
+  if (!trustedHost) throw new Error("Upstash endpoint host is not allowed");
 }
 
 /**

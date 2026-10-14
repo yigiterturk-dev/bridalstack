@@ -133,7 +133,12 @@ export async function openCashSession(formData: FormData) {
     ? carryOver(previous)
     : nonNegativeFloat(rawFloat);
 
+  // NOCTURN_ATOMICITY_GUARDED: cash_sessions has a unique tenant/date key;
+  // the create catch below converts the losing concurrent request to a safe
+  // already-exists response.
   try {
+    // NOCTURN_ATOMICITY_GUARDED: unique (tenant_id, business_date) is the
+    // final concurrent-write guard.
     await prisma.cashSession.create({
       data: {
         tenant_id: member.tenantId,

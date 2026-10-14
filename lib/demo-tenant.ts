@@ -28,10 +28,10 @@ export {
 const FRESH_FOR_MS = 12 * 60 * 60 * 1000;
 
 async function upsertUser(email: string, name: string, password: string) {
-  const existing = await prisma.user.findUnique({ where: { email }, select: { id: true } });
-  if (existing) return existing.id;
-  const row = await prisma.user.create({
-    data: { email, name, password_hash: await bcrypt.hash(password, 10) },
+  const row = await prisma.user.upsert({
+    where: { email },
+    update: { name },
+    create: { email, name, password_hash: await bcrypt.hash(password, 10) },
     select: { id: true },
   });
   return row.id;
