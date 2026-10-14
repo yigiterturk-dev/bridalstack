@@ -1,0 +1,3 @@
+Contact: mailto:security@bridalstack.com
+Policy: https://bridalstack.com/terms
+Preferred-Languages: en, tr

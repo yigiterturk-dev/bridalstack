@@ -5,10 +5,14 @@ import { prisma } from "@/lib/prisma";
 import { createToken, expiresIn } from "@/lib/tokens";
 import { sendEmail, passwordResetEmail } from "@/lib/email";
 import { siteUrl } from "@/lib/site-url";
+import { rateLimit } from "@/lib/ratelimit";
 
 export async function requestPasswordReset(formData: FormData) {
   const email = String(formData.get("email") || "").trim().toLowerCase();
   if (!email) redirect("/forgot-password?error=email");
+
+  const limit = await rateLimit(`password-reset:${email}`, 3, 15 * 60_000);
+  if (!limit.allowed) redirect("/forgot-password?error=retry");
 
   const user = await prisma.user.findUnique({ where: { email }, select: { id: true, name: true } });
 

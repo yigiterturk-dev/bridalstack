@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { hashToken } from "@/lib/tokens";
+import { rateLimit } from "@/lib/ratelimit";
 
 const MIN_LENGTH = 8;
 
@@ -13,6 +14,8 @@ export async function resetPassword(formData: FormData) {
   const confirm = String(formData.get("confirm") || "");
 
   if (!token) redirect("/forgot-password?error=email");
+  const limit = await rateLimit(`password-reset-apply:${hashToken(token)}`, 5, 15 * 60_000);
+  if (!limit.allowed) redirect(`/reset-password/${token}?error=retry`);
   if (password.length < MIN_LENGTH) redirect(`/reset-password/${token}?error=short`);
   if (password !== confirm) redirect(`/reset-password/${token}?error=mismatch`);
 

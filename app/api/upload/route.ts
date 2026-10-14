@@ -19,6 +19,10 @@ import {
  * istemcinin verdiği yola güvenmiyoruz, yolu kiracı kimliğinden kuruyoruz.
  */
 export async function POST(request: Request) {
+  // Yetkisiz çağrıyı gövde/Blob yapılandırmasına girmeden kes.
+  const member = await getCurrentMember();
+  if (!member) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
   if (!uploadsEnabled()) {
     return NextResponse.json(
       { error: "File uploads are not configured. Set BLOB_READ_WRITE_TOKEN." },
@@ -39,9 +43,6 @@ export async function POST(request: Request) {
       body,
       request,
       onBeforeGenerateToken: async (_pathname, clientPayload) => {
-        const member = await getCurrentMember();
-        if (!member) throw new Error("Unauthorized");
-
         let scope: UploadScope = "product";
         try {
           const parsed = JSON.parse(clientPayload ?? "{}") as { scope?: string };

@@ -8,6 +8,10 @@ import { PackId, PACKS, isPackSellable } from "@/config/modules";
 import { resolveCheckoutPlan } from "@/lib/billing";
 
 export async function POST(req: NextRequest) {
+  const origin = req.headers.get("origin");
+  if (origin && new URL(origin).host !== req.headers.get("host")) {
+    return NextResponse.json({ error: "Invalid request origin" }, { status: 403 });
+  }
   const session = await getServerSession(authOptions);
   const user = session?.user;
   if (!user?.id || !user.email) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
