@@ -1,8 +1,8 @@
-# BridalStack / StackCRM
+# BridalStack
 
 A multi-tenant CRM prototype for bridal retail operations. It brings customer records, appointments, sales, inventory, contracts, public booking, installments, and role-aware workflows into one Next.js application.
 
-[![CI](https://github.com/yigiterturk-dev/stackcrm/actions/workflows/ci.yml/badge.svg)](https://github.com/yigiterturk-dev/stackcrm/actions/workflows/ci.yml)
+[![CI](https://github.com/yigiterturk-dev/bridalstack/actions/workflows/ci.yml/badge.svg)](https://github.com/yigiterturk-dev/bridalstack/actions/workflows/ci.yml)
 [![Next.js](https://img.shields.io/badge/Next.js-16-black)](https://nextjs.org/)
 [![Tests](https://img.shields.io/badge/tests-304%20unit%20%2B%20324%20e2e-16a34a)](tests)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
@@ -68,8 +68,8 @@ npm audit --omit=dev --audit-level=high
 Requirements: Node.js 24+, npm, and a Postgres database (Neon recommended).
 
 ```bash
-git clone https://github.com/yigiterturk-dev/stackcrm.git
-cd stackcrm
+git clone https://github.com/yigiterturk-dev/bridalstack.git
+cd bridalstack
 npm ci --ignore-scripts
 npx prisma generate
 cp .env.example .env.local   # then fill DATABASE_URL and NEXTAUTH_SECRET

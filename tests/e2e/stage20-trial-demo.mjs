@@ -2,7 +2,7 @@
 // ║  Stage 20 — deneme okuma kapısı ve tanıtım verisi silme yolu             ║
 // ║                                                                          ║
 // ║  Kayıt YAZAR — canlı veritabanına ASLA çalıştırma. Boş bir yerelde:      ║
-// ║    createdb stackcrm_migcheck && ... npx prisma migrate deploy           ║
+// ║    createdb bridalstack_migcheck && ... npx prisma migrate deploy           ║
 // ║    DATABASE_URL=... DIRECT_URL=... node --experimental-strip-types \     ║
 // ║      tests/e2e/stage20-trial-demo.mjs                                    ║
 // ╚══════════════════════════════════════════════════════════════════════════╝

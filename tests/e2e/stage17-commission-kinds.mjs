@@ -2,8 +2,8 @@
 // ║  Stage 17 — kalem bazlı prim: kuralın veriden doğru okunması             ║
 // ║                                                                          ║
 // ║  Kayıt YAZAR — canlı veritabanına ASLA çalıştırma. Boş bir yerelde:      ║
-// ║    createdb stackcrm_migcheck                                            ║
-// ║    DATABASE_URL="postgresql://$USER@localhost:5432/stackcrm_migcheck" \  ║
+// ║    createdb bridalstack_migcheck                                            ║
+// ║    DATABASE_URL="postgresql://$USER@localhost:5432/bridalstack_migcheck" \  ║
 // ║    DIRECT_URL="$DATABASE_URL" npx prisma migrate deploy                  ║
 // ║    DATABASE_URL=... DIRECT_URL=... node --experimental-strip-types \     ║
 // ║      tests/e2e/stage17-commission-kinds.mjs                              ║

@@ -9,7 +9,7 @@ import { PACKS, SELLABLE_PACK_IDS, calculateMonthlyPrice, isPackSellable, format
  *                        itibar yönetimi +$119, smokin +$99, API +$50
  *   Bağımsız butik için gerçekçi hepsi dahil aralık: $80–$400
  *
- * StackCRM'in konumu bilinçli olarak bu aralığın ALTINDA: marka bilinirliği
+ * BridalStack'in konumu bilinçli olarak bu aralığın ALTINDA: marka bilinirliği
  * yok, o yüzden fiyat giriş silahı. Bu test fiyatların sessizce piyasa
  * seviyesine kaymasını engeller.
  */

@@ -57,7 +57,7 @@ for (const pack of PACKS) {
   console.log(`+ ${pack.id}: ürün+fiyat oluşturuldu (${price.id})`);
 }
 
-console.log("\n# Vercel > stackcrm > Production ortam değişkenlerine ekle:");
+console.log("\n# Vercel > bridalstack > Production ortam değişkenlerine ekle:");
 for (const [k, v] of Object.entries(out)) console.log(`STRIPE_PRICE_${k.toUpperCase()}=${v}`);
 
 const webhookFlag = process.argv.indexOf("--webhook");

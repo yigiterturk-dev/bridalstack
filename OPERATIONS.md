@@ -7,7 +7,7 @@ This guide covers the Vercel production deployment for `bridalstack.com`. It is 
 1. Work on a branch and open a pull request.
 2. Require the `CI` workflow to pass before merging to `main`.
 3. CI installs with `npm ci --ignore-scripts`, generates Prisma Client explicitly, runs lint and tests, builds the app, and audits production dependencies.
-4. Vercel deploys `main` to the `stackcrm` project. The production aliases are `bridalstack.com`, `www.bridalstack.com`, and `stackcrm.vercel.app`.
+4. Vercel deploys `main` to the `bridalstack` project. The production aliases are `bridalstack.com`, `www.bridalstack.com`, and `bridalstack.vercel.app`.
 5. After deployment, verify the deployment state and test the public landing page, sign-up page, demo, and one authenticated dashboard journey.
 
 The public liveness probe is `GET /api/health`. It returns only service health and does not reveal secrets or database details. Use it for uptime checks; use the authenticated smoke journey for dependency readiness.
@@ -15,7 +15,7 @@ The public liveness probe is `GET /api/health`. It returns only service health a
 Useful commands from the repository root:
 
 ```bash
-vercel ls stackcrm --yes
+vercel ls bridalstack --yes
 vercel inspect <deployment-url>
 vercel logs <deployment-url>
 ```

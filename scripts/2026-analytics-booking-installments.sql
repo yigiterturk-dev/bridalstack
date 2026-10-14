@@ -1,5 +1,5 @@
 -- ╔══════════════════════════════════════════════════════════════════════════════╗
--- ║  StackCRM — Analytics + Public Booking (pending) + Installment Automation     ║
+-- ║  BridalStack — Analytics + Public Booking (pending) + Installment Automation  ║
 -- ║  IDEMPOTENT. Mevcut canlı DB üzerinde GÜVENLE tekrar çalıştırılabilir.        ║
 -- ║                                                                                ║
 -- ║  SAHİBİN UYGULAMASI GEREKİR (owner applies). Bu dosya:                         ║

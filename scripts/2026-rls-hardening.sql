@@ -1,5 +1,5 @@
 -- ╔══════════════════════════════════════════════════════════════════════════════╗
--- ║  StackCRM — RLS Hardening + RBAC + Trial Cohort Migration                     ║
+-- ║  BridalStack — RLS Hardening + RBAC + Trial Cohort Migration                  ║
 -- ║  Idempotent. Mevcut canlı DB üzerinde GÜVENLE tekrar çalıştırılabilir.        ║
 -- ║                                                                                ║
 -- ║  NEDEN: Mevcut tenant politikaları yalnızca USING içeriyor; WITH CHECK yok.   ║

@@ -1,4 +1,4 @@
-// StackCRM — Neon Postgres şeması
+// BridalStack — Neon Postgres şeması
 //
 // Kaynak: scripts/*.sql (Supabase şemasının birebir karşılığı).
 // Alan adları snake_case tutuldu; uygulama kodu (44 dosya) bu adları kullanıyor.
