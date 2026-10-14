@@ -2,6 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
+import { getServerSession } from "next-auth/next";
+import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { getCurrentTenant, getCurrentMember } from "@/lib/tenant";
 import { hasPermission } from "@/lib/rbac";
@@ -9,6 +12,9 @@ import { canStartTrial, startTrial, TRIAL_DAYS } from "@/lib/trial";
 import type { PackId } from "@/config/modules";
 import { clearDemoRecords, insertDemoRecords } from "@/lib/demo-seed";
 import { isValidTimeZone } from "@/lib/timezone";
+import { authOptions } from "@/lib/auth";
+import { stripe } from "@/lib/stripe";
+import { deleteAccountData } from "@/lib/account";
 
 const HEX = /^#[0-9a-fA-F]{6}$/;
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -159,4 +165,52 @@ export async function clearDemoData() {
   revalidatePath("/dashboard");
   revalidatePath("/settings");
   redirect("/settings?success=demo_cleared");
+}
+
+/**
+ * Kullanıcı hesabını kalıcı olarak siler.
+ *
+ * Herkes kendi hesabını silebilir (viewer dahil) — ama parola yeniden girilir ve
+ * butik adresi (slug) birebir yazılması istenir. Sahip olduğu kiracılar ve tüm
+ * işletme verisi silinir; başka kiracılardaki üyeliği kaldırılır, o kiracılar
+ * etkilenmez (bkz. lib/account.ts).
+ */
+export async function deleteAccount(formData: FormData) {
+  const session = await getServerSession(authOptions);
+  const email = session?.user?.email;
+  if (!email) redirect("/login");
+
+  const user = await prisma.user.findUnique({ where: { email } });
+  if (!user) redirect("/login");
+
+  const tenant = await getCurrentTenant();
+  if (!tenant) redirect("/onboarding");
+
+  const confirm = String(formData.get("confirm") || "").trim();
+  if (confirm !== tenant.slug) redirect("/settings?error=confirm_mismatch");
+
+  const password = String(formData.get("password") || "");
+  const ok = password.length > 0 && (await bcrypt.compare(password, user.password_hash));
+  if (!ok) redirect("/settings?error=password_wrong");
+
+  // Abonelik varsa kapat; başarısızlık hesap silmeyi durdurmasın (fail-open,
+  // yoksa kullanıcı aboneliği iptal edilemediği için hesabını silemez).
+  const subscriptionId = (tenant.settings as Record<string, unknown>)?.stripe_subscription_id;
+  if (stripe && typeof subscriptionId === "string" && subscriptionId) {
+    try {
+      await stripe.subscriptions.cancel(subscriptionId);
+    } catch (error) {
+      console.error("Could not cancel Stripe subscription during account deletion:", error);
+    }
+  }
+
+  await deleteAccountData(user.id);
+
+  // Oturum çerezini temizle; kullanıcı silindiği için oturum geçersiz.
+  const jar = await cookies();
+  for (const cookie of jar.getAll()) {
+    if (cookie.name.includes("session-token")) jar.delete(cookie.name);
+  }
+
+  redirect("/?account=deleted");
 }

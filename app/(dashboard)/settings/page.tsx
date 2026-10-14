@@ -9,7 +9,7 @@ import { BILLING_CONFIGURED } from "@/lib/stripe";
 import SignOutButton from "@/components/sign-out-button";
 import CopyField from "@/components/copy-field";
 import SubmitButton from "@/components/submit-button";
-import { updateShopProfile, startPackTrial, seedDemoData, clearDemoData } from "./actions";
+import { updateShopProfile, startPackTrial, seedDemoData, clearDemoData, deleteAccount } from "./actions";
 import { canStartTrial, TRIAL_DAYS } from "@/lib/trial";
 import { normalizeTimeZone, TIME_ZONE_OPTIONS } from "@/lib/timezone";
 
@@ -25,6 +25,8 @@ const ERRORS: Record<string, string> = {
   timezone_invalid: "Choose a valid shop time zone.",
   update_failed: "Could not save your changes. Please try again.",
   trial_unavailable: "That free trial is not available for this workspace.",
+  confirm_mismatch: "Type your booking address exactly to confirm.",
+  password_wrong: "That password is incorrect.",
 };
 
 /** Herkese açık randevu adresini oluşturmak için isteğin kendi kökeni. */
@@ -399,8 +401,67 @@ export default async function SettingsPage({ searchParams }: Props) {
 
         {/* Account */}
         <div className="bg-white rounded-2xl border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Account</h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-gray-900">Account</h2>
+            <a
+              href="/settings/export"
+              className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-600 hover:text-gray-900"
+            >
+              <span className="material-symbols-outlined text-base">download</span>
+              Export my data
+            </a>
+          </div>
+          <p className="text-sm text-gray-500 mb-4">
+            Download everything in this workspace as JSON — customers, orders, appointments,
+            products and the rest.
+          </p>
           <SignOutButton />
+        </div>
+
+        {/* Danger zone */}
+        <div className="bg-white rounded-2xl border border-red-200 p-6">
+          <h2 className="text-lg font-semibold text-red-700 mb-1">Delete account</h2>
+          <p className="text-sm text-gray-500 mb-5 max-w-2xl">
+            This permanently deletes your account and, if you own this workspace, every record in
+            it. It cannot be undone. To confirm, type your booking address
+            (<span className="font-mono text-gray-700">{tenant.slug}</span>) and your password.
+          </p>
+          <form action={deleteAccount} className="grid gap-4 max-w-md">
+            <div>
+              <label htmlFor="delete-confirm" className="block text-sm font-medium text-gray-700 mb-1">
+                Booking address
+              </label>
+              <input
+                id="delete-confirm"
+                name="confirm"
+                required
+                autoComplete="off"
+                placeholder={tenant.slug}
+                className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none focus:border-red-500 font-mono"
+              />
+            </div>
+            <div>
+              <label htmlFor="delete-password" className="block text-sm font-medium text-gray-700 mb-1">
+                Password
+              </label>
+              <input
+                id="delete-password"
+                name="password"
+                type="password"
+                required
+                autoComplete="current-password"
+                className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none focus:border-red-500"
+              />
+            </div>
+            <div>
+              <SubmitButton
+                pendingLabel="Deleting…"
+                className="px-5 py-2.5 bg-red-600 text-white rounded-xl text-sm font-medium hover:bg-red-700 disabled:opacity-60 disabled:cursor-wait"
+              >
+                Delete my account permanently
+              </SubmitButton>
+            </div>
+          </form>
         </div>
       </div>
     </div>

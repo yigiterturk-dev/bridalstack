@@ -47,10 +47,14 @@ const j=await login(EMAIL,PW); const H={cookie:j.hdr()};
   check("Herkese açık randevu sayfası çalışıyor", pub.status===200, `status ${pub.status}`);
 }
 
-// ── Ücretli paket hâlâ kapalı ──
+// ── Ücretli modül denemede açık, deneme bitince kapanır ──
 {
-  const orders=strip(await(await fetch(`${BASE}/orders`,{headers:H})).text());
-  check("Sipariş sayfası ücretli, kapalı geliyor", orders.includes("not part of your current plan"));
+  const duringTrial=strip(await(await fetch(`${BASE}/orders`,{headers:H})).text());
+  check("Sipariş modülü deneme sırasında açık", !duringTrial.includes("not part of your current plan"));
+  // Kayıt tüm satılabilir paketlerde deneme açıyor; denemeyi bitirince modül kapanmalı.
+  await prisma.tenant.update({where:{id:tenant.id},data:{trial_ends_at:new Date(Date.now()-1000)}});
+  const afterTrial=strip(await(await fetch(`${BASE}/orders`,{headers:H})).text());
+  check("Deneme bitince sipariş modülü kapanıyor", afterTrial.includes("not part of your current plan"));
 }
 
 // ── Ücretsiz paket satın alınamaz ──
@@ -84,6 +88,8 @@ const j=await login(EMAIL,PW); const H={cookie:j.hdr()};
   check("Ayarlarda Communication paketi yok", !html.includes("Communication"));
   check("Ayarlarda e-Fatura yok", !html.includes("Fatura"));
   check("Salon paketi aktif görünüyor", html.includes("Salon"));
+  check("Ayarlarda veri dışa aktarma bağlantısı var", html.includes("Export my data"));
+  check("Ayarlarda hesap silme bölümü var", html.includes("Delete my account permanently"));
 }
 
 console.log(out.join("\n"));

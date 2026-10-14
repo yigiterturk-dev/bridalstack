@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { appointmentReminderEmail, bookingRequestEmail, dailyBriefingEmail, sanitizeEmailSubject } from "../lib/email.ts";
+import { appointmentReminderEmail, bookingRequestEmail, dailyBriefingEmail, sanitizeEmailSubject, sendEmail } from "../lib/email.ts";
 
 test("email subjects cannot inject newlines and stay bounded", () => {
   assert.equal(
@@ -68,4 +68,38 @@ test("booking request email escapes user-controlled HTML", () => {
   assert.match(email.html, /14:00 &lt; 15:00/);
   assert.match(email.html, /&lt;script&gt;alert\(1\)&lt;\/script&gt;@example.com/);
   assert.match(email.html, /&lt;b&gt;555&lt;\/b&gt;/);
+});
+
+test("sendEmail: EMAIL_DRY_RUN=1 yerelde sağlayıcı olmadan başarılı sayılır", async () => {
+  const savedDry = process.env.EMAIL_DRY_RUN;
+  const savedEnv = process.env.NODE_ENV;
+  const savedKey = process.env.RESEND_API_KEY;
+  process.env.EMAIL_DRY_RUN = "1";
+  (process.env as Record<string, string | undefined>).NODE_ENV = "development";
+  delete process.env.RESEND_API_KEY;
+  try {
+    const result = await sendEmail({ to: "bride@example.com", subject: "Hi", html: "<p>Hi</p>" });
+    assert.deepEqual(result, { sent: true });
+  } finally {
+    if (savedDry === undefined) delete process.env.EMAIL_DRY_RUN; else process.env.EMAIL_DRY_RUN = savedDry;
+    (process.env as Record<string, string | undefined>).NODE_ENV = savedEnv;
+    if (savedKey === undefined) delete process.env.RESEND_API_KEY; else process.env.RESEND_API_KEY = savedKey;
+  }
+});
+
+test("sendEmail: sağlayıcı ve dry-run yoksa gönderilmedi bildirir", async () => {
+  const savedDry = process.env.EMAIL_DRY_RUN;
+  const savedEnv = process.env.NODE_ENV;
+  const savedKey = process.env.RESEND_API_KEY;
+  delete process.env.EMAIL_DRY_RUN;
+  (process.env as Record<string, string | undefined>).NODE_ENV = "production";
+  delete process.env.RESEND_API_KEY;
+  try {
+    const result = await sendEmail({ to: "bride@example.com", subject: "Hi", html: "<p>Hi</p>" });
+    assert.deepEqual(result, { sent: false, reason: "unconfigured" });
+  } finally {
+    if (savedDry === undefined) delete process.env.EMAIL_DRY_RUN; else process.env.EMAIL_DRY_RUN = savedDry;
+    (process.env as Record<string, string | undefined>).NODE_ENV = savedEnv;
+    if (savedKey === undefined) delete process.env.RESEND_API_KEY; else process.env.RESEND_API_KEY = savedKey;
+  }
 });

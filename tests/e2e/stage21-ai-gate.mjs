@@ -22,6 +22,10 @@ const user=await prisma.user.findUnique({where:{email:EMAIL}});
 const tenant=await prisma.tenant.findFirst({where:{owner_id:user.id}});
 check("ücretsiz kiracı oluştu (Pro yok)", !!tenant && !(tenant.packs??[]).includes("pro"));
 
+// Kayıt tüm satılabilir paketlerde (Pro dahil) deneme açıyor; kapıyı sınamak
+// için denemeyi bitiriyoruz, aksi halde AI ucu 403 yerine 200 döner.
+await prisma.tenant.update({where:{id:tenant.id},data:{trial_ends_at:new Date(Date.now()-1000)}});
+
 const j=await login(EMAIL,PW); const H={cookie:j.hdr(),"content-type":"application/json"};
 check("giriş yapıldı", j.hdr().includes("authjs.session-token") || j.hdr().includes("next-auth.session-token"));
 

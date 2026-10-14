@@ -6,6 +6,17 @@ const FROM = process.env.EMAIL_FROM || "BridalStack <noreply@bridalstack.com>";
 export type EmailResult = { sent: boolean; reason?: "unconfigured" | "failed" };
 const EMAIL_TIMEOUT_MS = 5_000;
 
+/**
+ * Yalnızca yerel/geliştirme ortamında: sağlayıcı çağrısı yapmadan gönderim
+ * başarılı sayılır. Uçtan uca test takımı brifing/hatırlatma cron'larının
+ * gönderim yolunu (damga, tekrar gönderim engeli) gerçek bir e-posta anahtarı
+ * olmadan sınayabilsin diye. Üretimde NODE_ENV="production" olduğundan yok
+ * sayılır — canlıda gönderim sessizce "başarılı" sayılmaz.
+ */
+function emailDryRun(): boolean {
+  return process.env.EMAIL_DRY_RUN === "1" && process.env.NODE_ENV !== "production";
+}
+
 export function sanitizeEmailSubject(subject: string): string {
   return subject.replace(/[\r\n]+/g, " ").replace(/\s+/g, " ").trim().slice(0, 200);
 }
@@ -36,6 +47,11 @@ export async function sendEmail({
   subject: string;
   html: string;
 }): Promise<EmailResult> {
+  if (emailDryRun()) {
+    console.log(`[EMAIL DRY-RUN] to=${to} subject=${subject}`);
+    return { sent: true };
+  }
+
   if (!resend) {
     console.log(`[EMAIL SKIP] to=${to} subject=${subject}`);
     return { sent: false, reason: "unconfigured" };

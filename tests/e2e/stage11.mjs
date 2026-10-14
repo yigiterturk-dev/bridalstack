@@ -104,11 +104,14 @@ await prisma.order.create({data:{tenant_id:tenant.id,ref_no:`C${stamp}`.slice(0,
   check("Raporlar oturumsuz kapalı", (await fetch(`${BASE}/reports`,{redirect:"manual"})).status===307);
   const csv=await fetch(`${BASE}/reports/export?report=orders`,{redirect:"manual"});
   check("CSV ucu oturumsuz kapalı", csv.status===401 || csv.status===307, `status ${csv.status}`);
+  const exportRes=await fetch(`${BASE}/settings/export`,{redirect:"manual"});
+  check("Veri dışa aktarma ucu oturumsuz kapalı", exportRes.status===401 || exportRes.status===307, `status ${exportRes.status}`);
 }
 
 // ── Modül kapısı ──
 {
-  await prisma.tenant.update({where:{id:tenant.id},data:{packs:["base"]}});
+  // Kayıt tüm satılabilir paketlerde deneme açıyor; kapıyı sınamak için denemeyi bitir.
+  await prisma.tenant.update({where:{id:tenant.id},data:{packs:["base"],trial_ends_at:new Date(Date.now()-1000)}});
   const html=strip(await(await fetch(`${BASE}/invoices`,{headers:H})).text());
   check("Sales paketi yokken yükseltme çağrısı çıkıyor", html.includes("not part of your current plan"));
   await prisma.tenant.update({where:{id:tenant.id},data:{packs:["base","sales","inventory"]}});

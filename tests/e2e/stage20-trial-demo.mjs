@@ -82,7 +82,7 @@ await prisma.product.deleteMany({ where: { tenant_id: t.id, metadata: DEMO } });
 ok("demo kayıtları silindi", (await prisma.customer.count({ where: { tenant_id: t.id, metadata: DEMO } })) === 0
   && (await prisma.product.count({ where: { tenant_id: t.id, metadata: DEMO } })) === 0
   && (await prisma.order.count({ where: { tenant_id: t.id, metadata: DEMO } })) === 0);
-ok("sipariş kalemleri siparişle birlikte düştü", (await prisma.orderLine.count()) === 0);
+ok("sipariş kalemleri siparişle birlikte düştü", (await prisma.orderLine.count({ where: { order: { tenant_id: t.id } } })) === 0);
 ok("kullanıcının kendi müşterisi ve siparişi duruyor",
   (await prisma.customer.count({ where: { tenant_id: t.id } })) === 1
   && (await prisma.order.count({ where: { tenant_id: t.id } })) === 1);

@@ -106,8 +106,10 @@ await fetch(`${BASE}/api/auth/register`, { method: "POST", headers: { "content-t
       headers: { "content-type": "application/json", cookie: j.hdr() },
       body: JSON.stringify({ packs: ["base", pack] }) });
     const body = await res.json().catch(() => ({}));
+    const err = String(body.error || "");
     check(`'${pack}' paketi için checkout durumu açıkça dönüyor`,
-      (res.status === 400 && String(body.error || "").toLowerCase().includes("stripe")) ||
+      (res.status === 400 && err.toLowerCase().includes("stripe")) ||
+      (res.status === 503 && /not configured/i.test(err)) ||
       (res.status < 300 && typeof body.url === "string"),
       `status ${res.status} ${JSON.stringify(body).slice(0,90)}`);
   }
@@ -125,11 +127,14 @@ await fetch(`${BASE}/api/auth/register`, { method: "POST", headers: { "content-t
   const j = await login(OWNER, PW);
   const owner = await prisma.user.findUnique({ where: { email: OWNER } });
   const tenant = await prisma.tenant.findFirst({ where: { owner_id: owner.id } });
+  // Kayıt tüm paketlerde deneme açıyor; menüyü paket seçimine göre sınamak için
+  // denemeyi sonlandırıyoruz, aksi halde Finance de menüye girer.
   await prisma.tenant.update({ where: { id: tenant.id },
-    data: { packs: ["base", "sales", "inventory", "pro", "salon"] } });
+    data: { packs: ["base", "sales", "inventory", "pro", "salon"], trial_ends_at: new Date(Date.now() - 1000) } });
   const html = strip(await (await fetch(`${BASE}/dashboard`, { headers: { cookie: j.hdr() } })).text());
-  // /invoices ve /reports artık yazıldı; listeden çıkarıldılar.
-  const dead = ["/cash", "/ledger", "/checks", "/suppliers", "/inventory-count", "/returns", "/commissions", "/inbox", "/whatsapp"];
+  // /invoices, /reports, /suppliers, /inventory-count, /returns, /commissions artık yazıldı.
+  // Finance paketi açık olmadığından /cash, /ledger, /checks menüde görünmemeli.
+  const dead = ["/cash", "/ledger", "/checks", "/inbox", "/whatsapp"];
   const found = dead.filter(d => html.includes(`href="${d}"`));
   check("Kenar menüsünde 404'e giden bağlantı yok", found.length === 0, `hâlâ var: ${found.join(", ")}`);
   check("Yazılmış modüller menüde görünüyor", html.includes('href="/invoices"') && html.includes('href="/reports"'));

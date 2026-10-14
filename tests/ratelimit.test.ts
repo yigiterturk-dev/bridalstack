@@ -49,6 +49,44 @@ test("rateLimit (in-memory): pencere içinde limit kadar izin, sonrası ret, res
   }
 });
 
+test("rateLimit: RATE_LIMIT_DISABLED=1 yerelde sınırı kapatır", async () => {
+  const savedDisabled = process.env.RATE_LIMIT_DISABLED;
+  const savedNodeEnv = process.env.NODE_ENV;
+  process.env.RATE_LIMIT_DISABLED = "1";
+  (process.env as Record<string, string | undefined>).NODE_ENV = "development";
+  __resetRateLimitForTests();
+  try {
+    for (let i = 0; i < 50; i++) {
+      const r = await rateLimit("disabled-key", 1, 60_000);
+      assert.equal(r.allowed, true, `#${i + 1} izinli olmalı`);
+    }
+  } finally {
+    if (savedDisabled === undefined) delete process.env.RATE_LIMIT_DISABLED;
+    else process.env.RATE_LIMIT_DISABLED = savedDisabled;
+    (process.env as Record<string, string | undefined>).NODE_ENV = savedNodeEnv;
+    __resetRateLimitForTests();
+  }
+});
+
+test("rateLimit: bayrak üretimde yok sayılır (koruma kapanmaz)", async () => {
+  const savedDisabled = process.env.RATE_LIMIT_DISABLED;
+  const savedNodeEnv = process.env.NODE_ENV;
+  process.env.RATE_LIMIT_DISABLED = "1";
+  (process.env as Record<string, string | undefined>).NODE_ENV = "production";
+  __resetRateLimitForTests();
+  try {
+    const first = await rateLimit("prod-key", 1, 60_000);
+    assert.equal(first.allowed, true);
+    const second = await rateLimit("prod-key", 1, 60_000);
+    assert.equal(second.allowed, false, "üretimde sınır devrede olmalı");
+  } finally {
+    if (savedDisabled === undefined) delete process.env.RATE_LIMIT_DISABLED;
+    else process.env.RATE_LIMIT_DISABLED = savedDisabled;
+    (process.env as Record<string, string | undefined>).NODE_ENV = savedNodeEnv;
+    __resetRateLimitForTests();
+  }
+});
+
 test("rateLimit: anahtarlar farklıysa sayaçlar bağımsızdır", async () => {
   __resetRateLimitForTests();
   try {

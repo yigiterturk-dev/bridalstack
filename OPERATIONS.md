@@ -72,6 +72,29 @@ Vercel schedules the following authenticated routes:
 
 Each route must receive the configured `CRON_SECRET` as a Bearer token. After changing a cron secret, verify one scheduled invocation and inspect logs for a successful response. Stripe webhook signature validation and Resend/Blob availability are fail-closed or feature-gated in the application; still monitor their provider dashboards for delivery failures.
 
+## DNS and email authentication
+
+DNS for `bridalstack.com` is managed at Hostinger (`aster`/`helios.dns-parking.com`).
+The zone as of 2026-10-14 carries:
+
+- `A @ → 76.76.21.21` (Vercel) and `CNAME www → bridalstack.com`.
+- `TXT @ → v=spf1 include:send.bridalstack.com include:amazonses.com ~all`
+  (sender authorization; `send`/`rsend` are CNAMEs to the transactional
+  provider, `resend._domainkey` holds the DKIM public key).
+- `TXT _dmarc → v=DMARC1; p=quarantine; adkim=r; aspf=r;`
+- `CAA @ → issue/issuewild limited to letsencrypt.org and pki.goog`
+  (the current certificate is issued by Let's Encrypt).
+
+A zone backup is written before edits; changes can be reverted through the
+Hostinger DNS snapshot/restore API.
+
+**DNSSEC is not enabled.** The Hostinger API exposes no DNSSEC endpoint and the
+`dns-parking.com` nameservers do not sign the zone, so there is no DS record at
+the registry. To add DNSSEC, move the zone to a DNSSEC-capable provider
+(for example Cloudflare, which keeps the Vercel `A` record and adds one-click
+signing) and publish the resulting DS record at the registrar. This is the one
+email/DNS hardening step that still requires a manual provider change.
+
 ## Incident response
 
 ### A deployment is unhealthy

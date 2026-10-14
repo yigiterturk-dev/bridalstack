@@ -82,7 +82,7 @@ await prisma.booking.create({data:{tenant_id:tenant.id,customer_name:"Web Bride"
 
 // ── Cron zamanlaması tanımlı ──
 {
-  const cfg=fs.readFileSync("vercel.ts","utf8");
+  const cfg=fs.readFileSync("vercel.json","utf8");
   for (const p of ["/api/cron/briefing","/api/cron/reminders","/api/cron/installments"])
     check(`${p} zamanlanmış`, cfg.includes(p));
 }

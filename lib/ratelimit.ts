@@ -111,7 +111,19 @@ async function upstashFetch(url: string, init: RequestInit): Promise<Response> {
   }
 }
 
+/**
+ * Yalnızca yerel/geliştirme ortamında sınırlayıcıyı kapatır. Uçtan uca test
+ * takımı tek bir dev sunucusuna karşı onlarca kayıt/rezervasyon yapar; in-memory
+ * sayaç bunların bir kısmını 429'a çevirir ve testi ürün hatası gibi kırmızı
+ * gösterir. Üretimde NODE_ENV="production" olduğundan bu bayrak yok sayılır —
+ * abuse koruması canlıda asla sessizce kapanmaz.
+ */
+function rateLimitDisabled(): boolean {
+  return process.env.RATE_LIMIT_DISABLED === "1" && process.env.NODE_ENV !== "production";
+}
+
 export async function rateLimit(key: string, limit = 5, windowMs = 60_000): Promise<RateLimitResult> {
+  if (rateLimitDisabled()) return { allowed: true, remaining: limit, retryAfter: 0 };
   const cfg = upstashConfig();
   if (!cfg) return localRateLimit(key, limit, windowMs);
   try {

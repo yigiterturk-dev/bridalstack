@@ -170,7 +170,8 @@ const product=await prisma.product.create({data:{tenant_id:tenant.id,name:"Test 
 
 // ── Paket kapalıysa sayfa kapalı ──
 {
-  await prisma.tenant.update({where:{id:tenant.id},data:{packs:["base","salon"]}});
+  // Kayıt tüm satabilir paketlerde deneme açıyor; kapıyı sınamak için denemeyi bitir.
+  await prisma.tenant.update({where:{id:tenant.id},data:{packs:["base","salon"],trial_ends_at:new Date(Date.now()-1000)}});
   for (const route of ["/suppliers","/cash","/commissions"]) {
     const html=await get(route);
     check(`${route} paket kapalıyken erişime kapalı`, html.includes("not part of your current plan"));

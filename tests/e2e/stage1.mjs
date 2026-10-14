@@ -1,3 +1,5 @@
+import { PrismaClient } from "@prisma/client";
+const prisma = new PrismaClient();
 const BASE = "http://localhost:3100";
 const jar = new Map();
 let pass = 0, fail = 0;
@@ -106,6 +108,11 @@ for (const [path, label] of [["/dashboard","Ana panel"],["/customers","Müşteri
 {
   const html = await (await req("/customers")).text();
   check("Müşteriler boş durumu gösteriyor", html.includes("No brides yet"));
+  // Kayıt tüm satılabilir paketlerde deneme açıyor; modül kapısını sınamak
+  // için denemeyi sonlandırıyoruz (deneme dolunca modüller kendiliğinden kapanır).
+  const owner = await prisma.user.findUnique({ where: { email: EMAIL } });
+  const tenant = await prisma.tenant.findFirst({ where: { owner_id: owner.id } });
+  await prisma.tenant.update({ where: { id: tenant.id }, data: { trial_ends_at: new Date(Date.now() - 1000) } });
   // Base paketinde sales modülü yok; sipariş sayfası doğru şekilde yükseltme çağrısı gösterir.
   const h2 = await (await req("/orders")).text();
   check("Sipariş sayfası pakete dahil olmayan modül için yükseltme çağrısı gösteriyor",
@@ -123,6 +130,7 @@ for (const [path, label] of [["/dashboard","Ana panel"],["/customers","Müşteri
 console.log(results.join("\n"));
 console.log(`\nGeçen: ${pass}  Kalan: ${fail}`);
 console.log(`HESAP: ${EMAIL} / ${PASSWORD}`);
+await prisma.$disconnect();
 process.exit(fail ? 1 : 0);
 };
-run().catch(e => { console.error("BETİK HATASI:", e); process.exit(2); });
+run().catch(async e => { console.error("BETİK HATASI:", e); await prisma.$disconnect(); process.exit(2); });

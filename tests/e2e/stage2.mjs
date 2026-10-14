@@ -100,7 +100,15 @@ for (const [path, needle, label] of cases) {
 
 // Herkese açık rezervasyon oluşturma
 {
-  const d = new Date(Date.now() + 3 * 864e5).toISOString().split("T")[0];
+  const bookingDate = new Date(Date.now() + 3 * 864e5);
+  // Müsaitlik, rezervasyon gününün haftanın gününe göre programa bakıyor;
+  // +3 gün hafta sonuna denk gelirse randevu 409 döner. O günü kapsayan bir
+  // program ekleyerek testi tarihten bağımsız yapıyoruz.
+  await prisma.staffSchedule.createMany({
+    data: [{ tenant_id: tenant.id, member_id: member.id, day_of_week: bookingDate.getUTCDay(), start_time: "09:00", end_time: "18:00" }],
+    skipDuplicates: true,
+  });
+  const d = bookingDate.toISOString().split("T")[0];
   const res = await fetch(`${BASE}/api/book`, { method: "POST", headers: { "content-type": "application/json" },
     body: JSON.stringify({ tenant_id: tenant.id, service_id: service.id, member_id: member.id,
       booking_date: d, start_time: "11:00", end_time: "12:00", customer_name: "Elif Demir",
