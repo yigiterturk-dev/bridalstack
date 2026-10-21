@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { PACKS, ALL_PACK_IDS, SELLABLE_PACK_IDS, MODULES, isPackSellable, isModuleLive, formatPrice } from "@/config/modules";
 import { TRIAL_DAYS } from "@/lib/trial";
-import { BILLING_CONFIGURED } from "@/lib/stripe";
+import { BILLING_CONFIGURED } from "@/lib/dodo";
 import type { Metadata } from "next";
 import { siteBase, siteMetadata } from "@/lib/seo";
 

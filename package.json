@@ -22,7 +22,7 @@
     "react-dom": "19.2.4",
     "recharts": "^3.8.1",
     "resend": "^6.12.4",
-    "stripe": "^22.2.0"
+    "standardwebhooks": "^1.1.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

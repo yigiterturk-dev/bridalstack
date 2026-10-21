@@ -102,13 +102,13 @@ await fetch(`${BASE}/api/auth/register`, { method: "POST", headers: { "content-t
 {
   const j = await login(OWNER, PW);
   for (const pack of ["finance"]) {
-    const res = await fetch(`${BASE}/api/stripe/checkout`, { method: "POST",
+    const res = await fetch(`${BASE}/api/billing/checkout`, { method: "POST",
       headers: { "content-type": "application/json", cookie: j.hdr() },
       body: JSON.stringify({ packs: ["base", pack] }) });
     const body = await res.json().catch(() => ({}));
     const err = String(body.error || "");
     check(`'${pack}' paketi için checkout durumu açıkça dönüyor`,
-      (res.status === 400 && err.toLowerCase().includes("stripe")) ||
+      (res.status === 400 && /unknown plan|not available/i.test(err)) ||
       (res.status === 503 && /not configured/i.test(err)) ||
       (res.status < 300 && typeof body.url === "string"),
       `status ${res.status} ${JSON.stringify(body).slice(0,90)}`);

@@ -83,6 +83,6 @@ export async function GET(req: NextRequest) {
     statusUpdated,
     remindersSent,
     emailsSent,
-    stripeChargingEnabled: false,
+    autoChargingEnabled: false,
   });
 }

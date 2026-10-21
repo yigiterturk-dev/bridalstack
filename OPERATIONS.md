@@ -54,7 +54,7 @@ Required for the core application:
 Required before enabling the related feature:
 
 - `CRON_SECRET` for scheduled jobs
-- `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, and live Stripe Price IDs for billing
+- `DODO_PAYMENTS_API_KEY`, `DODO_PAYMENTS_WEBHOOK_KEY`, and the four live Dodo product IDs for billing (`DODO_PAYMENTS_ENVIRONMENT=live`)
 - `RESEND_API_KEY` and `EMAIL_FROM` for email
 - `BLOB_READ_WRITE_TOKEN` for image uploads
 - `ANTHROPIC_API_KEY` or `OPENAI_API_KEY` for the AI stylist
@@ -70,7 +70,7 @@ Vercel schedules the following authenticated routes:
 - `/api/cron/installments`
 - `/api/cron/trials`
 
-Each route must receive the configured `CRON_SECRET` as a Bearer token. After changing a cron secret, verify one scheduled invocation and inspect logs for a successful response. Stripe webhook signature validation and Resend/Blob availability are fail-closed or feature-gated in the application; still monitor their provider dashboards for delivery failures.
+Each route must receive the configured `CRON_SECRET` as a Bearer token. After changing a cron secret, verify one scheduled invocation and inspect logs for a successful response. Dodo webhook signature validation and Resend/Blob availability are fail-closed or feature-gated in the application; still monitor their provider dashboards for delivery failures.
 
 ## DNS and email authentication
 
@@ -124,7 +124,7 @@ The repository cannot prove these hosted controls:
 - Neon backup/PITR retention and restore drills.
 - Vercel alert routing and log retention.
 - Successful delivery of every scheduled cron invocation.
-- Stripe webhook replay/failed-event alerting.
+- Dodo webhook replay/failed-event alerting.
 - A configured distributed rate-limit store for multi-instance public routes. If the Upstash variables above are absent, the limiter is process-local and should not be described as a global abuse-control boundary.
 
 Confirm these before promising a service-level guarantee to a paying boutique. Until then, describe BridalStack as production-deployed with provider-level operational controls still requiring owner verification.

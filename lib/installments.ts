@@ -1,6 +1,6 @@
 // ╔══════════════════════════════════════════════════════════════════════════╗
 // ║  Taksit (installment) planı + hatırlatma mantığı — SAF KOD (DB yazımı yok) ║
-// ║  Stripe ile gerçek tahsilat env'e bağlı; burada yalnızca plan + durum +    ║
+// ║  Karttan otomatik tahsilat YOK; burada yalnızca plan + durum +             ║
 // ║  hatırlatma kararı hesaplanır.                                             ║
 // ╚══════════════════════════════════════════════════════════════════════════╝
 

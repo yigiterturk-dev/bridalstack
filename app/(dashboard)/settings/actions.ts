@@ -13,7 +13,8 @@ import type { PackId } from "@/config/modules";
 import { clearDemoRecords, insertDemoRecords } from "@/lib/demo-seed";
 import { isValidTimeZone } from "@/lib/timezone";
 import { authOptions } from "@/lib/auth";
-import { stripe } from "@/lib/stripe";
+import { cancelDodoSubscription } from "@/lib/dodo";
+import { readDodoState } from "@/lib/dodo-state";
 import { deleteAccountData } from "@/lib/account";
 
 const HEX = /^#[0-9a-fA-F]{6}$/;
@@ -195,12 +196,13 @@ export async function deleteAccount(formData: FormData) {
 
   // Abonelik varsa kapat; başarısızlık hesap silmeyi durdurmasın (fail-open,
   // yoksa kullanıcı aboneliği iptal edilemediği için hesabını silemez).
-  const subscriptionId = (tenant.settings as Record<string, unknown>)?.stripe_subscription_id;
-  if (stripe && typeof subscriptionId === "string" && subscriptionId) {
+  const dodo = readDodoState(tenant.settings as Record<string, unknown>);
+  for (const subscriptionId of Object.values(dodo.subscriptions)) {
+    if (!subscriptionId) continue;
     try {
-      await stripe.subscriptions.cancel(subscriptionId);
+      await cancelDodoSubscription(subscriptionId);
     } catch (error) {
-      console.error("Could not cancel Stripe subscription during account deletion:", error);
+      console.error("Could not cancel Dodo subscription during account deletion:", error);
     }
   }
 

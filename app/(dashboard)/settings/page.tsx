@@ -5,7 +5,8 @@ import { getCurrentTenant, getCurrentMember } from "@/lib/tenant";
 import { PACKS, MODULES, ALL_PACK_IDS, calculateMonthlyPrice, isPackSellable, isModuleLive, formatPrice } from "@/config/modules";
 import { hasPermission, ROLE_LABELS, normalizeRole } from "@/lib/rbac";
 import { UpgradeButton, ManageBillingButton } from "@/components/billing-buttons";
-import { BILLING_CONFIGURED } from "@/lib/stripe";
+import { BILLING_CONFIGURED } from "@/lib/dodo";
+import { readDodoState } from "@/lib/dodo-state";
 import SignOutButton from "@/components/sign-out-button";
 import CopyField from "@/components/copy-field";
 import SubmitButton from "@/components/submit-button";
@@ -64,7 +65,7 @@ export default async function SettingsPage({ searchParams }: Props) {
   const trialEligible = canEdit && canStartTrial(tenant);
   const hasDemoData = tenant.settings?.demo_data === true;
   const bookingUrl = `${origin}/book/${tenant.slug}`;
-  const stripeCustomerId = (tenant.settings as Record<string, unknown>)?.stripe_customer_id;
+  const dodoCustomerId = readDodoState(tenant.settings as Record<string, unknown>).customerId;
   const timeZone = normalizeTimeZone((tenant.settings as Record<string, unknown>)?.time_zone);
 
   return (
@@ -294,7 +295,7 @@ export default async function SettingsPage({ searchParams }: Props) {
           </div>
           <div className="flex gap-3">
             <UpgradeButton currentPacks={tenant.packs} billingConfigured={BILLING_CONFIGURED} />
-            {Boolean(stripeCustomerId) && <ManageBillingButton />}
+            {Boolean(dodoCustomerId) && <ManageBillingButton />}
           </div>
         </div>
 

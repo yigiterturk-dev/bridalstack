@@ -30,7 +30,7 @@ export function UpgradeButton({
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/stripe/checkout", {
+      const res = await fetch("/api/billing/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ packs: selectedPacks }),
@@ -158,7 +158,7 @@ export function ManageBillingButton() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/stripe/portal", { method: "POST" });
+      const res = await fetch("/api/billing/portal", { method: "POST" });
       const data = await res.json();
       if (data.url) window.location.href = data.url;
       else setError(data.error || "We couldn't open billing. Please try again.");

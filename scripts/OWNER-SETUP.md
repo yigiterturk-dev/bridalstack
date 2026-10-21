@@ -26,20 +26,27 @@ scripts/2026-rls-hardening.sql     # YENİ — bunu mutlaka uygulayın
 - `onboarding_drafts` tablosu (taslak kaydetme).
 - `funnel_events` tablosu (CTA/cohort analitiği).
 
-## 2. Stripe (canlı ödeme) — env anahtarları
+## 2. Dodo Payments (canlı ödeme) — env anahtarları
 Kod hazır; aşağıdaki env değişkenleri ayarlanınca checkout/portal/webhook çalışır:
 ```
-STRIPE_SECRET_KEY=
-STRIPE_WEBHOOK_SECRET=
-STRIPE_PRICE_SALES=
-STRIPE_PRICE_FINANCE=
-STRIPE_PRICE_INVENTORY=
-STRIPE_PRICE_COMMUNICATION=
-STRIPE_PRICE_PRO=
+DODO_PAYMENTS_ENVIRONMENT=live        # canlıda "live", testte "test"
+DODO_PAYMENTS_API_KEY=                # Developer → API Keys
+DODO_PAYMENTS_WEBHOOK_KEY=            # Developer → Webhooks → signing secret
+DODO_PRODUCT_SALES=                   # Products → 4 aylık abonelik ürünleri
+DODO_PRODUCT_INVENTORY=
+DODO_PRODUCT_PRO=
+DODO_PRODUCT_FINANCE=
 ```
-Anahtar yokken `lib/stripe.ts` null döner ve ödeme akışı devre dışı kalır (uygulama yine
-çalışır). Trial→paid funnel CTA'ları anahtar olmadan da görünür; yalnızca gerçek checkout
-adımı Stripe env'ine bağlıdır.
+Dodo panelinde:
+1. **Products** → Sales $39, Inventory $29, Pro $29, Finance $19 için aylık abonelik
+   ürünü oluştur; ürün kimliklerini (`pdt_...`) yukarıdaki dört değişkene yaz.
+2. **Developer → API Keys** → canlı anahtar üret.
+3. **Developer → Webhooks** → `https://bridalstack.com/api/dodo/webhook`,
+   `subscription.*` ve `payment.*` olayları; imza sırrını `DODO_PAYMENTS_WEBHOOK_KEY`'e yaz.
+4. Vercel → Production ortamına ekle ve yeniden dağıt.
+
+Anahtar yokken `lib/dodo.ts` ödeme hattını kapalı tutar ve ücretli planlar
+"Paid plans coming soon" gösterir; uygulama ve 14 günlük deneme çalışmaya devam eder.
 
 ## 3. Resend (e-posta) — env anahtarı
 ```
@@ -82,7 +89,7 @@ Authorization: Bearer <CRON_SECRET>
 Cron şu an: ödenmemiş taksitlerin durumunu (pending→due→overdue) günceller ve vade
 penceresine göre **hatırlatma e-postası** kuyruğa alır (deduplike). 
 
-**Stripe tekrarlı tahsilat (deferred):** gerçek otomatik kart çekimi mevcut Stripe env'ine
-(`STRIPE_SECRET_KEY` vb.) bağlı olarak SONRAYA bırakıldı. Plan + durum + hatırlatma mantığı
-koddadır (`lib/installments.ts`); anahtar bağlanınca `stripe_subscription_item_id` alanı ve
-çekim adımı eklenebilir. Cron yanıtında `stripeChargingEnabled: false` olarak işaretlidir.
+**Otomatik taksit tahsilatı (deferred):** taksit planı, durum ve hatırlatma mantığı
+koddadır (`lib/installments.ts`); karttan otomatik çekim bu sürümde YOK. Dodo abonelikleri
+modül erişimi içindir, taksit tahsilatı için kullanılmaz. Cron yanıtında
+`autoChargingEnabled: false` olarak işaretlidir.

@@ -4,7 +4,7 @@ import { resolveCheckoutPlan } from "../lib/billing.ts";
 import { FREE_PACK_IDS } from "../config/modules.ts";
 import type { PackId } from "../config/modules.ts";
 
-const FULL = { sales: "price_sales", finance: "price_fin", inventory: "price_inv", pro: "price_pro" };
+const FULL = { sales: "pdt_sales", finance: "pdt_fin", inventory: "pdt_inv", pro: "pdt_pro" };
 const EMPTY = { sales: "", finance: "", inventory: "", pro: "" };
 
 test("fiyat yapılandırması eksikken plan DEĞİŞTİRİLMEZ", () => {
@@ -23,7 +23,7 @@ test("ücretli paket seçilirse checkout kurulur, ücretsizler KORUNUR", () => {
   const r = resolveCheckoutPlan(["sales"] as PackId[], FULL);
   assert.equal(r.kind, "checkout");
   if (r.kind === "checkout") {
-    assert.deepEqual(r.lineItems, [{ price: "price_sales", quantity: 1 }]);
+    assert.deepEqual(r.productIds, ["pdt_sales"]);
     for (const free of FREE_PACK_IDS) assert.ok(r.packs.includes(free), `${free} korunmalı`);
     assert.ok(r.packs.includes("sales" as PackId));
   }
@@ -44,7 +44,7 @@ test("downgrade ücretsiz paketleri fiyat yokken bile yapabilir", () => {
 test("aynı paket iki kez gönderilirse tek satır olur", () => {
   const r = resolveCheckoutPlan(["sales", "sales"] as PackId[], FULL);
   assert.equal(r.kind, "checkout");
-  if (r.kind === "checkout") assert.equal(r.lineItems.length, 1);
+  if (r.kind === "checkout") assert.equal(r.productIds.length, 1);
 });
 
 // ── Onboarding: seçilen paket ödeme yerine geçmez ───────────────────────────

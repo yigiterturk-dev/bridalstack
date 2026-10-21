@@ -14,7 +14,7 @@ const stamp=Date.now(), EMAIL=`fp${stamp}@example.com`, PW="Str0ngPass!234", SHO
 const run=async()=>{
 // ── Kaldırılan modüller hiçbir yerde kalmamalı ──
 {
-  const src=["config/modules.ts","lib/stripe.ts",".env.example"]
+  const src=["config/modules.ts","lib/dodo.ts",".env.example"]
     .map(f=>fs.readFileSync(f,"utf8")).join("\n");
   for (const term of ["whatsapp","efatura","COMMUNICATION",'"communication"'])
     check(`Kodda '${term}' kalmadı`, !src.toLowerCase().includes(term.toLowerCase()));
@@ -60,7 +60,7 @@ const j=await login(EMAIL,PW); const H={cookie:j.hdr()};
 // ── Ücretsiz paket satın alınamaz ──
 {
   for (const pack of ["base","salon"]) {
-    const res=await fetch(`${BASE}/api/stripe/checkout`,{method:"POST",
+    const res=await fetch(`${BASE}/api/billing/checkout`,{method:"POST",
       headers:{"content-type":"application/json",...H},
       body:JSON.stringify({packs:["base",pack]})});
     // Ücretsiz paketler ücretli listeye girmez; istek reddedilmez ama
@@ -71,7 +71,7 @@ const j=await login(EMAIL,PW); const H={cookie:j.hdr()};
 
 // ── Kaldırılan paket artık seçilemiyor ──
 {
-  const res=await fetch(`${BASE}/api/stripe/checkout`,{method:"POST",
+  const res=await fetch(`${BASE}/api/billing/checkout`,{method:"POST",
     headers:{"content-type":"application/json",...H},
     body:JSON.stringify({packs:["base","communication"]})});
   const body=await res.json().catch(()=>({}));
