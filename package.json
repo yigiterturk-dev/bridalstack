@@ -41,6 +41,6 @@
     "browserslist": "^4.28.8",
     "sharp": "^0.35.5",
     "source-map-js": "^1.2.2",
-    "undici": "^6.29.0"
+    "undici": "^6.29.1"
   }
 }
