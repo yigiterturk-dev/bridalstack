@@ -41,6 +41,8 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   outputFileTracingRoot: process.cwd(),
+  // netcup'ta docker ile çalışır
+  output: "standalone",
   async headers() {
     return [
       {

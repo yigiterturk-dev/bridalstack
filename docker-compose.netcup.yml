@@ -1,0 +1,14 @@
+# netcup: host Postgres yalnız 127.0.0.1'de dinliyor (dışa kapalı), bu yüzden host ağı.
+# Uygulama docker köprüsünün ağ geçidinde (172.18.0.1) dinler; Caddy oradan ulaşır, dışarıdan erişilmez.
+# Cron'lar /opt/cron-tetik'ten tetiklenir (vercel.json crons yalnız Vercel'de çalışıyordu).
+services:
+  app:
+    build: .
+    image: bridalstack:netcup
+    container_name: bridalstack
+    network_mode: host
+    env_file: .env
+    environment:
+      HOSTNAME: 172.18.0.1
+      PORT: 3224
+    restart: unless-stopped
