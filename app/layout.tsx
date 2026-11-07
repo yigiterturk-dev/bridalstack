@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { siteBase, SITE_NAME } from "@/lib/seo";
 
@@ -12,6 +12,11 @@ export const metadata: Metadata = {
   applicationName: SITE_NAME,
   openGraph: { siteName: SITE_NAME, type: "website" },
   twitter: { card: "summary_large_image" },
+  appleWebApp: { capable: true, title: "Bridal Stack", statusBarStyle: "default" },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#7f1d1d",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
