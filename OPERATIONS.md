@@ -1,26 +1,32 @@
 # BridalStack operations guide
 
-This guide covers the Vercel production deployment for `bridalstack.com`. It is intentionally explicit about what the repository can verify and what still requires confirmation in the hosted services.
+BridalStack runs on a single netcup VPS behind Caddy, with a host PostgreSQL
+database. This guide is the operational source of truth; `README.md` describes
+the product and local development.
+
+## Topology
+
+```
+browser → Caddy (TLS, 80/443)
+        → 172.18.0.1:3224  (Docker container "bridalstack", Next.js standalone)
+        → PostgreSQL 17 on the host (database "bridalstack", only 127.0.0.1)
+```
+
+- Server: netcup VPS, `159.195.158.36`.
+- App source: `/opt/bridalstack` (extracted from this repository, no `.git` on
+  the server).
+- Container: `bridalstack` from `docker-compose.netcup.yml`, `network_mode: host`,
+  listening on `172.18.0.1:3224`. It is not exposed to the public internet.
+- Reverse proxy: Caddy container `legafetch-caddy`, config
+  `/opt/legafetch/caddy/Caddyfile` (block `bridalstack.com, www.bridalstack.com`).
+- Database: host PostgreSQL 17, database `bridalstack`. `DATABASE_URL` and
+  `DIRECT_URL` live in `/opt/bridalstack/.env` (mode `600`).
+- DNS: Hostinger. `A @ → 159.195.158.36`, `www` is a CNAME to the apex.
+- TLS: Let's Encrypt, issued and renewed by Caddy.
 
 ## Release path
 
-1. Work on a branch and open a pull request.
-2. Require the `CI` workflow to pass before merging to `main`.
-3. CI installs with `npm ci --ignore-scripts`, generates Prisma Client explicitly, runs lint and tests, builds the app, and audits production dependencies.
-4. Vercel deploys `main` to the `bridalstack` project. The production aliases are `bridalstack.com`, `www.bridalstack.com`, and `bridalstack.vercel.app`.
-5. After deployment, verify the deployment state and test the public landing page, sign-up page, demo, and one authenticated dashboard journey.
-
-The public liveness probe is `GET /api/health`. It returns only service health and does not reveal secrets or database details. Use it for uptime checks; use the authenticated smoke journey for dependency readiness.
-
-Useful commands from the repository root:
-
-```bash
-vercel ls bridalstack --yes
-vercel inspect <deployment-url>
-vercel logs <deployment-url>
-```
-
-The repository's local release checks are:
+Run the local gates first:
 
 ```bash
 npm ci --ignore-scripts
@@ -31,100 +37,165 @@ npm run build
 npm audit --omit=dev --audit-level=high
 ```
 
-## Database changes
-
-Prisma migrations are committed under `prisma/migrations/`. Apply them before serving traffic that depends on a new schema:
+Then deploy from the repository root:
 
 ```bash
-npx prisma migrate deploy
+scripts/deploy-netcup.sh
 ```
 
-`DATABASE_URL` is the pooled runtime connection. `DIRECT_URL` is used for migration operations. Never run a destructive reset against a production database. Take or confirm a provider backup/PITR point before a migration that changes or removes data.
+The script ships the tracked tree with `git archive` (so `.env`, `node_modules`,
+`.next` and `.git` are never overwritten), rebuilds the image and recreates the
+container. It finishes by probing `/api/health` and `/login`.
 
-## Required production configuration
+After every deploy verify:
 
-Required for the core application:
+```bash
+curl -s https://bridalstack.com/api/health          # {"status":"ok",...}
+curl -s -o /dev/null -w '%{http_code}\n' https://bridalstack.com/login
+curl -s -o /dev/null -w '%{http_code}\n' https://bridalstack.com/demo
+```
 
-- `DATABASE_URL`
-- `DIRECT_URL`
-- `NEXTAUTH_SECRET`
-- `NEXTAUTH_URL=https://bridalstack.com`
-- `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` for distributed public-route rate limiting
+`GET /api/health` reports service and database health only; it never reveals
+secrets or connection details. Use it for uptime checks.
 
-Required before enabling the related feature:
+Rollback: redeploy the previous commit (`git checkout <sha> && scripts/deploy-netcup.sh`).
+Application rollback does not undo an applied migration.
 
-- `CRON_SECRET` for scheduled jobs
-- `DODO_PAYMENTS_API_KEY`, `DODO_PAYMENTS_WEBHOOK_KEY`, and the four live Dodo product IDs for billing (`DODO_PAYMENTS_ENVIRONMENT=live`)
-- `RESEND_API_KEY` and `EMAIL_FROM` for email
-- `BLOB_READ_WRITE_TOKEN` for image uploads
-- `ANTHROPIC_API_KEY` or `OPENAI_API_KEY` for the AI stylist
+## Database changes
 
-Keep all values server-side. Rotate a credential immediately if it appears in logs, source, a browser bundle, or a support attachment.
+Prisma migrations are committed under `prisma/migrations/`. Apply them from the
+server after taking a backup:
 
-## Scheduled jobs and integrations
+```bash
+ssh netcup 'bash /opt/nocturn-yedek/nocturn-yedek.sh bridalstack'
+ssh netcup 'cd /opt/bridalstack && docker exec bridalstack npx prisma migrate deploy'
+```
 
-Vercel schedules the following authenticated routes:
+`DATABASE_URL` is the runtime connection and `DIRECT_URL` is used for migration
+operations. Never run a destructive reset against production. Take or confirm a
+backup before any migration that changes or removes data.
 
-- `/api/cron/briefing`
-- `/api/cron/reminders`
-- `/api/cron/installments`
-- `/api/cron/trials`
+## Required configuration
 
-Each route must receive the configured `CRON_SECRET` as a Bearer token. After changing a cron secret, verify one scheduled invocation and inspect logs for a successful response. Dodo webhook signature validation and Resend/Blob availability are fail-closed or feature-gated in the application; still monitor their provider dashboards for delivery failures.
+Stored in `/opt/bridalstack/.env`:
+
+- `DATABASE_URL`, `DIRECT_URL` — host PostgreSQL.
+- `NEXTAUTH_SECRET` — mandatory; the server refuses to start in production without it.
+- `NEXTAUTH_URL=https://bridalstack.com`.
+- `CRON_SECRET` — bearer token for the `/api/cron/*` routes.
+
+Optional, each feature stays disabled until its values are present:
+
+- `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` — distributed rate
+  limiting. Without them the limiter is process-local; acceptable on the single
+  container, not a global abuse-control boundary.
+- `DODO_PAYMENTS_ENVIRONMENT=live`, `DODO_PAYMENTS_API_KEY`,
+  `DODO_PAYMENTS_WEBHOOK_KEY`, `DODO_PRODUCT_SALES`, `DODO_PRODUCT_INVENTORY`,
+  `DODO_PRODUCT_PRO`, `DODO_PRODUCT_FINANCE` — paid plans. All seven must be set
+  or checkout stays closed ("Paid plans coming soon").
+- `RESEND_API_KEY`, `EMAIL_FROM` — transactional email (password reset, staff
+  invitations, reminders, trial notices). Without the key, sending is skipped
+  and logged; nothing is delivered.
+- `BLOB_READ_WRITE_TOKEN` — photo uploads (Vercel Blob). Without it the upload
+  fields are disabled and the app still works.
+- `ANTHROPIC_API_KEY` or `OPENAI_API_KEY` — AI stylist. Without either, the page
+  returns summary statistics instead.
+
+Keep all values server-side. Rotate a credential immediately if it appears in
+logs, source, a browser bundle or a support attachment.
+
+## Scheduled jobs
+
+The host runs `/opt/cron-tetik/tetik.py` every minute via
+`/etc/cron.d/cron-tetik`. It calls the authenticated cron routes over the host
+network. BridalStack jobs (all UTC):
+
+| UTC | Route |
+| --- | --- |
+| 13:00 | `/api/cron/briefing` |
+| 14:00 | `/api/cron/reminders` |
+| 15:00 | `/api/cron/installments` |
+| 16:00 | `/api/cron/trials` |
+
+The bearer secret is stored in `/opt/cron-tetik/secrets.env` as
+`BRIDALSTACK_CRON_SECRET`. Run one job by hand:
+
+```bash
+ssh netcup 'python3 /opt/cron-tetik/tetik.py bridalstack /api/cron/reminders'
+```
+
+Each route returns `401` without the bearer token.
+
+## Backups
+
+BridalStack is registered in the shared backup system as
+`/opt/nocturn-yedek/projeler/bridalstack.env`. `/etc/cron.d/nocturn-yedek` runs
+the dump daily at 03:15; dumps are written to
+`/var/backups/nocturn/bridalstack/` and kept for 30 days. A dump is only
+considered good if `pg_restore -l` lists at least one table.
+
+Run it by hand:
+
+```bash
+ssh netcup 'bash /opt/nocturn-yedek/nocturn-yedek.sh bridalstack'
+ssh netcup 'tail -5 /var/log/nocturn-yedek.log'
+```
+
+Restore into a scratch database first:
+
+```bash
+ssh netcup 'sudo -u postgres createdb bridalstack_restore'
+ssh netcup 'sudo -u postgres pg_restore -d bridalstack_restore --no-owner --no-acl /var/backups/nocturn/bridalstack/<file>.dump'
+```
 
 ## DNS and email authentication
 
-DNS for `bridalstack.com` is managed at Hostinger (`aster`/`helios.dns-parking.com`).
-The zone as of 2026-10-14 carries:
+DNS for `bridalstack.com` is managed at Hostinger. The zone carries:
 
-- `A @ → 76.76.21.21` (Vercel) and `CNAME www → bridalstack.com`.
-- `TXT @ → v=spf1 include:send.bridalstack.com include:amazonses.com ~all`
-  (sender authorization; `send`/`rsend` are CNAMEs to the transactional
-  provider, `resend._domainkey` holds the DKIM public key).
-- `TXT _dmarc → v=DMARC1; p=quarantine; adkim=r; aspf=r;`
-- `CAA @ → issue/issuewild limited to letsencrypt.org and pki.goog`
-  (the current certificate is issued by Let's Encrypt).
+- `A @ → 159.195.158.36` (netcup) and `CNAME www → bridalstack.com`.
+- `TXT @ → v=spf1 include:send.bridalstack.com include:amazonses.com ~all`.
+- `TXT _dmarc → v=DMARC1; p=quarantine; adkim=r; aspf=r;`.
+- Resend DKIM (`resend._domainkey`) and the `send`/`rsend` CNAMEs.
+- `CAA` limited to `letsencrypt.org` and `pki.goog`.
 
-A zone backup is written before edits; changes can be reverted through the
-Hostinger DNS snapshot/restore API.
-
-**DNSSEC is not enabled.** The Hostinger API exposes no DNSSEC endpoint and the
-`dns-parking.com` nameservers do not sign the zone, so there is no DS record at
-the registry. To add DNSSEC, move the zone to a DNSSEC-capable provider
-(for example Cloudflare, which keeps the Vercel `A` record and adds one-click
-signing) and publish the resulting DS record at the registrar. This is the one
-email/DNS hardening step that still requires a manual provider change.
+DNSSEC is not enabled; `dns-parking.com` does not sign the zone. Adding it means
+moving the zone to a DNSSEC-capable provider and publishing the DS record at the
+registrar.
 
 ## Incident response
 
-### A deployment is unhealthy
+### The app is unhealthy
 
-1. Check the deployment state and logs with `vercel inspect` and `vercel logs`.
-2. If the previous deployment is known-good, promote it while investigating:
+1. `ssh netcup 'docker ps --filter name=bridalstack'`
+2. `ssh netcup 'docker logs --tail 100 bridalstack'`
+3. `ssh netcup 'curl -s http://172.18.0.1:3224/api/health'`
+4. If a deploy caused it, redeploy the previous known-good commit.
+5. Re-check `/landing`, `/login`, `/demo` and `/api/health` afterwards.
 
-   ```bash
-   vercel promote <known-good-deployment-url>
-   ```
+### The database is unreachable
 
-3. Record the deployment IDs, first observed time, affected route, and the rollback decision.
-4. Re-run the public landing, sign-up, demo, and dashboard smoke checks after rollback.
+`/api/health` reports `dependencies.database` as not ok. Check the host cluster
+(`sudo -u postgres psql -d bridalstack -c 'select 1'`), disk space and the
+container's `DATABASE_URL`. Do not restart the database blindly.
 
 ### A migration fails
 
-Stop rollout. Do not retry destructive SQL blindly. Capture the migration name and database error, confirm the last successful backup/PITR point with the database owner, and prepare a forward fix or restore plan. Application rollback alone does not undo an applied migration.
+Stop rollout. Do not retry destructive SQL blindly. Capture the migration name
+and error, confirm the latest dump in `/var/backups/nocturn/bridalstack/`, and
+prepare a forward fix or restore plan.
 
 ### A credential or customer-data exposure is suspected
 
-Disable or rotate the affected credential, preserve only the minimum privacy-safe evidence, review provider access logs, and report the vulnerability privately as described in [SECURITY.md](SECURITY.md). Do not paste customer records, tokens, or secrets into issues or chat.
+Disable or rotate the affected credential, preserve only the minimum privacy-safe
+evidence, review provider access logs and report privately as described in
+[SECURITY.md](SECURITY.md). Never paste customer records, tokens or secrets into
+issues or chat.
 
-## Current operational unknowns
+## Known operational gaps
 
-The repository cannot prove these hosted controls:
-
-- Neon backup/PITR retention and restore drills.
-- Vercel alert routing and log retention.
-- Successful delivery of every scheduled cron invocation.
-- Dodo webhook replay/failed-event alerting.
-- A configured distributed rate-limit store for multi-instance public routes. If the Upstash variables above are absent, the limiter is process-local and should not be described as a global abuse-control boundary.
-
-Confirm these before promising a service-level guarantee to a paying boutique. Until then, describe BridalStack as production-deployed with provider-level operational controls still requiring owner verification.
+- Dodo and Resend credentials must be supplied by the owner before paid checkout
+  and email delivery are live (see `scripts/OWNER-SETUP.md`).
+- Rate limiting is process-local unless Upstash is configured.
+- DNSSEC is not enabled.
+- There is no separate staging environment; verify locally against a scratch
+  PostgreSQL database before deploying.

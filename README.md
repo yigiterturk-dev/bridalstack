@@ -7,7 +7,7 @@ A multi-tenant CRM prototype for bridal retail operations. It brings customer re
 [![Tests](https://img.shields.io/badge/tests-345%20unit%20%2B%20324%20e2e-16a34a)](tests)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-> Status: the domain rules, TypeScript build, lint, and dependency audit are verified locally, and a 22-stage end-to-end suite runs against a live Neon Postgres database or an isolated migration database, depending on the stage. Dodo Payments, Resend, Vercel Blob, and AI integrations are environment-gated and require owner-provided credentials.
+> Status: deployed at `bridalstack.com` on a single netcup VPS (Docker + Caddy + PostgreSQL) and verified live. The domain rules, TypeScript build, lint, and dependency audit pass locally, and a 22-stage end-to-end suite runs against a live PostgreSQL database or an isolated migration database, depending on the stage. Dodo Payments, Resend, Vercel Blob, and AI integrations are environment-gated and require owner-provided credentials; see [OPERATIONS.md](OPERATIONS.md) for the deployment, cron and backup layout.
 
 ## Product evidence
 
@@ -34,7 +34,7 @@ Bridal retail combines long customer journeys with scheduled fittings, physical 
 flowchart LR
     Browser[Next.js UI] --> Routes[Server Actions + Route Handlers]
     Routes --> Guard[RBAC + Tenant Context]
-    Guard --> Db[(Neon Postgres via Prisma)]
+    Guard --> Db[(PostgreSQL via Prisma)]
     Routes --> Dodo[Dodo Payments Checkout/Webhooks]
     Routes --> Resend[Resend Email]
     Cron[Authenticated Cron] --> Installments[Installment State Machine]
@@ -65,7 +65,7 @@ npm audit --omit=dev --audit-level=high
 
 ## Local setup
 
-Requirements: Node.js 24+, npm, and a Postgres database (Neon recommended).
+Requirements: Node.js 24+, npm, and a PostgreSQL 17+ database.
 
 ```bash
 git clone https://github.com/yigiterturk-dev/bridalstack.git
@@ -91,7 +91,7 @@ See [SECURITY.md](SECURITY.md) for reporting and [docs/showcase-audit.md](docs/s
 
 ## Stack
 
-Next.js 16 · React 19 · TypeScript · Prisma · Neon Postgres · NextAuth · Dodo Payments · Resend · Vercel Blob · Tailwind CSS · Recharts · Node test runner
+Next.js 16 · React 19 · TypeScript · Prisma · PostgreSQL · NextAuth · Dodo Payments · Resend · Vercel Blob · Tailwind CSS · Recharts · Node test runner · Docker · Caddy
 
 ## License
 

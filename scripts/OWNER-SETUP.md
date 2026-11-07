@@ -1,95 +1,79 @@
-# Owner — Elle Yapılması Gerekenler (Deferred)
+# Owner setup — the two remaining credentials
 
-Aşağıdaki adımlar **kod ile değil**, sahip tarafından anahtar/bağlantı kurularak
-tamamlanmalıdır. Kod tarafı hazır ve env-gated; anahtar bağlanınca devreye girer.
+Everything in the code is ready; these two integrations stay disabled until the
+owner supplies credentials. Production configuration lives in
+`/opt/bridalstack/.env`. After editing it, redeploy with
+`scripts/deploy-netcup.sh` (or `docker compose -f docker-compose.netcup.yml up -d`
+on the server).
 
-## 1. RLS + RBAC + Funnel migration'ını canlı DB'ye uygula (ZORUNLU)
-Supabase SQL Editor'de sırayla çalıştırın (idempotent, tekrar çalıştırılabilir):
+## 1. Dodo Payments (paid plans)
+
+The billing code is complete and fail-closed: checkout stays closed until the
+API key, webhook secret and **four** product IDs are all present.
 
 ```
-scripts/setup.sql                  # (zaten kurulu olabilir)
-scripts/add-salon.sql              # (zaten kurulu olabilir)
-scripts/add-tryon-portal.sql       # (zaten kurulu olabilir)
-scripts/add-contracts-workflows.sql# (zaten kurulu olabilir)
-scripts/2026-rls-hardening.sql     # YENİ — bunu mutlaka uygulayın
-```
-
-`2026-rls-hardening.sql` neyi ekler:
-- Tüm tenant tablolarına **WITH CHECK**'li RLS politikaları (yazma izolasyonu — workspace_id
-  bazlı). Önceki politikalar yalnızca `USING` içeriyordu; INSERT/UPDATE ile başka tenant'a
-  yazma açığı vardı. Bu migration o açığı kapatır (fail-closed).
-- `user_tenant_ids()` SECURITY DEFINER yardımcı fonksiyonu (RLS özyinelemesini önler).
-- RBAC: `tenant_members.role` kısıtı `owner/admin/stylist/viewer` olarak güncellenir;
-  eski `member` kayıtları `stylist`'e taşınır.
-- Trial→paid cohort alanları: `trial_started_at`, `trial_ends_at`, `converted_at`,
-  `signup_source`, `cohort_month`, `onboarding_completed_at`.
-- `onboarding_drafts` tablosu (taslak kaydetme).
-- `funnel_events` tablosu (CTA/cohort analitiği).
-
-## 2. Dodo Payments (canlı ödeme) — env anahtarları
-Kod hazır; aşağıdaki env değişkenleri ayarlanınca checkout/portal/webhook çalışır:
-```
-DODO_PAYMENTS_ENVIRONMENT=live        # canlıda "live", testte "test"
-DODO_PAYMENTS_API_KEY=                # Developer → API Keys
-DODO_PAYMENTS_WEBHOOK_KEY=            # Developer → Webhooks → signing secret
-DODO_PRODUCT_SALES=                   # Products → 4 aylık abonelik ürünleri
+DODO_PAYMENTS_ENVIRONMENT=live
+DODO_PAYMENTS_API_KEY=          # Dodo → Developer → API Keys
+DODO_PAYMENTS_WEBHOOK_KEY=      # Dodo → Developer → Webhooks → signing secret
+DODO_PRODUCT_SALES=             # Dodo → Products: monthly subscription products
 DODO_PRODUCT_INVENTORY=
 DODO_PRODUCT_PRO=
 DODO_PRODUCT_FINANCE=
 ```
-Dodo panelinde:
-1. **Products** → Sales $39, Inventory $29, Pro $29, Finance $19 için aylık abonelik
-   ürünü oluştur; ürün kimliklerini (`pdt_...`) yukarıdaki dört değişkene yaz.
-2. **Developer → API Keys** → canlı anahtar üret.
-3. **Developer → Webhooks** → `https://bridalstack.com/api/dodo/webhook`,
-   `subscription.*` ve `payment.*` olayları; imza sırrını `DODO_PAYMENTS_WEBHOOK_KEY`'e yaz.
-4. Vercel → Production ortamına ekle ve yeniden dağıt.
 
-Anahtar yokken `lib/dodo.ts` ödeme hattını kapalı tutar ve ücretli planlar
-"Paid plans coming soon" gösterir; uygulama ve 14 günlük deneme çalışmaya devam eder.
+In the Dodo dashboard:
 
-## 3. Resend (e-posta) — env anahtarı
-```
-RESEND_API_KEY=
-```
-Yoksa e-posta gönderimi atlanır.
+1. **Products** — create one monthly subscription product per paid pack:
+   Sales $39, Inventory $29, Pro $29, Finance $19. Copy each product ID
+   (`pdt_...`) into the matching variable.
+2. **Developer → API Keys** — create a live API key.
+3. **Developer → Webhooks** — endpoint `https://bridalstack.com/api/dodo/webhook`,
+   events `subscription.*` and `payment.*`; copy the signing secret into
+   `DODO_PAYMENTS_WEBHOOK_KEY`.
+4. Add all seven values to `/opt/bridalstack/.env` and redeploy.
 
-## 4. Ekip daveti (gerçek e-posta eşlemesi)
-`app/(dashboard)/staff/actions.ts > addMember` şu an daveti yer tutucu olarak işaretler.
-Gerçek davet için Supabase Admin API (service role anahtarı) ile e-posta→user_id eşlemesi
-gerekir. Service role anahtarı bağlanınca bu fonksiyon genişletilebilir. **Asla** service
-role anahtarını client'a sızdırmayın.
+Verify: open `/settings` while signed in; the plan selector should offer paid
+packs instead of "Paid plans coming soon". Do one test purchase in Dodo test mode
+before switching `DODO_PAYMENTS_ENVIRONMENT` to `live`.
 
-## 5. YENİ — Analitik + Online Rezervasyon + Taksit Otomasyonu migration'ı (ZORUNLU)
-`2026-rls-hardening.sql` UYGULANDIKTAN SONRA çalıştırın (idempotent):
-```
-scripts/2026-analytics-booking-installments.sql
-```
-Neyi ekler:
-- `bookings.status` CHECK kısıtına **`pending`** değerini ekler. Public rezervasyon sayfası
-  artık ONAY BEKLEYEN (pending) kayıt yazar; salon "Bookings" ekranından onaylar.
-- **`installments`** ve **`installment_reminders`** tabloları (taksit planı + hatırlatma
-  otomasyonu) — tenant-scoped RLS (USING + WITH CHECK, `user_tenant_ids()` ile) ve indexler.
+Displayed prices come from `config/modules.ts`; the amount actually charged comes
+from the Dodo product. When you change a price, create a new Dodo product and
+update the ID, or the screen and the charge will disagree.
 
-> NOT: Bu dosya `user_tenant_ids()` fonksiyonuna bağımlıdır; bu yüzden önce
-> `2026-rls-hardening.sql` çalıştırılmalıdır.
+## 2. Resend (transactional email)
 
-## 6. YENİ — Taksit cron'u + service-role anahtarı (env)
-Taksit otomasyonu cron'u (`/api/cron/installments`) RLS'i baypas etmek için service-role
-anahtarı ister. Anahtar yokken cron **fail-closed** çalışır (503 döner, hiçbir şey yapmaz):
 ```
-CRON_SECRET=                     # cron uçlarını korur (Bearer ile çağrılır)
-SUPABASE_SERVICE_ROLE_KEY=       # YALNIZCA sunucu; ASLA client'a sızdırmayın
+RESEND_API_KEY=                 # Resend → API Keys
+EMAIL_FROM="BridalStack <noreply@bridalstack.com>"
 ```
-Zamanlama önerisi (Vercel Cron veya harici scheduler), günde 1 kez:
-```
-GET /api/cron/installments
-Authorization: Bearer <CRON_SECRET>
-```
-Cron şu an: ödenmemiş taksitlerin durumunu (pending→due→overdue) günceller ve vade
-penceresine göre **hatırlatma e-postası** kuyruğa alır (deduplike). 
 
-**Otomatik taksit tahsilatı (deferred):** taksit planı, durum ve hatırlatma mantığı
-koddadır (`lib/installments.ts`); karttan otomatik çekim bu sürümde YOK. Dodo abonelikleri
-modül erişimi içindir, taksit tahsilatı için kullanılmaz. Cron yanıtında
-`autoChargingEnabled: false` olarak işaretlidir.
+The domain `bridalstack.com` is already verified in Resend (us-east-1) with the
+DKIM/SPF/DMARC records in Hostinger DNS. Without the key, `sendEmail` does not
+throw; it logs `[EMAIL SKIP]` and returns `{ sent: false, reason: "unconfigured" }`.
+That affects password reset, staff invitations, installment reminders, the daily
+briefing and trial notices.
+
+After adding the key, verify with a real password reset from `/forgot-password`
+and check the Resend dashboard for "delivered". Then restrict the API key to the
+`bridalstack.com` domain.
+
+## 3. Verify the deployment
+
+```bash
+curl -s https://bridalstack.com/api/health          # database ok
+curl -s -o /dev/null -w '%{http_code}\n' https://bridalstack.com/login
+ssh netcup 'python3 /opt/cron-tetik/tetik.py bridalstack /api/cron/reminders'
+ssh netcup 'bash /opt/nocturn-yedek/nocturn-yedek.sh bridalstack'
+```
+
+Expected: `{"status":"ok","dependencies":{"database":"ok"}}`, `200`, `200` from
+the cron job, and `OK bridalstack … tablo verisi` in the backup log.
+
+## Notes
+
+- Tenant isolation is enforced in application code (`getCurrentTenant` /
+  `requireTenantId` on every query); there is no database-level RLS. The old
+  Supabase SQL scripts under `scripts/` are historical and are not part of the
+  current deployment.
+- Automatic recurring card charging for installments is intentionally not
+  implemented; installments are reminder-only (`autoChargingEnabled: false`).

@@ -2,6 +2,11 @@
 
 Audit date: 2026-08-12
 
+> **Note (2026-11-07):** this is the original snapshot. Current state: 345 unit
+> tests, ESLint and production build clean, Dodo Payments (replaced Stripe),
+> PostgreSQL on netcup behind Caddy. Supabase/RLS/Stripe lines below are
+> historical; see `OPERATIONS.md` for the live deployment.
+
 ## Verified locally
 
 | Gate | Result | Evidence |
