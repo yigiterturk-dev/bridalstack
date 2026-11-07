@@ -30,7 +30,7 @@ export default function Privacy() {
         {
           heading: "Where it runs",
           body: [
-            "The application and its database run on infrastructure in the United States. Email is sent through Resend. Uploaded images are stored in Vercel Blob. Card payments, when you subscribe to a paid module, are handled by Dodo Payments — card numbers never reach our servers.",
+            "The application and its database run on a server in Nuremberg, Germany (EU). Email is sent through Resend and uploaded images are stored in Vercel Blob, both in the United States. Card payments, when you subscribe to a paid module, are handled by Dodo Payments — card numbers never reach our servers.",
             "Each shop's records are isolated by workspace. Every query is scoped to the workspace of the signed-in user; staff you invite see only your workspace, and only what their role permits.",
           ],
         },
