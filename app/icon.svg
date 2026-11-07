@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Bridal Stack">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#9f1239"/>
+      <stop offset="1" stop-color="#4c0519"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.22" cy="0.12" r="0.9">
+      <stop offset="0" stop-color="#fb7185" stop-opacity="0.35"/>
+      <stop offset="0.55" stop-color="#fb7185" stop-opacity="0.06"/>
+      <stop offset="1" stop-color="#fb7185" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="gown" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff7ed"/>
+      <stop offset="1" stop-color="#ffe4e6"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="512" height="512" rx="104" fill="url(#bg)"/>
+  <rect width="512" height="512" rx="104" fill="url(#glow)"/>
+
+  <!-- sparkle -->
+  <path d="M372 118c4 22 10 28 32 32-22 4-28 10-32 32-4-22-10-28-32-32 22-4 28-10 32-32z" fill="#fecdd3" opacity="0.95"/>
+  <path d="M393 196c2.5 13 6 16.5 19 19-13 2.5-16.5 6-19 19-2.5-13-6-16.5-19-19 13-2.5 16.5-6 19-19z" fill="#fecdd3" opacity="0.55"/>
+
+  <!-- bodice -->
+  <path d="M256 108c-18 0-30 13-32 32l-5 66c-1 13 7 23 19 25v19h36v-19c12-2 20-12 19-25l-5-66c-2-19-14-32-32-32z" fill="url(#gown)"/>
+
+  <!-- stacked tiers -->
+  <path d="M238 262h36l24 56c2 6-2 12-9 12h-66c-7 0-11-6-9-12z" fill="url(#gown)" opacity="0.97"/>
+  <path d="M214 342h84l28 56c2 6-2 12-9 12H195c-7 0-11-6-9-12z" fill="url(#gown)" opacity="0.92"/>
+  <path d="M186 422h140l32 56c3 7-2 14-10 14H164c-8 0-13-7-10-14z" fill="url(#gown)" opacity="0.86"/>
+</svg>
