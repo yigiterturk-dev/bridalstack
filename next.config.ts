@@ -40,6 +40,8 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // Framework parmak izini başlıktan kaldır (X-Powered-By).
+  poweredByHeader: false,
   outputFileTracingRoot: process.cwd(),
   // netcup'ta docker ile çalışır
   output: "standalone",

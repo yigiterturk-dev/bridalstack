@@ -1,4 +1,4 @@
-FROM node:22-bookworm-slim AS build
+FROM node:24-bookworm-slim AS build
 WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends openssl && rm -rf /var/lib/apt/lists/*
 COPY package.json package-lock.json ./
@@ -8,7 +8,7 @@ RUN npx prisma generate
 # auth-secret.ts üretimde NEXTAUTH_SECRET ister; derlemede yer tutucu, gerçeği çalışma anında .env'den gelir.
 RUN NEXTAUTH_SECRET=derleme-yer-tutucu npx next build
 
-FROM node:22-bookworm-slim
+FROM node:24-bookworm-slim
 WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends openssl && rm -rf /var/lib/apt/lists/*
 ENV NODE_ENV=production
