@@ -1,6 +1,6 @@
 # BridalStack
 
-A multi-tenant CRM prototype for bridal retail operations. It brings customer records, appointments, sales, inventory, contracts, public booking, installments, and role-aware workflows into one Next.js application.
+A multi-tenant CRM for bridal retail operations. It brings customer records, appointments, sales, inventory, contracts, public booking, installments, and role-aware workflows into one Next.js application.
 
 [![CI](https://github.com/yigiterturk-dev/bridalstack/actions/workflows/ci.yml/badge.svg)](https://github.com/yigiterturk-dev/bridalstack/actions/workflows/ci.yml)
 [![Next.js](https://img.shields.io/badge/Next.js-16-black)](https://nextjs.org/)
@@ -13,7 +13,7 @@ A multi-tenant CRM prototype for bridal retail operations. It brings customer re
 
 [![BridalStack landing experience](docs/screenshots/landing-desktop.png)](docs/screenshots/landing-desktop.png)
 
-Current default-branch landing experience captured locally. External services remain environment-gated; the image is UI evidence, not proof of a hosted production deployment.
+Landing experience at `bridalstack.com` (the screenshot above was captured locally). External integrations remain environment-gated.
 
 ## Why this project exists
 
