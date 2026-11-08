@@ -28,7 +28,7 @@ export default function ListRow(props: {
           {tone !== "none" && <span aria-hidden="true" className={`h-2 w-2 shrink-0 rounded-full ${DOT[tone]}`} />}
           <span className="truncate font-medium text-[var(--ink)]">{title}</span>
         </div>
-        {sub && <p className="mt-0.5 truncate text-sm text-[var(--muted)]">{sub}</p>}
+        {sub && <p className="mt-0.5 text-sm text-[var(--muted)] sm:truncate">{sub}</p>}
       </div>
       {(value || valueSub) && (
         <div className="shrink-0 text-right">

@@ -246,7 +246,7 @@ export default function Sidebar({
       {/* Sidebar */}
       <aside
         id="dashboard-sidebar"
-        className={`fixed inset-y-0 left-0 w-[280px] bg-[#FDFCFB]/95 border-r border-stone-100 text-[var(--ink)] flex flex-col z-50 transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 w-[280px] bg-white border-r border-stone-100 text-[var(--ink)] flex flex-col z-50 transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] lg:translate-x-0 ${
           open ? "translate-x-0 shadow-2xl" : "-translate-x-full"
         }`}
       >
