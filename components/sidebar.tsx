@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { switchTenant } from "@/app/(dashboard)/locations/actions";
+import { OPEN_PALETTE_EVENT } from "@/components/command-palette";
 
 type NavItem = { href: string; label: string; icon: string };
 type NavGroup = { section?: string; items: NavItem[] };
@@ -42,6 +43,11 @@ export default function Sidebar({
     return () => document.removeEventListener("keydown", closeOnEscape);
   }, [open]);
 
+  function openPalette() {
+    setOpen(false);
+    window.dispatchEvent(new Event(OPEN_PALETTE_EVENT));
+  }
+
   const nav = (
     <>
       <div className="px-6 py-6 border-b border-stone-100 flex items-center justify-between">
@@ -72,6 +78,17 @@ export default function Sidebar({
         </div>
         <button onClick={() => setOpen(false)} className="lg:hidden text-stone-400 hover:text-gold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40 focus-visible:ring-offset-2 rounded-lg" aria-label="Close menu">
           <span aria-hidden="true" className="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <div className="px-4 pt-5">
+        <button
+          onClick={openPalette}
+          className="flex w-full items-center gap-2.5 rounded-xl border border-[var(--line)] bg-white px-3.5 py-2 text-[13.5px] text-[var(--muted)] hover:border-stone-300 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40"
+        >
+          <span aria-hidden="true" className="material-symbols-outlined text-[18px]">search</span>
+          <span className="flex-1 text-left">Search</span>
+          <kbd className="rounded-md border border-[var(--line)] px-1.5 text-[11px]">⌘K</kbd>
         </button>
       </div>
 
@@ -143,7 +160,9 @@ export default function Sidebar({
           <span aria-hidden="true" className="material-symbols-outlined">menu</span>
         </button>
         <h1 className="text-lg text-[var(--ink)]"><Wordmark /></h1>
-        <div className="w-8" />
+        <button onClick={openPalette} className="text-stone-700 -mr-1 p-2 hover:bg-stone-50 rounded-xl transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40" aria-label="Search">
+          <span aria-hidden="true" className="material-symbols-outlined">search</span>
+        </button>
       </div>
 
       {/* Mobile overlay */}
