@@ -21,11 +21,13 @@ export default function Sidebar({
   tenantName,
   locations = [],
   activeTenantId,
+  isDemo = false,
 }: {
   groups: NavGroup[];
   tenantName: string;
   locations?: { id: string; name: string }[];
   activeTenantId?: string;
+  isDemo?: boolean;
 }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
@@ -65,7 +67,7 @@ export default function Sidebar({
             </form>
           ) : null}
           <Link href="/locations" className="mt-1 inline-block text-[11px] font-medium text-stone-400 hover:text-rose-600">
-            {locations.length > 1 ? "Manage locations" : "Add a location"}
+            {isDemo ? "Locations" : locations.length > 1 ? "Manage locations" : "Add a location"}
           </Link>
         </div>
         <button onClick={() => setOpen(false)} className="lg:hidden text-stone-400 hover:text-rose-500 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2 rounded-lg" aria-label="Close menu">
