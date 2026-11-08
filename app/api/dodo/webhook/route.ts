@@ -100,18 +100,19 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ received: true, ignored: true });
   }
 
-  const settings = (tenant.settings ?? {}) as Record<string, unknown>;
-
   if (type === "subscription.active" || type === "subscription.renewed" || type === "subscription.unpaused") {
     if (!isPaidPack(pack)) return NextResponse.json({ received: true });
-    const change = applyActiveSubscription(settings, {
-      pack,
-      subscriptionId,
-      customerId,
-      interval: metadataInterval,
-    });
-
+    // Aynı ödemede birden çok paket alınınca Dodo abonelik olaylarını aynı anda
+    // gönderir. Satır kilitlenmeden okunup yazılırsa her olay eski hâli görür ve
+    // son yazan diğerlerinin paketini siler. Kilit + işlem içinde yeniden okuma.
     await prisma.$transaction(async (tx) => {
+      const current = await lockTenantSettings(tx, tenant.id);
+      const change = applyActiveSubscription(current, {
+        pack,
+        subscriptionId,
+        customerId,
+        interval: metadataInterval,
+      });
       await tx.tenant.update({
         where: { id: tenant.id },
         data: {
@@ -137,18 +138,19 @@ export async function POST(req: NextRequest) {
     type === "subscription.failed" ||
     (type === "subscription.cancelled" && data.cancel_at_next_billing_date !== true)
   ) {
-    const change = removeSubscription(settings, subscriptionId);
-    if (!change.removedPack) {
+    await prisma.$transaction(async (tx) => {
+      const current = await lockTenantSettings(tx, tenant.id);
+      const change = removeSubscription(current, subscriptionId);
       // Eski/yinelenen olay ya da dönem-sonu iptali; erişim zaten doğru.
-      return NextResponse.json({ received: true });
-    }
-    await prisma.tenant.update({
-      where: { id: tenant.id },
-      data: {
-        settings: change.settings as object,
-        packs: change.packs,
-        plan: change.plan,
-      },
+      if (!change.removedPack) return;
+      await tx.tenant.update({
+        where: { id: tenant.id },
+        data: {
+          settings: change.settings as object,
+          packs: change.packs,
+          plan: change.plan,
+        },
+      });
     });
     return NextResponse.json({ received: true });
   }
@@ -156,4 +158,12 @@ export async function POST(req: NextRequest) {
   // past_due: grace period boyunca erişim korunur. payment.* olayları
   // erişimi değiştirmez; abonelik olayları tek karar kaynağıdır.
   return NextResponse.json({ received: true });
+}
+
+type Tx = Parameters<Parameters<typeof prisma.$transaction>[0]>[0];
+
+/** Kiracı satırını işlem sonuna kadar kilitler ve güncel settings'i döner. */
+async function lockTenantSettings(tx: Tx, tenantId: string): Promise<Record<string, unknown>> {
+  const rows = await tx.$queryRaw<{ settings: unknown }[]>`SELECT settings FROM tenants WHERE id = ${tenantId}::uuid FOR UPDATE`;
+  return ((rows[0]?.settings ?? {}) as Record<string, unknown>);
 }

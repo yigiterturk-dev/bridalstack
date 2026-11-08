@@ -10,6 +10,7 @@ import { currentBillingInterval, readDodoState } from "@/lib/dodo-state";
 import SignOutButton from "@/components/sign-out-button";
 import CopyField from "@/components/copy-field";
 import SubmitButton from "@/components/submit-button";
+import SubscriptionRefresher from "@/components/subscription-refresher";
 import { updateShopProfile, startPackTrial, seedDemoData, clearDemoData, deleteAccount } from "./actions";
 import { canStartTrial, TRIAL_DAYS } from "@/lib/trial";
 import { normalizeTimeZone, TIME_ZONE_OPTIONS } from "@/lib/timezone";
@@ -80,6 +81,12 @@ export default async function SettingsPage({ searchParams }: Props) {
       {params?.success === "saved" && (
         <div className="mb-6 rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-800">
           Your shop details have been saved.
+        </div>
+      )}
+      {params?.success === "subscribed" && (
+        <div className="mb-6 rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-800">
+          Payment received — thank you! Your new modules unlock within a few seconds.
+          <SubscriptionRefresher />
         </div>
       )}
       {params?.success === "trial_started" && (
