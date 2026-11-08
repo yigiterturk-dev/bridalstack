@@ -139,7 +139,7 @@ export default async function OrderDetailPage({ params, searchParams }: Props) {
             <span className="material-symbols-outlined text-[18px]">print</span>
             Invoice
           </Link>
-          <span className={`px-3 py-1 rounded-full text-xs font-medium ${STATUS_STYLE[order.status] ?? STATUS_STYLE.draft}`}>{order.status}</span>
+          <span className={`px-3 py-1 rounded-full text-xs font-medium ${STATUS_STYLE[order.status] ?? STATUS_STYLE.draft}`}>{(order.status.charAt(0).toUpperCase() + order.status.slice(1)).replace(/_/g, " ")}</span>
         </div>
       </div>
 
