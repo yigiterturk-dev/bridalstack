@@ -18,6 +18,7 @@ export type DemoCustomer = {
   phone: string;
   status: string;
   notes: string;
+  event_date: string | null;
   metadata: typeof DEMO_MARK;
 };
 
@@ -78,12 +79,12 @@ function at(base: Date, dayOffset: number, hour: number) {
 
 export function buildDemoData(now: Date) {
   const customers: DemoCustomer[] = [
-    { name: "Ava Bennett", email: "ava.bennett@example.com", phone: "+1 212 555 0111", status: "ordered", notes: "Ceremony in June. Loves clean A-line silhouettes.", metadata: DEMO_MARK },
-    { name: "Sofia Ramirez", email: "sofia.ramirez@example.com", phone: "+1 212 555 0142", status: "ordered", notes: "Bringing her mother to the second fitting.", metadata: DEMO_MARK },
-    { name: "Chloe Turner", email: "chloe.turner@example.com", phone: "+1 212 555 0173", status: "appointment", notes: "Booked a first try-on. Budget around 2,000.", metadata: DEMO_MARK },
-    { name: "Maya Okafor", email: "maya.okafor@example.com", phone: "+1 212 555 0194", status: "new", notes: "Walked in from the website booking page.", metadata: DEMO_MARK },
-    { name: "Elena Rossi", email: "elena.rossi@example.com", phone: "+1 212 555 0128", status: "ordered", notes: "Renting for a destination wedding.", metadata: DEMO_MARK },
-    { name: "Hannah Cole", email: "hannah.cole@example.com", phone: "+1 212 555 0165", status: "delivered", notes: "Picked up in August. Sent a thank-you note.", metadata: DEMO_MARK },
+    { name: "Ava Bennett", email: "ava.bennett@example.com", phone: "+1 212 555 0111", status: "ordered", notes: "Ceremony in five weeks. Loves clean A-line silhouettes.", event_date: dateOnly(new Date(now.getTime() + 38 * DAY)), metadata: DEMO_MARK },
+    { name: "Sofia Ramirez", email: "sofia.ramirez@example.com", phone: "+1 212 555 0142", status: "ordered", notes: "Bringing her mother to the second fitting.", event_date: dateOnly(new Date(now.getTime() + 74 * DAY)), metadata: DEMO_MARK },
+    { name: "Chloe Turner", email: "chloe.turner@example.com", phone: "+1 212 555 0173", status: "appointment", notes: "Booked a first try-on. Budget around 2,000.", event_date: dateOnly(new Date(now.getTime() + 150 * DAY)), metadata: DEMO_MARK },
+    { name: "Maya Okafor", email: "maya.okafor@example.com", phone: "+1 212 555 0194", status: "new", notes: "Walked in from the website booking page.", event_date: dateOnly(new Date(now.getTime() + 175 * DAY)), metadata: DEMO_MARK },
+    { name: "Elena Rossi", email: "elena.rossi@example.com", phone: "+1 212 555 0128", status: "ordered", notes: "Renting for a destination wedding.", event_date: dateOnly(new Date(now.getTime() + 21 * DAY)), metadata: DEMO_MARK },
+    { name: "Hannah Cole", email: "hannah.cole@example.com", phone: "+1 212 555 0165", status: "delivered", notes: "Picked up in August. Sent a thank-you note.", event_date: dateOnly(new Date(now.getTime() - 60 * DAY)), metadata: DEMO_MARK },
   ];
 
   const products: DemoProduct[] = [
@@ -250,7 +251,7 @@ export function buildDemoOperations(now: Date) {
       kind: "hem",
       status: "in_progress",
       fitting_date: dateOnly(new Date(now.getTime() - 3 * DAY)),
-      promised_date: dateOnly(new Date(now.getTime() + 6 * DAY)),
+      promised_date: dateOnly(new Date(now.getTime() - 2 * DAY)),
       seamstress: "Rosa",
       price: 180,
       notes: "Hem and bustle, shoes already fitted.",

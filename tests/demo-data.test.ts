@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { buildDemoData, DEMO_MARK } from "../lib/demo-data.ts";
+import { buildDemoData, buildDemoOperations, DEMO_MARK } from "../lib/demo-data.ts";
+import { buildJourney } from "../lib/journey.ts";
 
 const now = new Date("2026-09-09T12:00:00Z");
 const data = buildDemoData(now);
@@ -49,4 +50,18 @@ test("veri dolu bir mağaza gösterir — boş panel satmaz", () => {
   assert.ok(data.products.length >= 5);
   assert.ok(data.orders.length >= 3);
   assert.ok(data.appointments.length >= 3);
+});
+
+test("tanıtımda düğün tarihleri önümüzdeki 6 aya yayılır ve Today boş kalmaz", () => {
+  const now = new Date("2026-11-08T12:00:00Z");
+  const today = "2026-11-08";
+  const data = buildDemoData(now);
+  const dated = data.customers.filter((c) => c.event_date && c.event_date >= today);
+  assert.ok(dated.length >= 4, "en az dört yaklaşan düğün");
+  assert.ok(dated.some((c) => c.event_date! <= "2026-12-08"), "30 gün içinde en az bir düğün");
+  assert.ok(dated.every((c) => c.event_date! <= "2027-05-08"), "6 aydan uzak düğün yok");
+  const ava = data.customers.find((c) => c.name === "Ava Bennett")!;
+  const avaAlts = buildDemoOperations(now).alterations.filter((a) => a.customerName === "Ava Bennett");
+  const j = buildJourney({ eventDate: ava.event_date, today, orders: [{ status: "confirmed" }], appointments: [], alterations: avaAlts.map((a) => ({ kind: a.kind, status: a.status, promised_date: a.promised_date })), installments: [] });
+  assert.equal(j.risk, "late", "Needs attention bölümünde en az bir kırmızı gelin");
 });

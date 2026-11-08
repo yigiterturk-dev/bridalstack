@@ -12,8 +12,8 @@ export type Step = {
 export const STEPS: Step[] = [
   {
     href: "/dashboard",
-    title: "A sample boutique, mid-season",
-    body: "Four orders in progress, fittings this week, money in and out. Everything you see is made up — click anything, nothing can break.",
+    title: "Today: who needs you",
+    body: "Every bride with her wedding countdown. Red means something is late, amber means she's falling behind. Click a name to see her whole journey. Everything here is made up — nothing can break.",
   },
   {
     href: "/rentals",
