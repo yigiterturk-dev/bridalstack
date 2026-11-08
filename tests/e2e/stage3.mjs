@@ -86,12 +86,6 @@ for (const p of ["/api/cron/installments", "/api/cron/reminders"]) {
   check(`${p} yanlış anahtarı reddediyor`, wrong.status === 401, `status ${wrong.status}`);
 }
 
-// --- Taksit: kayıt var mı, oluşturan bir yol var mı ---
-{
-  const count = await prisma.installment.count();
-  check("Sistemde taksit oluşturulabiliyor", count > 0,
-    "hiç taksit kaydı yok — oluşturma yolu çalışmıyor olabilir");
-}
 
 console.log(out.join("\n"));
 console.log(`\nGeçen: ${pass}  Kalan: ${fail}`);

@@ -7,7 +7,7 @@
 // ║      tests/e2e/stage20-trial-demo.mjs                                    ║
 // ╚══════════════════════════════════════════════════════════════════════════╝
 import { PrismaClient } from "@prisma/client";
-import { startTrial, activeTrialPacks, effectivePacks } from "../../lib/trial.ts";
+import { startTrial, activeTrialPacks, effectivePacks, TRIAL_DAYS } from "../../lib/trial.ts";
 import { buildDemoData } from "../../lib/demo-data.ts";
 
 const prisma = new PrismaClient();
@@ -30,8 +30,8 @@ ok("deneme paketleri kiracının packs alanına yazılmaz", !fresh.packs.include
 ok("deneme okuma anında açılır", activeTrialPacks(fresh.settings, fresh.trial_ends_at, new Date()).includes("sales"));
 ok("effectivePacks ikisini birleştirir", effectivePacks(fresh.packs, fresh.settings, fresh.trial_ends_at, new Date()).length === 3);
 
-const later = new Date(Date.now() + 15 * 86400000);
-ok("15 gün sonra deneme kendiliğinden kapanır", activeTrialPacks(fresh.settings, fresh.trial_ends_at, later).length === 0);
+const later = new Date(Date.now() + (TRIAL_DAYS + 1) * 86400000);
+ok("deneme süresi bitince kendiliğinden kapanır", activeTrialPacks(fresh.settings, fresh.trial_ends_at, later).length === 0);
 
 const second = await prisma.tenant.updateMany({ where: { id: t.id, trial_started_at: null }, data: { trial_ends_at: later } });
 ok("ikinci kez başlatma yarış kapısına takılır", second.count === 0);

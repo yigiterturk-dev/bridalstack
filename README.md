@@ -4,7 +4,7 @@ A multi-tenant CRM for bridal retail operations. It brings customer records, app
 
 [![CI](https://github.com/yigiterturk-dev/bridalstack/actions/workflows/ci.yml/badge.svg)](https://github.com/yigiterturk-dev/bridalstack/actions/workflows/ci.yml)
 [![Next.js](https://img.shields.io/badge/Next.js-16-black)](https://nextjs.org/)
-[![Tests](https://img.shields.io/badge/tests-345%20unit%20%2B%20393%20e2e-16a34a)](tests)
+[![Tests](https://img.shields.io/badge/tests-349%20unit%20%2B%20392%20e2e-16a34a)](tests)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 > Status: deployed at `bridalstack.com` on a single netcup VPS (Docker + Caddy + PostgreSQL) and verified live. The domain rules, TypeScript build, lint, and dependency audit pass locally, and a 23-stage end-to-end suite runs against a live PostgreSQL database or an isolated migration database, depending on the stage. Dodo Payments, Resend, Vercel Blob, and AI integrations are environment-gated and require owner-provided credentials; see [OPERATIONS.md](OPERATIONS.md) for the deployment, cron and backup layout.
@@ -46,7 +46,7 @@ Authorization is layered: the proxy rejects unauthenticated requests to protecte
 
 ## Verified domain behavior
 
-`npm test` covers 345 unit cases; `tests/e2e/` adds 393 checks across 23 stages against a running server, a live database, or an isolated migration database. Together they cover:
+`npm test` covers 349 unit cases; `tests/e2e/` adds 392 checks across 23 stages against a running server, a live database, or an isolated migration database. Together they cover:
 
 - booking happy paths, malformed tenant IDs, invalid time windows, past dates, missing contact data, and collision detection;
 - role ranking, permission escalation denial, legacy-role normalization, and unknown-role fallback;
