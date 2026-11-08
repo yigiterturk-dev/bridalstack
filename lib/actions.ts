@@ -259,6 +259,8 @@ export async function createOrder(formData: FormData) {
     ? derived.discounted_total
     : nonNegativeFloat(formData.get("discounted_total"));
   const list_total = derived ? derived.list_total : discounted_total;
+  // Kapora toplamı aşamaz: aşarsa sipariş "ödendi" görünür, fazla para kaybolur.
+  if (deposit_amount > discounted_total) redirect("/orders/new?error=deposit_exceeds");
 
   const [yFull, m, d] = shopToday.split("-");
   const y = yFull.slice(2);

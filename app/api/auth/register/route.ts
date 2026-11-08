@@ -4,6 +4,7 @@ import { FREE_PACK_IDS, SELLABLE_PACK_IDS } from "@/config/modules";
 import { startTrial } from "@/lib/trial";
 import { validateRegistration, slugBase, pickUniqueSlug } from "@/lib/register";
 import { clientIp, rateLimit } from "@/lib/ratelimit";
+import { isValidTimeZone } from "@/lib/timezone";
 
 export async function POST(req: Request) {
   try {
@@ -30,6 +31,9 @@ export async function POST(req: Request) {
       return new Response(JSON.stringify({ error: v.error }), { status: 400 });
     }
     const { email, password, shopName } = v;
+    // Dükkânın saat dilimi kayıt olan tarayıcıdan: yoksa randevular UTC'ye göre kayar.
+    const rawTz = (input as { timeZone?: unknown }).timeZone;
+    const time_zone = isValidTimeZone(rawTz) ? String(rawTz).trim() : null;
 
     const existingUser = await prisma.user.findUnique({
       where: { email: email.toLowerCase() }
@@ -74,7 +78,7 @@ export async function POST(req: Request) {
           owner_id: user.id,
           // Ücretsiz paketler baştan açık: randevu sayfası ve hizmetler dahil.
           packs: FREE_PACK_IDS,
-          settings: trial ? { trial_packs: trial.trialPacks } : {},
+          settings: { ...(trial ? { trial_packs: trial.trialPacks } : {}), ...(time_zone ? { time_zone } : {}) },
           trial_started_at: trial?.trialStartedAt ?? null,
           trial_ends_at: trial?.trialEndsAt ?? null,
         }

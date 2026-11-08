@@ -9,7 +9,20 @@ import SubmitButton from "@/components/submit-button";
 import { CURRENCY_SYMBOL } from "@/config/modules";
 import { dateInTimeZone, normalizeTimeZone } from "@/lib/timezone";
 
-export default async function NewOrderPage() {
+const ERRORS: Record<string, string> = {
+  required: "Pick the bride this order is for.",
+  line_invalid: "One of the items is no longer in stock records. Remove it and add it again.",
+  line_required: "Every item needs a name.",
+  deposit_exceeds: "The deposit is more than the order total. Add the items or type the total first.",
+  insert: "The order could not be saved. Try again.",
+};
+
+export default async function NewOrderPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ error?: string }>;
+}) {
+  const params = await searchParams;
   const tenant = await getCurrentTenant();
   if (!tenant) redirect("/onboarding");
 
@@ -31,6 +44,11 @@ export default async function NewOrderPage() {
     <div className="max-w-3xl">
       <Link href="/orders" className="text-sm text-[var(--muted)] hover:text-[var(--ink)] mb-4 inline-block">← Back to Orders</Link>
       <h1 className="font-serif text-3xl font-normal text-[var(--ink)] lg:text-4xl mb-6">New order</h1>
+      {params?.error && (
+        <div role="alert" className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-late">
+          {ERRORS[params.error] ?? "Something went wrong."}
+        </div>
+      )}
 
       <form action={createOrder} className="bg-white rounded-2xl border border-[var(--line)] p-6 flex flex-col gap-4">
         <div>

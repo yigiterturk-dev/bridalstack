@@ -30,7 +30,7 @@ export default function SignupPage() {
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, shopName }),
+        body: JSON.stringify({ email, password, shopName, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone }),
       });
 
       if (!res.ok) {

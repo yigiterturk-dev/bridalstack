@@ -35,7 +35,11 @@ export default function UpgradeCta({ daysLeft, expired }: Props) {
                 : "Unlock more modules"}
           </p>
           <p className="text-xs text-gray-600">
-            Upgrade your plan to unlock sales, finance, and inventory modules.
+            {expired
+              ? "Sales, money and stock screens are locked. Pick a plan to open them again."
+              : daysLeft !== null
+                ? "Every module is open until then. Pick a plan to keep the ones you use."
+                : "Upgrade your plan to unlock sales, finance, and inventory modules."}
           </p>
         </div>
       </div>
