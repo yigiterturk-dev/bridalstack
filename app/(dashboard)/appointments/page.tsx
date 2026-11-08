@@ -65,13 +65,13 @@ async function AppointmentsContent({ tenantId, timeZone, customer }: { tenantId:
     const needsClose = isPast && a.status !== "completed";
     return (
       <div key={a.id} className="flex items-center gap-4 px-4 py-3">
-        <span className="w-24 shrink-0 whitespace-nowrap font-serif text-lg tabular-nums text-[var(--ink)]">{time(a.appointment_date)}</span>
+        <span className="w-[4.5rem] shrink-0 whitespace-nowrap font-serif text-base tabular-nums text-[var(--ink)] sm:w-24 sm:text-lg">{time(a.appointment_date)}</span>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             {unconfirmed && !isPast && <span aria-hidden="true" className="h-2 w-2 shrink-0 rounded-full bg-amber" />}
             <span className="truncate font-medium text-[var(--ink)]">{a.customer?.name ?? "No bride"}</span>
           </div>
-          <p className="mt-0.5 truncate text-sm text-[var(--muted)]">
+          <p className="mt-0.5 text-sm text-[var(--muted)] sm:truncate">
             {[a.title, unconfirmed && !isPast ? "Not confirmed yet" : null, a.status === "completed" ? "Done" : null].filter(Boolean).join(" · ")}
           </p>
         </div>
@@ -100,7 +100,7 @@ async function AppointmentsContent({ tenantId, timeZone, customer }: { tenantId:
 
       <details id="new" open={formOpen} className="group mb-8 scroll-mt-24 rounded-2xl border border-[var(--line)] bg-white">
         <summary className="flex cursor-pointer list-none items-center gap-3 px-4 py-3 font-medium text-[var(--ink)] [&::-webkit-details-marker]:hidden">
-          <span aria-hidden="true" className="material-symbols-outlined flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--ink)] text-[18px] text-white">add</span>
+          <span aria-hidden="true" className="material-symbols-outlined flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--ink)] text-[18px] leading-none text-white">add</span>
           Book an appointment
           <span aria-hidden="true" className="material-symbols-outlined ml-auto text-stone-400 transition-transform group-open:rotate-180">expand_more</span>
         </summary>

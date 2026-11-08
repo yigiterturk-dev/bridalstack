@@ -75,9 +75,17 @@
   }
 }
 
-.material-symbols-outlined {
-  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-  user-select: none;
+/* İkon fontu: font gelmeden ad metni ("settings") görünmesin ve kaymasın diye
+   layout'ta display=block; burada satır yüksekliği sabit, dikey ortalı. */
+@layer base {
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    user-select: none;
+    line-height: 1;
+    vertical-align: middle;
+    white-space: nowrap;
+    overflow: hidden;
+  }
 }
 
 /* ── Reusable component classes ───────────────────────────────────────────── */
