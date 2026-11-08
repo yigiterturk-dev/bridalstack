@@ -22,18 +22,19 @@ function statusStyle(status: string) {
   }
 }
 
-export default async function AppointmentsPage() {
+export default async function AppointmentsPage({ searchParams }: { searchParams?: Promise<{ customer?: string }> }) {
+  const params = await searchParams;
   const tenant = await getCurrentTenant();
   if (!tenant) redirect("/onboarding");
 
   return (
     <ModuleGuard moduleId="appointments" enabledModules={tenant.enabled_modules}>
-      <AppointmentsContent tenantId={tenant.id} timeZone={normalizeTimeZone(tenant.settings.time_zone)} />
+      <AppointmentsContent tenantId={tenant.id} timeZone={normalizeTimeZone(tenant.settings.time_zone)} customer={params?.customer} />
     </ModuleGuard>
   );
 }
 
-async function AppointmentsContent({ tenantId, timeZone }: { tenantId: string; timeZone: string }) {
+async function AppointmentsContent({ tenantId, timeZone, customer }: { tenantId: string; timeZone: string; customer?: string }) {
   const [list, customers] = await Promise.all([
     prisma.appointment.findMany({
       where: { tenant_id: tenantId },
@@ -87,6 +88,7 @@ async function AppointmentsContent({ tenantId, timeZone }: { tenantId: string; t
                 <SelectField
                   name="customer_id"
                   required
+                  defaultValue={customer ?? ""}
                   placeholder="Select a bride…"
                   options={customers.map((c) => ({ value: c.id, label: c.name }))}
                 />

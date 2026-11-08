@@ -45,7 +45,7 @@ const ACTION_LABEL: Record<string, string> = {
   cancelled: "Cancel",
 };
 
-type Props = { searchParams?: Promise<{ error?: string }> };
+type Props = { searchParams?: Promise<{ error?: string; customer?: string }> };
 
 export default async function AlterationsPage({ searchParams }: Props) {
   const params = await searchParams;
@@ -54,12 +54,12 @@ export default async function AlterationsPage({ searchParams }: Props) {
 
   return (
     <ModuleGuard moduleId="inventory" enabledModules={tenant.enabled_modules}>
-      <AlterationsContent tenantId={tenant.id} timeZone={normalizeTimeZone(tenant.settings.time_zone)} error={params?.error} />
+      <AlterationsContent tenantId={tenant.id} timeZone={normalizeTimeZone(tenant.settings.time_zone)} error={params?.error} customer={params?.customer} />
     </ModuleGuard>
   );
 }
 
-async function AlterationsContent({ tenantId, timeZone, error }: { tenantId: string; timeZone: string; error?: string }) {
+async function AlterationsContent({ tenantId, timeZone, error, customer }: { tenantId: string; timeZone: string; error?: string; customer?: string }) {
   const today = todayISO(new Date(), timeZone);
 
   const [jobs, customers, products, orders] = await Promise.all([
@@ -125,6 +125,7 @@ async function AlterationsContent({ tenantId, timeZone, error }: { tenantId: str
               <SelectField
                 name="customer_id"
                 required
+                defaultValue={customer ?? ""}
                 placeholder="Select a bride…"
                 options={customers.map((c) => ({ value: c.id, label: c.name, hint: c.email ?? undefined }))}
               />
