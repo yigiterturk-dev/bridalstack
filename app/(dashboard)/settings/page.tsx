@@ -74,8 +74,8 @@ export default async function SettingsPage({ searchParams }: Props) {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-2xl font-serif font-normal text-gray-900">Settings</h1>
-        <p className="text-sm text-gray-500 mt-1">Manage your shop and subscription</p>
+        <h1 className="font-serif text-3xl font-normal text-[var(--ink)] lg:text-4xl">Settings</h1>
+        <p className="mt-1.5 text-[var(--muted)]">Manage your shop and subscription</p>
       </div>
 
       {params?.success === "saved" && (

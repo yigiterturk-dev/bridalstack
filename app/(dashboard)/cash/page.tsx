@@ -23,6 +23,7 @@ import { closeCashSession, deleteMovement, openCashSession } from "./actions";
 import ConfirmSubmitButton from "@/components/confirm-submit-button";
 import { normalizeTimeZone } from "@/lib/timezone";
 import EmptyState from "@/components/empty-state";
+import AddPanel from "@/components/add-panel";
 
 export const dynamic = "force-dynamic";
 
@@ -97,12 +98,14 @@ async function CashContent({ tenantId, timeZone, date, error }: { tenantId: stri
         </div>
       )}
 
+      {/* hepsi sıfırsa kart yok */ (day.inflow > 0 || day.outflow > 0 || cashOnly !== 0) && (
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
         <Stat label="In" value={formatPrice(Math.round(day.inflow))} tone="emerald" />
         <Stat label="Out" value={formatPrice(Math.round(day.outflow))} tone={day.outflow > 0 ? "rose" : undefined} />
         <Stat label="Net" value={formatPrice(Math.round(day.net))} />
         <Stat label="In the drawer" value={formatPrice(Math.round(cashOnly))} hint="cash only" />
       </div>
+      )}
 
       <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-6 mb-6">
         <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
@@ -219,13 +222,12 @@ async function CashContent({ tenantId, timeZone, date, error }: { tenantId: stri
         )}
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-6 h-fit">
-          <h2 className="text-lg font-serif font-normal text-[var(--ink)] mb-4">New entry</h2>
+      <div className="flex flex-col gap-6">
+        <AddPanel title="Record money in or out">
           <MovementForm today={today} back="/cash" />
-        </div>
+        </AddPanel>
 
-        <div className="xl:col-span-2">
+        <div>
           {movements.length === 0 ? (
             <EmptyState icon="account_balance" title="Nothing today">
               Every deposit, balance and expense you record here rolls straight into the ledger. Installment payments land here on their own.

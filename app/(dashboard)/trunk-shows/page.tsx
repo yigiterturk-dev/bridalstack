@@ -4,6 +4,7 @@ import { getCurrentTenant } from "@/lib/tenant";
 import { createTrunkShow } from "./actions";
 import SubmitButton from "@/components/submit-button";
 import EmptyState from "@/components/empty-state";
+import AddPanel from "@/components/add-panel";
 
 const ERRORS: Record<string, string> = {
   required: "Enter an event name and both dates.",
@@ -36,8 +37,8 @@ export default async function TrunkShowsPage({ searchParams }: Props) {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-serif font-normal text-gray-900">Trunk Shows</h1>
-        <p className="text-sm text-gray-500 mt-1">Manage vendor sample events and gown tracking</p>
+        <h1 className="font-serif text-3xl font-normal text-[var(--ink)] lg:text-4xl">Trunk shows</h1>
+        <p className="mt-1.5 text-[var(--muted)]">Manage vendor sample events and gown tracking</p>
       </div>
       {params?.error && ERRORS[params.error] && (
         <div role="alert" aria-live="assertive" className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
@@ -45,9 +46,8 @@ export default async function TrunkShowsPage({ searchParams }: Props) {
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="bg-white rounded-2xl border border-gray-200 p-6">
-          <h2 className="text-lg font-serif font-normal text-gray-900 mb-4">New Trunk Show</h2>
+      <div className="flex flex-col gap-6">
+        <AddPanel title="Plan a trunk show">
           <form id="new" action={createTrunkShow} className="scroll-mt-24 flex flex-col gap-3">
             <div>
               <label htmlFor="trunk-show-name" className="block text-sm font-medium text-gray-700 mb-1">Event Name *</label>
@@ -73,9 +73,9 @@ export default async function TrunkShowsPage({ searchParams }: Props) {
             </div>
             <SubmitButton pendingLabel="Creating event…" className="mt-2 py-2.5 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-800 disabled:opacity-60 disabled:cursor-wait">Create Event</SubmitButton>
           </form>
-        </div>
+        </AddPanel>
 
-        <div className="lg:col-span-2">
+        <div>
           {list.length > 0 ? (
             <div className="flex flex-col gap-4">
               {list.map((s) => {

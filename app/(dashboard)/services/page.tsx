@@ -8,6 +8,7 @@ import ConfirmSubmitButton from "@/components/confirm-submit-button";
 import { CURRENCY_SYMBOL, formatPrice } from "@/config/modules";
 import SubmitButton from "@/components/submit-button";
 import EmptyState from "@/components/empty-state";
+import AddPanel from "@/components/add-panel";
 
 const CATEGORIES = ["Consultation", "Fitting", "Alterations", "Styling", "Accessories", "Hair", "Nails", "Skin", "Massage", "Makeup", "Tattoo", "Barber", "Lashes", "Waxing", "Other"];
 const DURATIONS = [15, 30, 45, 60, 90, 120, 150, 180];
@@ -37,14 +38,13 @@ export default async function ServicesPage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-serif font-normal text-gray-900">Services</h1>
-          <p className="text-sm text-gray-500 mt-1">{list.length} services</p>
+          <h1 className="font-serif text-3xl font-normal text-[var(--ink)] lg:text-4xl">Services</h1>
+          <p className="mt-1.5 text-[var(--muted)]">{list.length} services</p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="bg-white rounded-2xl border border-gray-200 p-6">
-          <h2 className="text-lg font-serif font-normal text-gray-900 mb-4">Add Service</h2>
+      <div className="flex flex-col gap-6">
+        <AddPanel title="Add a service">
           <form id="new" action={createService} className="scroll-mt-24 flex flex-col gap-3">
             <div>
               <label htmlFor="service-name" className="block text-sm font-medium text-gray-700 mb-1">Name *</label>
@@ -89,9 +89,9 @@ export default async function ServicesPage() {
             </div>
             <SubmitButton pendingLabel="Adding service…" className="mt-1 py-2.5 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-800 disabled:opacity-60 disabled:cursor-wait">Add Service</SubmitButton>
           </form>
-        </div>
+        </AddPanel>
 
-        <div className="lg:col-span-2">
+        <div>
           {Object.keys(grouped).length > 0 ? (
             <div className="flex flex-col gap-6">
               {Object.entries(grouped).map(([category, items]) => (

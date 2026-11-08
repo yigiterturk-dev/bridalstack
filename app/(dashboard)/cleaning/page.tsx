@@ -17,6 +17,7 @@ import {
 } from "@/lib/cleaning";
 import { createCleaningJob, updateCleaningStatus } from "./actions";
 import EmptyState from "@/components/empty-state";
+import AddPanel from "@/components/add-panel";
 
 export const dynamic = "force-dynamic";
 
@@ -98,9 +99,8 @@ async function CleaningContent({ tenantId, timeZone, error }: { tenantId: string
         </div>
       )}
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-6 h-fit">
-          <h2 className="text-lg font-serif font-normal text-[var(--ink)] mb-4">Send a gown out</h2>
+      <div className="flex flex-col gap-6">
+        <AddPanel title="Send a gown out">
           <form id="new" action={createCleaningJob} className="scroll-mt-24 flex flex-col gap-3">
             <Field label="Gown" htmlFor="product_id-select">
               <SelectField
@@ -146,9 +146,9 @@ async function CleaningContent({ tenantId, timeZone, error }: { tenantId: string
               Send to cleaning
             </SubmitButton>
           </form>
-        </div>
+        </AddPanel>
 
-        <div className="xl:col-span-2">
+        <div>
           {jobs.length === 0 ? (
             <EmptyState icon="local_laundry_service" action={{ href: "#new", label: "Send a gown to the cleaner" }} title="Nothing at the cleaner">
               Every dirty gown lands here — sent out by hand, or opened automatically when a return or a rental comes back soiled. None of them counts as stock until it is back.

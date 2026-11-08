@@ -20,6 +20,7 @@ import {
 } from "@/lib/alterations";
 import { createAlteration, updateAlterationStatus } from "./actions";
 import EmptyState from "@/components/empty-state";
+import AddPanel from "@/components/add-panel";
 
 export const dynamic = "force-dynamic";
 
@@ -118,9 +119,8 @@ async function AlterationsContent({ tenantId, timeZone, error, customer }: { ten
         </div>
       )}
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-6 h-fit">
-          <h2 className="text-lg font-serif font-normal text-[var(--ink)] mb-4">Log an alteration</h2>
+      <div className="flex flex-col gap-6">
+        <AddPanel title="Log an alteration">
           <form id="new" action={createAlteration} className="scroll-mt-24 flex flex-col gap-3">
             <Field label="Bride" htmlFor="customer_id-select">
               <SelectField
@@ -189,9 +189,9 @@ async function AlterationsContent({ tenantId, timeZone, error, customer }: { ten
               Log alteration
             </SubmitButton>
           </form>
-        </div>
+        </AddPanel>
 
-        <div className="xl:col-span-2">
+        <div>
           {jobs.length === 0 ? (
             <EmptyState icon="content_cut" action={{ href: "#new", label: "Log an alteration" }} title="No alterations logged">
               Every hem, bustle and bead. Give each one a promised date and the ones running late climb to the top of this list on their own.

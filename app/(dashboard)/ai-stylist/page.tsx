@@ -22,8 +22,8 @@ export default async function AIStylistPage() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-serif font-normal text-gray-900">AI Stylist ✨</h1>
-        <p className="text-sm text-gray-500 mt-1">
+        <h1 className="font-serif text-3xl font-normal text-[var(--ink)] lg:text-4xl">AI Stylist</h1>
+        <p className="mt-1.5 text-[var(--muted)]">
           What needs your attention today, and answers about your inventory and brides
         </p>
       </div>

@@ -13,6 +13,7 @@ import {
 } from "@/lib/inventory";
 import { createReturn, updateReturnStatus } from "./actions";
 import EmptyState from "@/components/empty-state";
+import AddPanel from "@/components/add-panel";
 
 export const dynamic = "force-dynamic";
 
@@ -103,9 +104,8 @@ async function ReturnsContent({ tenantId, error }: { tenantId: string; error?: s
         </div>
       )}
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-6 h-fit">
-          <h2 className="text-lg font-serif font-normal text-[var(--ink)] mb-4">Log a return</h2>
+      <div className="flex flex-col gap-6">
+        <AddPanel title="Log a return">
           <form id="new" action={createReturn} className="scroll-mt-24 flex flex-col gap-3">
             <Field label="Bride">
               <SelectField
@@ -173,9 +173,9 @@ async function ReturnsContent({ tenantId, error }: { tenantId: string; error?: s
               Log return
             </button>
           </form>
-        </div>
+        </AddPanel>
 
-        <div className="xl:col-span-2">
+        <div>
           {returns.length === 0 ? (
             <EmptyState icon="swap_horiz" action={{ href: "#new", label: "Log a return" }} title="No returns logged">
               Log every gown that comes back. Stock only moves when you mark it received, so an approved return never inflates your rail.

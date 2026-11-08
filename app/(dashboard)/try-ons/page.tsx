@@ -8,6 +8,7 @@ import { addTryOn } from "./actions";
 import SelectField from "@/components/select-field";
 import SubmitButton from "@/components/submit-button";
 import EmptyState from "@/components/empty-state";
+import AddPanel from "@/components/add-panel";
 
 const REACTIONS = [
   { value: "loved", emoji: "😍", label: "Loved it" },
@@ -65,15 +66,13 @@ async function TryOnsContent({ tenantId }: { tenantId: string }) {
     <div>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-serif font-normal text-gray-900">Try-On Tracking</h1>
-          <p className="text-sm text-gray-500 mt-1">Record which gowns each bride tried and their reaction</p>
+          <h1 className="font-serif text-3xl font-normal text-[var(--ink)] lg:text-4xl">Try-ons</h1>
+          <p className="mt-1.5 text-[var(--muted)]">Record which gowns each bride tried and their reaction</p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* New Try-On Form */}
-        <div className="bg-white rounded-2xl border border-gray-200 p-6">
-          <h2 className="text-lg font-serif font-normal text-gray-900 mb-4">Log a Try-On</h2>
+      <div className="flex flex-col gap-6">
+        <AddPanel title="Log a try-on">
           <form id="new" action={addTryOn} className="scroll-mt-24 flex flex-col gap-3">
             <div>
               <label htmlFor="customer_id-select" className="block text-sm font-medium text-gray-700 mb-1">Bride *</label>
@@ -144,10 +143,10 @@ async function TryOnsContent({ tenantId }: { tenantId: string }) {
               Log Try-On
             </SubmitButton>
           </form>
-        </div>
+        </AddPanel>
 
         {/* Try-On History */}
-        <div className="lg:col-span-2">
+        <div>
           {list.length > 0 ? (
             <div className="flex flex-col gap-3">
               {list.map((t) => {

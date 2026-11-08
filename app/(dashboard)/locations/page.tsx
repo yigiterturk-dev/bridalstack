@@ -42,8 +42,8 @@ export default async function LocationsPage({
   return (
     <div className="max-w-3xl">
       <div className="mb-8">
-        <h1 className="text-2xl font-serif font-normal text-gray-900">Locations</h1>
-        <p className="text-sm text-gray-500 mt-1">
+        <h1 className="font-serif text-3xl font-normal text-[var(--ink)] lg:text-4xl">Locations</h1>
+        <p className="mt-1.5 text-[var(--muted)]">
           Each location is its own workspace: its own customers, stock, orders and team.
           Billing is per location, so every shop carries its own subscription.
         </p>

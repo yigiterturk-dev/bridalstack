@@ -99,11 +99,13 @@ async function InstallmentsContent({
         </div>
       )}
 
+      {(outstanding > 0 || overdue > 0 || dueSoon > 0) && (
       <div className="grid grid-cols-3 gap-3 mb-8">
         <Stat label="Outstanding" value={formatPrice(Math.round(outstanding))} />
         <Stat label="Overdue" value={formatPrice(Math.round(overdue))} tone={overdue > 0 ? "rose" : undefined} />
         <Stat label="Due within 3 days" value={formatPrice(Math.round(dueSoon))} />
       </div>
+      )}
 
       <div className="flex items-center gap-2 mb-5 flex-wrap">
         {FILTERS.map((f) => (

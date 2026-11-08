@@ -81,6 +81,7 @@ export default function BookingsTable({ bookings }: { bookings: Booking[] }) {
       )}
 
       {/* Stats Widget */}
+      {stats.total > 0 && (
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         <div className="bg-white p-5 rounded-2xl border border-gray-200">
           <div className="text-xs font-semibold text-gray-400 uppercase">Total Bookings</div>
@@ -103,6 +104,7 @@ export default function BookingsTable({ bookings }: { bookings: Booking[] }) {
           <div className="text-2xl font-bold text-gray-500 mt-1">{stats.cancelled}</div>
         </div>
       </div>
+      )}
 
       {/* Filters bar */}
       <div className="bg-white p-4 rounded-2xl border border-gray-200 flex flex-col md:flex-row gap-3 items-center justify-between">

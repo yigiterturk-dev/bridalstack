@@ -16,6 +16,7 @@ import { createCheck, moveCheck, deleteCheck } from "./actions";
 import ConfirmSubmitButton from "@/components/confirm-submit-button";
 import { normalizeTimeZone } from "@/lib/timezone";
 import EmptyState from "@/components/empty-state";
+import AddPanel from "@/components/add-panel";
 
 export const dynamic = "force-dynamic";
 
@@ -96,16 +97,17 @@ async function ChecksContent({ tenantId, timeZone, error }: { tenantId: string; 
         </div>
       )}
 
+      {(summary.incoming > 0 || summary.outgoing > 0 || summary.dueThisWeek > 0 || summary.overdue > 0) && (
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
         <Stat label="Incoming" value={formatPrice(Math.round(summary.incoming))} tone="emerald" />
         <Stat label="Outgoing" value={formatPrice(Math.round(summary.outgoing))} tone={summary.outgoing > 0 ? "rose" : undefined} />
         <Stat label="Due this week" value={formatPrice(Math.round(summary.dueThisWeek))} />
         <Stat label="Past due" value={formatPrice(Math.round(summary.overdue))} tone={summary.overdue > 0 ? "rose" : undefined} />
       </div>
+      )}
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-6 h-fit">
-          <h2 className="text-lg font-serif font-normal text-[var(--ink)] mb-4">Log a check</h2>
+      <div className="flex flex-col gap-6">
+        <AddPanel title="Log a check">
           <form id="new" action={createCheck} className="scroll-mt-24 flex flex-col gap-3">
             <Field label="Direction">
               <SelectField
@@ -160,9 +162,9 @@ async function ChecksContent({ tenantId, timeZone, error }: { tenantId: string; 
               Add check
             </button>
           </form>
-        </div>
+        </AddPanel>
 
-        <div className="xl:col-span-2">
+        <div>
           {checks.length === 0 ? (
             <EmptyState icon="request_quote" action={{ href: "#new", label: "Log a check" }} title="No checks logged">
               A check only becomes money in the ledger when you mark it cleared — and if it bounces, that entry comes straight back out.

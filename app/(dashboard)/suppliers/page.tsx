@@ -9,6 +9,7 @@ import { normalizeTimeZone } from "@/lib/timezone";
 import { isLate, summarize } from "@/lib/purchasing";
 import { createSupplier, toggleSupplier, deleteSupplier } from "./actions";
 import EmptyState from "@/components/empty-state";
+import AddPanel from "@/components/add-panel";
 
 export const dynamic = "force-dynamic";
 
@@ -77,9 +78,8 @@ async function SuppliersContent({ tenantId, timeZone }: { tenantId: string; time
         </p>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-6 h-fit">
-          <h2 className="text-lg font-serif font-normal text-[var(--ink)] mb-4">Add supplier</h2>
+      <div className="flex flex-col gap-6">
+        <AddPanel title="Add a supplier">
           <form id="new" action={createSupplier} className="scroll-mt-24 flex flex-col gap-3">
             <Field label="Name *">
               <input name="name" required maxLength={120} className={INPUT} placeholder="e.g. Maggie Sottero" />
@@ -113,9 +113,9 @@ async function SuppliersContent({ tenantId, timeZone }: { tenantId: string; time
               Add supplier
             </button>
           </form>
-        </div>
+        </AddPanel>
 
-        <div className="xl:col-span-2">
+        <div>
           {suppliers.length === 0 ? (
             <EmptyState icon="local_shipping" action={{ href: "#new", label: "Add a supplier" }} title="No suppliers yet">
               Add the designers and wholesalers you order from. Lead times here become the delivery dates you promise your brides.

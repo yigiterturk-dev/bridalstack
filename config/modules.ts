@@ -127,11 +127,11 @@ export const MODULES: Record<ModuleId, ModuleDefinition> = {
     ],
     navItems: [
       { href: "/products", label: "Products", icon: "checkroom" },
-      { href: "/try-ons", label: "Try-Ons", icon: "favorite" },
-      { href: "/trunk-shows", label: "Trunk Shows", icon: "event_note" },
+      { href: "/try-ons", label: "Try-ons", icon: "favorite" },
+      { href: "/trunk-shows", label: "Trunk shows", icon: "event_note" },
       { href: "/suppliers", label: "Suppliers", icon: "local_shipping" },
       { href: "/purchase-orders", label: "Buying", icon: "inbox" },
-      { href: "/inventory-count", label: "Stock Count", icon: "inventory" },
+      { href: "/inventory-count", label: "Stock count", icon: "inventory" },
       { href: "/returns", label: "Returns", icon: "swap_horiz" },
       { href: "/rentals", label: "Rentals", icon: "event_available" },
       { href: "/alterations", label: "Alterations", icon: "content_cut" },
@@ -162,7 +162,7 @@ export const MODULES: Record<ModuleId, ModuleDefinition> = {
     routes: ["/bookings", "/schedule"],
     navItems: [
       { href: "/bookings", label: "Bookings", icon: "calendar_month" },
-      { href: "/schedule", label: "Schedule", icon: "date_range" },
+      { href: "/schedule", label: "Staff hours", icon: "date_range" },
     ],
   },
   services: {

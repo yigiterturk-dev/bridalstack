@@ -85,6 +85,7 @@ async function LedgerContent({ tenantId, timeZone, period }: { tenantId: string;
         <LedgerPeriodPicker periods={periods} active={active} />
       </div>
 
+      {(totals.inflow > 0 || totals.outflow > 0) && (
       <div className="grid grid-cols-3 gap-3 mb-8">
         <Stat label="Money in" value={formatPrice(Math.round(totals.inflow))} tone="emerald" />
         <Stat label="Money out" value={formatPrice(Math.round(totals.outflow))} tone={totals.outflow > 0 ? "rose" : undefined} />
@@ -94,6 +95,7 @@ async function LedgerContent({ tenantId, timeZone, period }: { tenantId: string;
           tone={totals.net < 0 ? "rose" : undefined}
         />
       </div>
+      )}
 
       {till.counted > 0 && (
         <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-6 mb-8">

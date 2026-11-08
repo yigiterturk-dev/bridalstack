@@ -6,6 +6,7 @@ import { getCurrentTenant } from "@/lib/tenant";
 import { createContract } from "./actions";
 import SelectField from "@/components/select-field";
 import EmptyState from "@/components/empty-state";
+import AddPanel from "@/components/add-panel";
 
 export default async function ContractsPage() {
   const tenant = await getCurrentTenant();
@@ -34,14 +35,13 @@ export default async function ContractsPage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-serif font-normal text-gray-900">Contracts & E-Sign</h1>
-          <p className="text-sm text-gray-500 mt-1">Send contracts, brides sign online</p>
+          <h1 className="font-serif text-3xl font-normal text-[var(--ink)] lg:text-4xl">Contracts</h1>
+          <p className="mt-1.5 text-[var(--muted)]">Send contracts, brides sign online</p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="bg-white rounded-2xl border border-gray-200 p-6">
-          <h2 className="text-lg font-serif font-normal text-gray-900 mb-4">New Contract</h2>
+      <div className="flex flex-col gap-6">
+        <AddPanel title="Write a contract">
           <form id="new" action={createContract} className="scroll-mt-24 flex flex-col gap-3">
             <div>
               <label htmlFor="customer_id-select" className="block text-sm font-medium text-gray-700 mb-1">Customer *</label>
@@ -78,9 +78,9 @@ export default async function ContractsPage() {
             </div>
             <button type="submit" className="mt-2 py-2.5 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-800">Create & Send</button>
           </form>
-        </div>
+        </AddPanel>
 
-        <div className="lg:col-span-2">
+        <div>
           {list.length > 0 ? (
             <div className="flex flex-col gap-3">
               {list.map((c) => {

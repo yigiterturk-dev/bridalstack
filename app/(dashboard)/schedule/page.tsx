@@ -128,8 +128,8 @@ export default function SchedulePage() {
       {/* Title */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-serif font-normal text-gray-900">Staff Schedules</h1>
-          <p className="text-sm text-gray-500 mt-1">Configure staff availability, breaks, and off days.</p>
+          <h1 className="font-serif text-3xl font-normal text-[var(--ink)] lg:text-4xl">Staff hours</h1>
+          <p className="mt-1.5 text-[var(--muted)]">Configure staff availability, breaks, and off days.</p>
         </div>
         {members.length > 0 && (
           <button
@@ -211,7 +211,7 @@ export default function SchedulePage() {
                         onChange={(e) => handleScheduleChange(day.value, "is_off", !e.target.checked)}
                         className="sr-only peer"
                       />
-                      <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-late"></div>
+                      <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-gold"></div>
                       <span className="ml-2 text-xs font-semibold text-gray-500 w-8 select-none">
                         {sched.is_off ? "Off" : "Active"}
                       </span>

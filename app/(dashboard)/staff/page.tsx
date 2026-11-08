@@ -28,6 +28,7 @@ export default async function StaffPage({ searchParams }: PageProps) {
   const list = await prisma.tenantMember.findMany({
     where: { tenant_id: tenant.id },
     orderBy: { created_at: "asc" },
+    include: { user: { select: { name: true, email: true } } },
   });
 
   // Kabul edilmemiş davetler: e-posta gitmese bile ekip buradan kurulabilsin.
@@ -42,8 +43,8 @@ export default async function StaffPage({ searchParams }: PageProps) {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-serif font-normal text-gray-900">Team &amp; Roles</h1>
-        <p className="text-sm text-gray-500 mt-1">
+        <h1 className="font-serif text-3xl font-normal text-[var(--ink)] lg:text-4xl">Team</h1>
+        <p className="mt-1.5 text-[var(--muted)]">
           Manage who can sign in and what they can do
         </p>
       </div>
@@ -133,8 +134,13 @@ export default async function StaffPage({ searchParams }: PageProps) {
                 const editable = canManage && role !== "owner" && !isSelf;
                 return (
                   <tr key={m.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 text-sm font-mono text-gray-900">
-                      {m.user_id.slice(0, 8)}…{isSelf ? " (you)" : ""}
+                    <td className="px-6 py-4">
+                      {/* Kimlik değil ad: "a9cad29f…" kimseye bir şey söylemiyor. */}
+                      <div className="text-sm font-medium text-[var(--ink)]">
+                        {m.display_name || m.user.name || m.user.email}
+                        {isSelf && <span className="font-normal text-[var(--muted)]"> (you)</span>}
+                      </div>
+                      {(m.display_name || m.user.name) && <div className="text-xs text-[var(--muted)]">{m.user.email}</div>}
                     </td>
                     <td className="px-6 py-4">
                       {editable ? (

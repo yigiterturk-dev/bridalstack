@@ -18,6 +18,7 @@ import {
 } from "@/lib/rentals";
 import { collectLateFee, createRental, updateRentalStatus } from "./actions";
 import EmptyState from "@/components/empty-state";
+import AddPanel from "@/components/add-panel";
 
 export const dynamic = "force-dynamic";
 
@@ -120,9 +121,8 @@ async function RentalsContent({ tenantId, timeZone, error }: { tenantId: string;
         </div>
       )}
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-6 h-fit">
-          <h2 className="text-lg font-serif font-normal text-[var(--ink)] mb-4">Book a rental</h2>
+      <div className="flex flex-col gap-6">
+        <AddPanel title="Book a rental">
           <form id="new" action={createRental} className="scroll-mt-24 flex flex-col gap-3">
             <Field label="Bride" htmlFor="customer_id-select">
               <SelectField
@@ -186,9 +186,9 @@ async function RentalsContent({ tenantId, timeZone, error }: { tenantId: string;
               Book rental
             </SubmitButton>
           </form>
-        </div>
+        </AddPanel>
 
-        <div className="xl:col-span-2">
+        <div>
           {rentals.length === 0 ? (
             <EmptyState icon="event_available" action={{ href: "#new", label: "Book a rental" }} title="No rentals booked">
               Book a gown for a date range and the calendar is held — the same gown can never be promised to two brides for the same weekend.
