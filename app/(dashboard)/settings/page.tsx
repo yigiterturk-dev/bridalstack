@@ -334,7 +334,7 @@ export default async function SettingsPage({ searchParams }: Props) {
                 <div
                   key={packId}
                   className={`p-4 rounded-xl border-2 transition-colors ${
-                    isActive ? "border-[var(--ink)] bg-stone-50" : "border-[var(--line)] bg-white opacity-60"
+                    isActive ? "border-[var(--line)] bg-white" : "border-[var(--line)] bg-stone-50 opacity-60"
                   }`}
                 >
                   <div className="flex items-center justify-between mb-2">

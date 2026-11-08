@@ -97,6 +97,7 @@ export default function BookingsTable({ bookings }: { bookings: Booking[] }) {
         </div>
       )}
 
+      {bookings.length > 0 && (
       <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <input
           type="text"
@@ -124,10 +125,11 @@ export default function BookingsTable({ bookings }: { bookings: Booking[] }) {
           ))}
         </div>
       </div>
+      )}
 
       {filtered.length === 0 ? (
         <div className="rounded-2xl border border-[var(--line)] bg-white py-16 text-center text-sm text-[var(--muted)]">
-          {bookings.length === 0 ? "No bookings yet." : "No bookings match this search."}
+          {bookings.length === 0 ? "No bookings yet. When a client books on your booking page, it shows up here for you to approve." : "No bookings match this search."}
         </div>
       ) : (
         <div className="overflow-hidden rounded-2xl border border-[var(--line)] bg-white divide-y divide-[var(--line)]">

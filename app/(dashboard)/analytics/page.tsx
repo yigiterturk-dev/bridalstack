@@ -55,7 +55,8 @@ export default async function AnalyticsPage({ searchParams }: Props) {
     const d = new Date(Date.UTC(y, m0, 1));
     return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
   };
-  const revenueStart = startOfDayInTimeZone(`${monthKey(tzYear, tzMonth - 1 - 5)}-01`, tz);
+  const revenueStartDate = `${monthKey(tzYear, tzMonth - 1 - 5)}-01`;
+  const revenueStart = startOfDayInTimeZone(revenueStartDate, tz);
   const weekStart = startOfWeek(now);
   const weekEnd = new Date(weekStart);
   weekEnd.setDate(weekEnd.getDate() + 7);
@@ -82,8 +83,12 @@ export default async function AnalyticsPage({ searchParams }: Props) {
       : null,
     hasSales
       ? prisma.order.findMany({
-          where: { tenant_id: tenant.id, status: { not: "cancelled" }, created_at: { gte: revenueStart } },
-          select: { created_at: true, discounted_total: true },
+          where: {
+            tenant_id: tenant.id,
+            status: { not: "cancelled" },
+            OR: [{ created_at: { gte: revenueStart } }, { order_date: { gte: revenueStartDate } }],
+          },
+          select: { created_at: true, order_date: true, discounted_total: true },
         })
       : [],
     hasBooking
@@ -152,7 +157,10 @@ export default async function AnalyticsPage({ searchParams }: Props) {
     revenueBuckets.push({ key, label: MONTHS[Number(key.slice(5)) - 1], value: 0 });
   }
   for (const o of revenueOrders) {
-    const bucket = revenueBuckets.find((b) => b.key === dateInTimeZone(o.created_at, tz).slice(0, 7));
+    const bucket = revenueBuckets.find(
+      // Reports ile aynı: sipariş tarihi varsa o, yoksa kayıt anı dükkân saatiyle.
+      (b) => b.key === (o.order_date || dateInTimeZone(o.created_at, tz)).slice(0, 7),
+    );
     if (bucket) bucket.value += o.discounted_total;
   }
   const revenueSeries = revenueBuckets.map(({ label, value }) => ({ label, value }));
