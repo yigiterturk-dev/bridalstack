@@ -68,6 +68,7 @@ async function ProductsContent({ tenantId, query }: { tenantId: string; query: s
     return (
       <ListRow
         key={p.id}
+        href={`/products/${p.id}`}
         lead={
           p.image_url ? (
             <Image unoptimized src={p.image_url} alt="" width={40} height={40} className="h-10 w-10 shrink-0 rounded-lg border border-[var(--line)] object-cover" />

@@ -2,7 +2,9 @@ import { uploadsEnabled } from "@/lib/uploads";
 import { prisma } from "@/lib/prisma";
 import { getCurrentTenant } from "@/lib/tenant";
 import { redirect } from "next/navigation";
-import NewProductForm from "./new-product-form";
+import Link from "next/link";
+import ProductForm from "@/components/product-form";
+import PageHead from "@/components/page-head";
 
 export const dynamic = "force-dynamic";
 
@@ -17,5 +19,11 @@ export default async function NewProductPage() {
   });
 
   // Yükleme yapılandırılmamışsa form fotoğraf alanını devre dışı gösterir.
-  return <NewProductForm uploadsOn={uploadsEnabled()} suppliers={suppliers} />;
+  return (
+    <div className="animate-fade-in-up">
+      <Link href="/products" className="mb-3 inline-block text-sm text-[var(--muted)] hover:text-[var(--ink)]">← Stock</Link>
+      <PageHead title="Add a piece" />
+      <ProductForm uploadsOn={uploadsEnabled()} suppliers={suppliers} />
+    </div>
+  );
 }

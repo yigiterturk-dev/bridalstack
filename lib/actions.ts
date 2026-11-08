@@ -97,6 +97,64 @@ export async function updateAppointmentStatus(formData: FormData) {
 
 // ─── Products ───
 
+/** Ürün formundaki alanları okur (ekle ve düzenle aynı kuralla). */
+async function readProductForm(formData: FormData, tenantId: string) {
+  const name = String(formData.get("name") || "").trim();
+  const sku = String(formData.get("sku") || "").trim() || null;
+  const category = String(formData.get("category") || "").trim() || null;
+  const price = nonNegativeFloat(formData.get("price"));
+  const cost = nonNegativeFloat(formData.get("cost"));
+  const stock_quantity = boundedInt(formData.get("stock_quantity"), 0, 1_000_000, 1);
+  const description = String(formData.get("description") || "").trim() || null;
+  const barcode = String(formData.get("barcode") || "").trim();
+  const imageInput = String(formData.get("image_url") || "").trim();
+  // Sadece kendi Blob alanımızdan gelen adresleri kabul et; keyfi URL yazılmasın.
+  const image_url = /^https:\/\/[a-z0-9-]+\.public\.blob\.vercel-storage\.com\//i.test(imageInput) ? imageInput : null;
+  // Tedarikçi başka kiracıya aitse sessizce boş bırak — çapraz bağ kurulmasın.
+  const supplierInput = String(formData.get("supplier_id") || "").trim();
+  const supplier = supplierInput
+    ? await prisma.supplier.findFirst({ where: { id: supplierInput, tenant_id: tenantId }, select: { id: true } })
+    : null;
+  return { name, sku, category, price, cost, stock_quantity, description, barcode, image_url, supplier_id: supplier?.id ?? null };
+}
+
+export async function updateProduct(formData: FormData) {
+  const { tenant } = await requireAuth("products.manage", "/products?error=forbidden");
+  const id = String(formData.get("id") || "");
+  const existing = await prisma.product.findFirst({ where: { id, tenant_id: tenant.id }, select: { id: true, barcode: true } });
+  if (!existing) redirect("/products");
+
+  const f = await readProductForm(formData, tenant.id);
+  if (!f.name) redirect(`/products/${id}?error=required`);
+
+  try {
+    await prisma.product.update({
+      where: { id: existing.id },
+      data: { ...f, barcode: f.barcode || existing.barcode },
+    });
+  } catch {
+    redirect(`/products/${id}?error=update`);
+  }
+  revalidatePath("/products");
+  revalidatePath(`/products/${id}`);
+  redirect(`/products/${id}?success=saved`);
+}
+
+/** Tek dokunuşla stok ±1 (satıldı / geldi). Sıfırın altına inmez. */
+export async function adjustStock(formData: FormData) {
+  const { tenant } = await requireAuth("products.manage", "/products?error=forbidden");
+  const id = String(formData.get("id") || "");
+  const delta = Number(formData.get("delta")) === -1 ? -1 : 1;
+  const product = await prisma.product.findFirst({ where: { id, tenant_id: tenant.id }, select: { id: true, stock_quantity: true } });
+  if (!product) redirect("/products");
+  const next = Math.max(0, product.stock_quantity + delta);
+  if (next !== product.stock_quantity) {
+    await prisma.product.update({ where: { id: product.id }, data: { stock_quantity: next } });
+  }
+  revalidatePath("/products");
+  revalidatePath(`/products/${id}`);
+}
+
 export async function createProduct(formData: FormData) {
   const { userId, tenant } = await requireAuth("products.manage", "/products?error=forbidden");
 
