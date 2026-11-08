@@ -29,7 +29,7 @@ export default async function ClientPortalPage({ params }: Props) {
 
   const tenant = portal.tenant;
   const shopName = tenant?.name ?? "Bridal Shop";
-  const accent = tenant?.accent_color ?? "#e11d48";
+  const accent = tenant?.accent_color ?? "#8a6a3f";
 
   const scope = { customer_id: portal.customer_id, tenant_id: portal.tenant_id };
   const [customer, appointments, orders, tryOnRows] = await Promise.all([

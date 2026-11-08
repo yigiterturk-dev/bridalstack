@@ -71,7 +71,7 @@ export default async function OrderPrintPage({ params }: Props) {
         documentTitle="Invoice"
         reference={order.ref_no}
       >
-        <div className="grid grid-cols-2 gap-8 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 mb-8">
           <div>
             <div className="text-[11px] font-bold uppercase tracking-wider text-stone-400 mb-2">Billed to</div>
             <div className="font-semibold">{order.customer?.name ?? "—"}</div>
@@ -110,9 +110,9 @@ export default async function OrderPrintPage({ params }: Props) {
               <thead>
                 <tr className="border-b border-stone-200 text-[11px] uppercase tracking-wider text-stone-400">
                   <th className="text-left py-2 font-semibold">Item</th>
-                  <th className="text-right py-2 font-semibold">Qty</th>
-                  <th className="text-right py-2 font-semibold">Price</th>
-                  <th className="text-right py-2 font-semibold">Amount</th>
+                  <th className="text-right py-2 pl-3 font-semibold">Qty</th>
+                  <th className="text-right py-2 pl-3 font-semibold">Price</th>
+                  <th className="text-right py-2 pl-3 font-semibold">Amount</th>
                 </tr>
               </thead>
               <tbody>
@@ -122,9 +122,9 @@ export default async function OrderPrintPage({ params }: Props) {
                       {item.description}
                       <span className="text-stone-400"> · {kindLabel(item.kind)}</span>
                     </td>
-                    <td className="py-2.5 text-right tabular-nums text-[var(--muted)]">{item.quantity}</td>
-                    <td className="py-2.5 text-right tabular-nums text-[var(--muted)]">{formatPrice(item.unit_price)}</td>
-                    <td className="py-2.5 text-right tabular-nums font-medium">{formatPrice(lineNet(item))}</td>
+                    <td className="py-2.5 pl-3 text-right tabular-nums text-[var(--muted)] whitespace-nowrap">{item.quantity}</td>
+                    <td className="py-2.5 pl-3 text-right tabular-nums text-[var(--muted)] whitespace-nowrap">{formatPrice(item.unit_price)}</td>
+                    <td className="py-2.5 pl-3 text-right tabular-nums font-medium whitespace-nowrap">{formatPrice(lineNet(item))}</td>
                   </tr>
                 ))}
               </tbody>
@@ -155,7 +155,7 @@ export default async function OrderPrintPage({ params }: Props) {
                 <tr className="border-b border-stone-200 text-[11px] uppercase tracking-wider text-stone-400">
                   <th className="text-left py-2 font-semibold">No</th>
                   <th className="text-left py-2 font-semibold">Due</th>
-                  <th className="text-right py-2 font-semibold">Amount</th>
+                  <th className="text-right py-2 pl-3 font-semibold">Amount</th>
                   <th className="text-right py-2 font-semibold">Status</th>
                 </tr>
               </thead>

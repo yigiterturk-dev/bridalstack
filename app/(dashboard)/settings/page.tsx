@@ -183,7 +183,7 @@ export default async function SettingsPage({ searchParams }: Props) {
                       id="accent-color"
                       name="accent_color"
                       type="color"
-                      defaultValue={tenant.accent_color ?? "#2563EB"}
+                      defaultValue={tenant.accent_color ?? "#8a6a3f"}
                       className="h-11 w-14 rounded-xl border border-stone-200 bg-white cursor-pointer"
                     />
                     <span className="text-xs text-[var(--muted)]">Booking page highlights</span>

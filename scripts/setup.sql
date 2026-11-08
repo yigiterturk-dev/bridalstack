@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS public.tenants (
   settings        jsonb DEFAULT '{}'::jsonb,
   logo_url        text,
   primary_color   text DEFAULT '#0A0A0C',
-  accent_color    text DEFAULT '#2563EB',
+  accent_color    text DEFAULT '#8a6a3f',
   created_at      timestamptz DEFAULT now(),
   updated_at      timestamptz DEFAULT now()
 );

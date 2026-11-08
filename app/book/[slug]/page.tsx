@@ -51,7 +51,7 @@ export default async function PublicBookingPage({ params }: Props) {
     }),
   ]);
 
-  const accent = (tenant.accent_color as string) ?? "#b4496a";
+  const accent = (tenant.accent_color as string) ?? "#8a6a3f";
 
   return (
     <div className="min-h-screen bg-[#fafafa] flex flex-col">
