@@ -267,34 +267,44 @@ export function calculateAnnualPrice(packIds: PackId[]): number {
 }
 
 /**
- * Menü: üstte bir butiğin her gün açtığı 6 ekran, gerisi kapalı gruplarda.
- * Aynı işi yapan sayfalar (Calendar/Schedule/Bookings) ana listeye girmez.
+ * Menü: üstte butiğin kendi seçtiği ekranlar (WordPress gibi), gerisi kapalı
+ * gruplarda. Seçim yoksa her butiğin her gün açtığı 5 ekran varsayılan.
  */
-const PRIMARY: { href: string; label: string }[] = [
-  { href: "/customers", label: "Brides" },
-  { href: "/appointments", label: "Appointments" },
-  { href: "/orders", label: "Orders" },
-  { href: "/products", label: "Stock" },
-  { href: "/invoices", label: "Balances due" },
-];
+export const DEFAULT_NAV_PINS = ["/customers", "/appointments", "/orders", "/products", "/invoices"];
+export const MAX_NAV_PINS = 10;
+const NAV_LABELS: Record<string, string> = { "/customers": "Brides", "/products": "Stock" };
+const ANALYTICS_ITEM: NavItem = { href: "/analytics", label: "Analytics", icon: "insights" };
 
-export function getNavForModules(enabledModules: ModuleId[]) {
-  const available: NavItem[] = [];
+/** Gelen listeyi temizler: tekrar yok, Today yok, en fazla MAX_NAV_PINS. */
+export function normalizeNavPins(value: unknown): string[] | null {
+  if (!Array.isArray(value)) return null;
+  const out: string[] = [];
+  for (const v of value) {
+    if (typeof v !== "string" || !v.startsWith("/") || v === "/dashboard" || out.includes(v)) continue;
+    out.push(v);
+    if (out.length >= MAX_NAV_PINS) break;
+  }
+  return out;
+}
+
+export function getNavForModules(enabledModules: ModuleId[], pins?: string[] | null) {
+  const label = (n: NavItem): NavItem => ({ ...n, label: NAV_LABELS[n.href] ?? n.label });
+  const available: NavItem[] = [ANALYTICS_ITEM];
   for (const id of enabledModules) {
     available.push(...(MODULES[id]?.navItems ?? []).filter((n) => !n.soon));
   }
 
   const primary: NavItem[] = [{ href: "/dashboard", label: "Today", icon: "today" }];
-  for (const p of PRIMARY) {
-    const item = available.find((n) => n.href === p.href);
-    if (item) primary.push({ ...item, label: p.label });
+  for (const href of pins ?? DEFAULT_NAV_PINS) {
+    const item = available.find((n) => n.href === href);
+    if (item && !primary.some((p) => p.href === href)) primary.push(label(item));
   }
   const taken = new Set(primary.map((n) => n.href));
 
   const groups: { section?: string; items: NavItem[] }[] = [{ items: primary }];
 
   const sectionMap: { section: string; moduleIds: ModuleId[]; extra?: NavItem[] }[] = [
-    { section: "Numbers", moduleIds: ["reports"], extra: [{ href: "/analytics", label: "Analytics", icon: "insights" }] },
+    { section: "Numbers", moduleIds: ["reports"], extra: [ANALYTICS_ITEM] },
     { section: "Clients & calendar", moduleIds: ["crm", "appointments"] },
     { section: "Sales", moduleIds: ["sales", "invoices"] },
     { section: "Styling", moduleIds: ["booking", "services"] },
@@ -304,11 +314,11 @@ export function getNavForModules(enabledModules: ModuleId[]) {
   ];
 
   for (const group of sectionMap) {
-    const items: NavItem[] = [...(group.extra ?? [])];
+    const items: NavItem[] = (group.extra ?? []).filter((n) => !taken.has(n.href));
     for (const moduleId of group.moduleIds) {
       if (!enabledModules.includes(moduleId)) continue;
       // Sayfası olmayan girdiler menüye girmez; 404'e götüren bağlantı olmasın.
-      items.push(...MODULES[moduleId].navItems.filter((n) => !n.soon && !taken.has(n.href)));
+      items.push(...MODULES[moduleId].navItems.filter((n) => !n.soon && !taken.has(n.href)).map(label));
     }
     if (items.length > 0) groups.push({ section: group.section, items });
   }

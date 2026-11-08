@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { switchTenant } from "@/app/(dashboard)/locations/actions";
 import { OPEN_PALETTE_EVENT } from "@/components/command-palette";
+import { saveNavPins } from "@/app/(dashboard)/menu/actions";
 
 type NavItem = { href: string; label: string; icon: string };
 type NavGroup = { section?: string; items: NavItem[] };
@@ -33,6 +34,15 @@ export default function Sidebar({
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState<Record<number, boolean>>({});
+  const [editing, setEditing] = useState(false);
+  const [saving, startSaving] = useTransition();
+  // Ana listedeki sayfalar (Today sabit, sayılmaz).
+  const pins = (groups[0]?.items ?? []).filter((n) => n.href !== "/dashboard").map((n) => n.href);
+
+  function togglePin(href: string) {
+    const next = pins.includes(href) ? pins.filter((h) => h !== href) : [...pins, href];
+    startSaving(() => saveNavPins(next));
+  }
 
   useEffect(() => {
     if (!open) return;
@@ -96,7 +106,7 @@ export default function Sidebar({
         {groups.map((group, gi) => {
           const groupHasActive = group.items.some((item) => pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href)));
           // Ana liste her zaman açık; diğer gruplar kapalı başlar, içindeki sayfadaysan açılır.
-          const groupCollapsed = Boolean(group.section && !expandedGroups[gi] && !groupHasActive);
+          const groupCollapsed = Boolean(group.section && !editing && !expandedGroups[gi] && !groupHasActive);
           return (
           <div key={gi} className={gi === 1 ? "mt-6 pt-5 border-t border-stone-100" : gi > 1 ? "mt-1" : ""}>
             {group.section && (
@@ -114,6 +124,29 @@ export default function Sidebar({
             <div id={`nav-group-${gi}`} className={`flex flex-col gap-0.5 ${group.section ? "mb-2" : ""} ${groupCollapsed ? "hidden" : ""}`}>
               {group.items.map((item) => {
                 const active = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
+                if (editing) {
+                  const pinned = gi === 0;
+                  const fixed = item.href === "/dashboard";
+                  return (
+                    <div key={item.href} className="flex items-center gap-3 px-3.5 py-2 rounded-xl text-[13.5px] font-medium text-[var(--ink)]">
+                      <span aria-hidden="true" className="material-symbols-outlined w-5 shrink-0 text-center text-[20px] leading-none text-stone-400">{item.icon}</span>
+                      <span className="flex-1 truncate">{item.label}</span>
+                      {!fixed && (
+                        <button
+                          type="button"
+                          disabled={saving}
+                          onClick={() => togglePin(item.href)}
+                          aria-label={pinned ? `Remove ${item.label} from menu` : `Add ${item.label} to menu`}
+                          className={`flex h-7 w-7 items-center justify-center rounded-lg border transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40 ${
+                            pinned ? "border-stone-200 text-stone-500 hover:border-late hover:text-late" : "border-gold/40 bg-gold-soft text-gold hover:bg-gold hover:text-white"
+                          }`}
+                        >
+                          <span aria-hidden="true" className="material-symbols-outlined text-[18px] leading-none">{pinned ? "remove" : "add"}</span>
+                        </button>
+                      )}
+                    </div>
+                  );
+                }
                 return (
                   <Link
                     key={item.href}
@@ -135,6 +168,21 @@ export default function Sidebar({
                 );
               })}
             </div>
+            {gi === 0 && (
+              <button
+                type="button"
+                onClick={() => setEditing((v) => !v)}
+                className={`mt-2 flex w-full items-center gap-3 px-3.5 py-2 rounded-xl text-[13px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40 ${
+                  editing ? "bg-[var(--ink)] text-white hover:bg-stone-800" : "text-stone-400 hover:text-[var(--ink)] hover:bg-stone-50"
+                }`}
+              >
+                <span aria-hidden="true" className="material-symbols-outlined w-5 shrink-0 text-center text-[18px] leading-none">{editing ? "check" : "tune"}</span>
+                {editing ? "Done" : "Edit menu"}
+              </button>
+            )}
+            {gi === 0 && editing && (
+              <p className="px-3.5 pt-3 text-[12px] leading-snug text-[var(--muted)]">Tap + to put a page in your menu, − to take it out.</p>
+            )}
           </div>
           );
         })}

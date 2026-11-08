@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
-import { getNavForModules } from "@/config/modules";
+import { getNavForModules, normalizeNavPins } from "@/config/modules";
+import { cookies } from "next/headers";
 import { getCurrentTenant, getCurrentUserId } from "@/lib/tenant";
 import { prisma } from "@/lib/prisma";
 import { isDemoTenant } from "@/lib/demo-identity";
@@ -30,7 +31,13 @@ export default async function DashboardLayout({ children }: { children: React.Re
     : [];
   const locations = memberships.map((m) => ({ id: m.tenant_id, name: m.tenant.name }));
 
-  const navGroups = getNavForModules(tenant.enabled_modules);
+  // Ana menü: tarayıcıya özel seçim (demo / yetkisiz) > butiğin seçimi > varsayılan.
+  let cookiePins: string[] | null = null;
+  try {
+    cookiePins = normalizeNavPins(JSON.parse((await cookies()).get("bs_nav_pins")?.value ?? "null"));
+  } catch {}
+  const tenantPins = normalizeNavPins((tenant.settings as Record<string, unknown> | null)?.nav_pins);
+  const navGroups = getNavForModules(tenant.enabled_modules, cookiePins ?? tenantPins);
 
   // Ücretli plandaysa CTA yok. Değilse deneme bitişine kalan gün sayısı gösterilir.
   const isPaid = tenant.plan !== "free" || Boolean(tenant.converted_at);
