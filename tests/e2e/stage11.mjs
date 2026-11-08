@@ -41,7 +41,7 @@ await prisma.order.create({data:{tenant_id:tenant.id,ref_no:`C${stamp}`.slice(0,
 // ── Faturalar ──
 {
   const html=strip(await(await fetch(`${BASE}/invoices`,{headers:H})).text());
-  check("Faturalar sayfası açılıyor", html.includes("Invoices"));
+  check("Faturalar sayfası açılıyor", html.includes("Balances due"));
   check("Açık bakiye toplamı gösteriliyor", html.includes("6,000"));
   check("Borçlu sipariş listede", html.includes(late.ref_no));
   check("Tamamı ödenen sipariş listede DEĞİL", !html.includes(`F${stamp}`.slice(0,14)));

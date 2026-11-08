@@ -4,6 +4,7 @@ import { getCurrentTenant } from "@/lib/tenant";
 import { createWorkflow, toggleWorkflow, deleteWorkflow } from "./actions";
 import ConfirmSubmitButton from "@/components/confirm-submit-button";
 import SubmitButton from "@/components/submit-button";
+import EmptyState from "@/components/empty-state";
 
 const TRIGGERS = [
   { value: "appointment_created", label: "Appointment Created", icon: "event" },
@@ -41,7 +42,7 @@ export default async function WorkflowsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="bg-white rounded-2xl border border-gray-200 p-6">
           <h2 className="text-lg font-serif font-normal text-gray-900 mb-4">New Workflow</h2>
-          <form action={createWorkflow} className="flex flex-col gap-3">
+          <form id="new" action={createWorkflow} className="scroll-mt-24 flex flex-col gap-3">
             <div>
               <label htmlFor="workflow-name" className="block text-sm font-medium text-gray-700 mb-1">Name</label>
               <input id="workflow-name" name="name" required className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none focus-visible:ring-2 focus-visible:ring-gray-500 focus-visible:ring-offset-1" placeholder="e.g. Send reminder before appointment" />
@@ -123,11 +124,9 @@ export default async function WorkflowsPage() {
               })}
             </div>
           ) : (
-            <div className="bg-white rounded-2xl border border-gray-200 p-16 text-center">
-              <span className="material-symbols-outlined text-4xl text-gray-300 mb-4 block">bolt</span>
-              <h3 className="text-lg font-semibold text-gray-900">No automations yet</h3>
-              <p className="text-sm text-gray-500">Create workflows to automate repetitive tasks.</p>
-            </div>
+            <EmptyState icon="bolt" action={{ href: "#new", label: "Create an automation" }} title="No automations yet">
+              Create workflows to automate repetitive tasks.
+            </EmptyState>
           )}
         </div>
       </div>

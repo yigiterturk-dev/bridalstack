@@ -8,6 +8,7 @@ import ModuleGuard from "@/components/module-guard";
 import PortalLinkButton from "@/components/portal-link-button";
 import FollowUpEmailButton from "@/components/follow-up-email-button";
 import { buildFollowUps, buildGownPerformance } from "@/lib/follow-ups";
+import EmptyState from "@/components/empty-state";
 
 export const dynamic = "force-dynamic";
 
@@ -87,23 +88,9 @@ async function FollowUpsContent({ tenantId }: { tenantId: string }) {
     return (
       <div className="animate-fade-in-up">
         <Header count={0} value={0} />
-        <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-16 text-center">
-          <span className="flex items-center justify-center w-16 h-16 rounded-2xl bg-gold-soft text-gold mx-auto mb-5 material-symbols-outlined text-[32px]">
-            favorite
-          </span>
-          <h3 className="text-xl font-bold text-[var(--ink)] mb-2">No try-ons recorded yet</h3>
-          <p className="text-[var(--muted)] mb-8 max-w-md mx-auto">
-            Every time a bride tries a gown, log how she reacted. This page then tells you exactly
-            who to call back, and which gowns get loved but never sell.
-          </p>
-          <Link
-            href="/try-ons"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-stone-900 text-white font-medium text-sm hover:bg-gold transition-all duration-300"
-          >
-            <span className="material-symbols-outlined text-[20px]">add</span>
-            Log a try-on
-          </Link>
-        </div>
+        <EmptyState icon="favorite" action={{ href: "/try-ons", label: "Log a try-on" }} title="No try-ons recorded yet">
+          Every time a bride tries a gown, log how she reacted. This page then tells you exactly who to call back, and which gowns get loved but never sell.
+        </EmptyState>
       </div>
     );
   }
@@ -120,13 +107,9 @@ async function FollowUpsContent({ tenantId }: { tenantId: string }) {
           </h2>
 
           {followUps.length === 0 ? (
-            <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-12 text-center">
-              <span className="material-symbols-outlined text-4xl text-emerald-400 mb-3 block">task_alt</span>
-              <h3 className="text-lg font-bold text-[var(--ink)] mb-1">Nothing outstanding</h3>
-              <p className="text-[var(--muted)]">
-                Every bride who loved a gown has since placed an order. Nice work.
-              </p>
-            </div>
+            <EmptyState icon="task_alt" title="Nothing outstanding">
+              Every bride who loved a gown has since placed an order. Nice work.
+            </EmptyState>
           ) : (
             <div className="flex flex-col gap-3">
               {followUps.map((f) => {

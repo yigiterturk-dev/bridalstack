@@ -19,6 +19,7 @@ import {
   type AlterationStatus,
 } from "@/lib/alterations";
 import { createAlteration, updateAlterationStatus } from "./actions";
+import EmptyState from "@/components/empty-state";
 
 export const dynamic = "force-dynamic";
 
@@ -120,7 +121,7 @@ async function AlterationsContent({ tenantId, timeZone, error, customer }: { ten
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-6 h-fit">
           <h2 className="text-lg font-serif font-normal text-[var(--ink)] mb-4">Log an alteration</h2>
-          <form action={createAlteration} className="flex flex-col gap-3">
+          <form id="new" action={createAlteration} className="scroll-mt-24 flex flex-col gap-3">
             <Field label="Bride" htmlFor="customer_id-select">
               <SelectField
                 name="customer_id"
@@ -192,16 +193,9 @@ async function AlterationsContent({ tenantId, timeZone, error, customer }: { ten
 
         <div className="xl:col-span-2">
           {jobs.length === 0 ? (
-            <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-16 text-center">
-              <span className="flex items-center justify-center w-16 h-16 rounded-2xl bg-violet-50 text-violet-500 mx-auto mb-5 material-symbols-outlined text-[32px]">
-                content_cut
-              </span>
-              <h3 className="text-xl font-bold text-[var(--ink)] mb-2">No alterations logged</h3>
-              <p className="text-[var(--muted)] max-w-md mx-auto">
-                Every hem, bustle and bead. Give each one a promised date and the ones running late
-                climb to the top of this list on their own.
-              </p>
-            </div>
+            <EmptyState icon="content_cut" action={{ href: "#new", label: "Log an alteration" }} title="No alterations logged">
+              Every hem, bustle and bead. Give each one a promised date and the ones running late climb to the top of this list on their own.
+            </EmptyState>
           ) : (
             <div className="flex flex-col gap-3">
               {sorted.map((j) => {

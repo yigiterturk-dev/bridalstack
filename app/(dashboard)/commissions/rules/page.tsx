@@ -8,6 +8,7 @@ import SelectField from "@/components/select-field";
 import { LINE_KINDS, kindLabel } from "@/lib/order-lines";
 import { createRule, toggleRule, deleteRule } from "../actions";
 import ConfirmSubmitButton from "@/components/confirm-submit-button";
+import EmptyState from "@/components/empty-state";
 
 export const dynamic = "force-dynamic";
 
@@ -86,7 +87,7 @@ async function RulesContent({ tenantId, error }: { tenantId: string; error?: str
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-6 h-fit">
           <h2 className="text-lg font-serif font-normal text-[var(--ink)] mb-4">New rule</h2>
-          <form action={createRule} className="flex flex-col gap-3">
+          <form id="new" action={createRule} className="scroll-mt-24 flex flex-col gap-3">
             <Field label="Name *">
               <input name="name" required maxLength={80} className={INPUT} placeholder="e.g. Standard 5%" />
             </Field>
@@ -167,16 +168,9 @@ async function RulesContent({ tenantId, error }: { tenantId: string; error?: str
 
         <div className="xl:col-span-2">
           {rules.length === 0 ? (
-            <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-16 text-center">
-              <span className="flex items-center justify-center w-16 h-16 rounded-2xl bg-amber-50 text-amber-500 mx-auto mb-5 material-symbols-outlined text-[32px]">
-                rule
-              </span>
-              <h3 className="text-xl font-bold text-[var(--ink)] mb-2">No rules yet</h3>
-              <p className="text-[var(--muted)] max-w-md mx-auto">
-                Most boutiques start with one shop-wide percentage, then add a better rate for the
-                stylist who closes the big gowns.
-              </p>
-            </div>
+            <EmptyState icon="rule" action={{ href: "#new", label: "Add a rule" }} title="No rules yet">
+              Most boutiques start with one shop-wide percentage, then add a better rate for the stylist who closes the big gowns.
+            </EmptyState>
           ) : (
             <div className="flex flex-col gap-3">
               {rules.map((r) => (

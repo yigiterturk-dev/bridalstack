@@ -12,6 +12,7 @@ import {
   restockUnits,
 } from "@/lib/inventory";
 import { createReturn, updateReturnStatus } from "./actions";
+import EmptyState from "@/components/empty-state";
 
 export const dynamic = "force-dynamic";
 
@@ -105,7 +106,7 @@ async function ReturnsContent({ tenantId, error }: { tenantId: string; error?: s
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-6 h-fit">
           <h2 className="text-lg font-serif font-normal text-[var(--ink)] mb-4">Log a return</h2>
-          <form action={createReturn} className="flex flex-col gap-3">
+          <form id="new" action={createReturn} className="scroll-mt-24 flex flex-col gap-3">
             <Field label="Bride">
               <SelectField
                 name="customer_id"
@@ -176,16 +177,9 @@ async function ReturnsContent({ tenantId, error }: { tenantId: string; error?: s
 
         <div className="xl:col-span-2">
           {returns.length === 0 ? (
-            <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-16 text-center">
-              <span className="flex items-center justify-center w-16 h-16 rounded-2xl bg-violet-50 text-violet-500 mx-auto mb-5 material-symbols-outlined text-[32px]">
-                swap_horiz
-              </span>
-              <h3 className="text-xl font-bold text-[var(--ink)] mb-2">No returns logged</h3>
-              <p className="text-[var(--muted)] max-w-md mx-auto">
-                Log every gown that comes back. Stock only moves when you mark it received, so an
-                approved return never inflates your rail.
-              </p>
-            </div>
+            <EmptyState icon="swap_horiz" action={{ href: "#new", label: "Log a return" }} title="No returns logged">
+              Log every gown that comes back. Stock only moves when you mark it received, so an approved return never inflates your rail.
+            </EmptyState>
           ) : (
             <div className="flex flex-col gap-3">
               {returns.map((r) => {

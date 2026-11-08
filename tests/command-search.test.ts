@@ -35,3 +35,8 @@ test("buildCommands: hızlı iş yalnız modülü açıksa çıkar, sayfalar tek
   assert.deepEqual(pages.map((p) => p.href), ["/dashboard", "/customers"]);
   assert.equal(pages[1].section, "Clients");
 });
+
+test("buildCommands: sade adlı sayfa eski adıyla da bulunur", () => {
+  const { pages } = buildCommands([{ items: [{ href: "/ledger", label: "Money in & out", icon: "x" }] }]);
+  assert.equal(filterCommands("ledger", pages).length, 1);
+});

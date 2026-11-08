@@ -4,6 +4,7 @@ import { getCurrentTenant } from "@/lib/tenant";
 import { RevenueBars, FillLine, StaffBars, DistributionPie } from "@/components/analytics-charts";
 import { formatPrice } from "@/config/modules";
 import RangeFilter from "./range-filter";
+import EmptyState from "@/components/empty-state";
 
 export const dynamic = "force-dynamic";
 
@@ -251,11 +252,9 @@ export default async function AnalyticsPage({ searchParams }: Props) {
           )}
         </div>
       ) : (
-        <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-16 text-center">
-          <span className="flex items-center justify-center w-16 h-16 rounded-2xl bg-gold-soft text-gold mx-auto mb-5 material-symbols-outlined text-[32px]">insights</span>
-          <h3 className="text-xl font-bold text-[var(--ink)] mb-2">Not enough data yet</h3>
-          <p className="text-[var(--muted)]">Add brides, orders and appointments and your charts will fill in here.</p>
-        </div>
+        <EmptyState icon="insights" action={{ href: "/customers/new", label: "Add a bride" }} title="Not enough data yet">
+          Add brides, orders and appointments and your charts will fill in here.
+        </EmptyState>
       )}
     </div>
   );

@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentTenant } from "@/lib/tenant";
 import { createContract } from "./actions";
 import SelectField from "@/components/select-field";
+import EmptyState from "@/components/empty-state";
 
 export default async function ContractsPage() {
   const tenant = await getCurrentTenant();
@@ -41,7 +42,7 @@ export default async function ContractsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="bg-white rounded-2xl border border-gray-200 p-6">
           <h2 className="text-lg font-serif font-normal text-gray-900 mb-4">New Contract</h2>
-          <form action={createContract} className="flex flex-col gap-3">
+          <form id="new" action={createContract} className="scroll-mt-24 flex flex-col gap-3">
             <div>
               <label htmlFor="customer_id-select" className="block text-sm font-medium text-gray-700 mb-1">Customer *</label>
               <SelectField
@@ -103,11 +104,9 @@ export default async function ContractsPage() {
               })}
             </div>
           ) : (
-            <div className="bg-white rounded-2xl border border-gray-200 p-16 text-center">
-              <span className="material-symbols-outlined text-4xl text-gray-300 mb-4 block">draw</span>
-              <h3 className="text-lg font-semibold text-gray-900">No contracts yet</h3>
-              <p className="text-sm text-gray-500">Create your first e-sign contract.</p>
-            </div>
+            <EmptyState icon="draw" action={{ href: "#new", label: "Create a contract" }} title="No contracts yet">
+              Create your first e-sign contract.
+            </EmptyState>
           )}
         </div>
       </div>

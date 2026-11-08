@@ -17,6 +17,7 @@ import {
   type RentalStatus,
 } from "@/lib/rentals";
 import { collectLateFee, createRental, updateRentalStatus } from "./actions";
+import EmptyState from "@/components/empty-state";
 
 export const dynamic = "force-dynamic";
 
@@ -122,7 +123,7 @@ async function RentalsContent({ tenantId, timeZone, error }: { tenantId: string;
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-6 h-fit">
           <h2 className="text-lg font-serif font-normal text-[var(--ink)] mb-4">Book a rental</h2>
-          <form action={createRental} className="flex flex-col gap-3">
+          <form id="new" action={createRental} className="scroll-mt-24 flex flex-col gap-3">
             <Field label="Bride" htmlFor="customer_id-select">
               <SelectField
                 name="customer_id"
@@ -189,16 +190,9 @@ async function RentalsContent({ tenantId, timeZone, error }: { tenantId: string;
 
         <div className="xl:col-span-2">
           {rentals.length === 0 ? (
-            <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-16 text-center">
-              <span className="flex items-center justify-center w-16 h-16 rounded-2xl bg-violet-50 text-violet-500 mx-auto mb-5 material-symbols-outlined text-[32px]">
-                event_available
-              </span>
-              <h3 className="text-xl font-bold text-[var(--ink)] mb-2">No rentals booked</h3>
-              <p className="text-[var(--muted)] max-w-md mx-auto">
-                Book a gown for a date range and the calendar is held — the same gown can never be
-                promised to two brides for the same weekend.
-              </p>
-            </div>
+            <EmptyState icon="event_available" action={{ href: "#new", label: "Book a rental" }} title="No rentals booked">
+              Book a gown for a date range and the calendar is held — the same gown can never be promised to two brides for the same weekend.
+            </EmptyState>
           ) : (
             <div className="flex flex-col gap-3">
               {sorted.map((r) => {

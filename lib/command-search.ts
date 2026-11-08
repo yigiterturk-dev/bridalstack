@@ -41,6 +41,14 @@ const QUICK_ACTIONS: (Command & { needs: string })[] = [
   { href: "/alterations", label: "Open an alteration", icon: "content_cut", needs: "/alterations", keywords: ["tailor", "hem"] },
 ];
 
+// Sade adı verilen sayfalar eski/sektör adıyla da bulunur.
+const PAGE_KEYWORDS: Record<string, string[]> = {
+  "/purchase-orders": ["purchase orders", "po", "stock"],
+  "/ledger": ["ledger", "accounting", "expenses"],
+  "/installments": ["installments", "layaway"],
+  "/invoices": ["invoices", "owed", "unpaid"],
+};
+
 export function buildCommands(groups: NavGroup[]): { actions: Command[]; pages: Command[] } {
   const seen = new Set<string>();
   const pages: Command[] = [];
@@ -48,7 +56,7 @@ export function buildCommands(groups: NavGroup[]): { actions: Command[]; pages: 
     for (const item of g.items) {
       if (seen.has(item.href)) continue;
       seen.add(item.href);
-      pages.push({ ...item, section: g.section });
+      pages.push({ ...item, section: g.section, keywords: PAGE_KEYWORDS[item.href] });
     }
   }
   const actions = QUICK_ACTIONS.filter((a) => seen.has(a.needs)).map(({ needs: _needs, ...a }) => a);

@@ -74,7 +74,7 @@ async function InvoicesContent({ tenantId, bucket }: { tenantId: string; bucket?
     <div className="animate-fade-in-up">
       <div className="mb-8">
         <h1 className="text-3xl lg:text-4xl font-serif font-normal text-[var(--ink)] flex items-center gap-3">
-          Invoices <span className="text-gold font-normal">✧</span>
+          Balances due <span className="text-gold font-normal">✧</span>
         </h1>
         <p className="text-[var(--muted)] mt-2 font-medium">
           {all.length === 0

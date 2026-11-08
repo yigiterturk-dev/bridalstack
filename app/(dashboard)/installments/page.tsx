@@ -7,6 +7,7 @@ import ModuleGuard from "@/components/module-guard";
 import ConfirmSubmitButton from "@/components/confirm-submit-button";
 import { deriveStatus, daysUntilDue } from "@/lib/installments";
 import { payInstallment, unpayInstallment } from "./actions";
+import EmptyState from "@/components/empty-state";
 
 export const dynamic = "force-dynamic";
 
@@ -84,7 +85,7 @@ async function InstallmentsContent({
   return (
     <div className="animate-fade-in-up">
       <div className="mb-8">
-        <h1 className="text-3xl lg:text-4xl font-serif font-normal text-[var(--ink)]">Installments</h1>
+        <h1 className="text-3xl lg:text-4xl font-serif font-normal text-[var(--ink)]">Payment plans</h1>
         <p className="text-[var(--muted)] mt-2 font-medium">
           {openRows.length === 0
             ? "Every payment plan is settled"
@@ -121,16 +122,9 @@ async function InstallmentsContent({
       </div>
 
       {visible.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-16 text-center">
-          <span className="flex items-center justify-center w-16 h-16 rounded-2xl bg-emerald-50 text-emerald-600 mx-auto mb-5 material-symbols-outlined text-[32px]">
-            receipt
-          </span>
-          <h3 className="text-xl font-bold text-[var(--ink)] mb-2">Nothing here</h3>
-          <p className="text-[var(--muted)] max-w-md mx-auto">
-            Payment plans are created on an order. Once a bride is on a plan, every instalment shows
-            up here on its due date.
-          </p>
-        </div>
+        <EmptyState icon="receipt" action={{ href: "/orders", label: "Go to orders" }} title="Nothing here">
+          Payment plans are created on an order. Once a bride is on a plan, every instalment shows up here on its due date.
+        </EmptyState>
       ) : (
         <div className="flex flex-col gap-2">
           {visible.map((r) => (

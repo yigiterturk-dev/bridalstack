@@ -6,6 +6,7 @@ import ModuleGuard from "@/components/module-guard";
 import SelectField from "@/components/select-field";
 import SubmitButton from "@/components/submit-button";
 import { dateInTimeZone, normalizeTimeZone } from "@/lib/timezone";
+import EmptyState from "@/components/empty-state";
 
 function statusStyle(status: string) {
   switch (status) {
@@ -82,7 +83,7 @@ async function AppointmentsContent({ tenantId, timeZone, customer }: { tenantId:
               Add a bride first, then you can schedule appointments for her.
             </p>
           ) : (
-            <form action={createAppointment} className="flex flex-col gap-5">
+            <form id="new" action={createAppointment} className="scroll-mt-24 flex flex-col gap-5">
               <div>
                 <label htmlFor="customer_id-select" className="block text-xs font-bold text-[var(--muted)] uppercase tracking-wider mb-2">Customer *</label>
                 <SelectField
@@ -183,11 +184,9 @@ async function AppointmentsContent({ tenantId, timeZone, customer }: { tenantId:
               </table>
             </div>
           ) : (
-            <div className="p-16 text-center flex flex-col items-center justify-center h-full">
-              <span className="flex items-center justify-center w-16 h-16 rounded-2xl bg-gold-soft text-gold mb-5 material-symbols-outlined text-[32px]">event_busy</span>
-              <h3 className="text-xl font-bold text-[var(--ink)] mb-2">No appointments</h3>
-              <p className="text-[var(--muted)]">Your calendar is clear. Schedule a fitting to get started.</p>
-            </div>
+            <EmptyState icon="event_busy" action={{ href: "#new", label: "Book a fitting" }} title="No appointments">
+              Your calendar is clear. Schedule a fitting to get started.
+            </EmptyState>
           )}
         </div>
       </div>

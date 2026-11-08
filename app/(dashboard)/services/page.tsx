@@ -7,6 +7,7 @@ import ModuleGuard from "@/components/module-guard";
 import ConfirmSubmitButton from "@/components/confirm-submit-button";
 import { CURRENCY_SYMBOL, formatPrice } from "@/config/modules";
 import SubmitButton from "@/components/submit-button";
+import EmptyState from "@/components/empty-state";
 
 const CATEGORIES = ["Consultation", "Fitting", "Alterations", "Styling", "Accessories", "Hair", "Nails", "Skin", "Massage", "Makeup", "Tattoo", "Barber", "Lashes", "Waxing", "Other"];
 const DURATIONS = [15, 30, 45, 60, 90, 120, 150, 180];
@@ -44,7 +45,7 @@ export default async function ServicesPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="bg-white rounded-2xl border border-gray-200 p-6">
           <h2 className="text-lg font-serif font-normal text-gray-900 mb-4">Add Service</h2>
-          <form action={createService} className="flex flex-col gap-3">
+          <form id="new" action={createService} className="scroll-mt-24 flex flex-col gap-3">
             <div>
               <label htmlFor="service-name" className="block text-sm font-medium text-gray-700 mb-1">Name *</label>
               <input id="service-name" name="name" required className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none" placeholder="e.g. Bridal Consultation" />
@@ -146,11 +147,9 @@ export default async function ServicesPage() {
               ))}
             </div>
           ) : (
-            <div className="bg-white rounded-2xl border border-gray-200 p-16 text-center">
-              <span className="material-symbols-outlined text-4xl text-gray-300 mb-4 block">content_cut</span>
-              <h3 className="text-lg font-semibold text-gray-900 mb-1">No services yet</h3>
-              <p className="text-sm text-gray-500">Add your first service to get started.</p>
-            </div>
+            <EmptyState icon="content_cut" action={{ href: "#new", label: "Add a service" }} title="No services yet">
+              Add your first service to get started.
+            </EmptyState>
           )}
         </div>
       </div>

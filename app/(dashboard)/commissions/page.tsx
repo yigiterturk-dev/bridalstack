@@ -21,6 +21,7 @@ import {
 } from "@/lib/commissions";
 import { markPaid, unmarkPaid } from "./actions";
 import PeriodPicker from "./period-picker";
+import EmptyState from "@/components/empty-state";
 
 export const dynamic = "force-dynamic";
 
@@ -120,23 +121,9 @@ async function CommissionsContent({
       )}
 
       {activeRules.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-16 text-center">
-          <span className="flex items-center justify-center w-16 h-16 rounded-2xl bg-amber-50 text-amber-500 mx-auto mb-5 material-symbols-outlined text-[32px]">
-            payments
-          </span>
-          <h3 className="text-xl font-bold text-[var(--ink)] mb-2">No commission rules yet</h3>
-          <p className="text-[var(--muted)] mb-8 max-w-md mx-auto">
-            Write one rule — say 5% of every order — and this page turns your order history into a
-            payable figure per stylist, month by month.
-          </p>
-          <Link
-            href="/commissions/rules"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-stone-900 text-white font-medium text-sm hover:bg-gold transition-all duration-300"
-          >
-            <span className="material-symbols-outlined text-[20px]">add</span>
-            Write your first rule
-          </Link>
-        </div>
+        <EmptyState icon="payments" action={{ href: "/commissions/rules", label: "Write your first rule" }} title="No commission rules yet">
+          Write one rule — say 5% of every order — and this page turns your order history into a payable figure per stylist, month by month.
+        </EmptyState>
       ) : (
         <>
           <h2 className="text-sm font-serif font-normal text-[var(--muted)] uppercase tracking-wider mb-4">
@@ -144,10 +131,9 @@ async function CommissionsContent({
           </h2>
 
           {rows.length === 0 ? (
-            <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-12 text-center">
-              <h3 className="text-lg font-bold text-[var(--ink)] mb-1">No orders this month</h3>
-              <p className="text-[var(--muted)]">Nothing was sold in {formatPeriod(active)}.</p>
-            </div>
+            <EmptyState action={{ href: "/orders/new", label: "New order" }} title="No orders this month">
+              Nothing was sold in {formatPeriod(active)}.
+            </EmptyState>
           ) : (
             <div className="flex flex-col gap-3 mb-10">
               {rows.map((row) => {

@@ -16,6 +16,7 @@ import {
 import { summarizeSessions, variance, verdict } from "@/lib/cash-session";
 import LedgerPeriodPicker from "./period-picker";
 import { normalizeTimeZone } from "@/lib/timezone";
+import EmptyState from "@/components/empty-state";
 
 export const dynamic = "force-dynamic";
 
@@ -74,7 +75,7 @@ async function LedgerContent({ tenantId, timeZone, period }: { tenantId: string;
     <div className="animate-fade-in-up">
       <div className="mb-8 flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="text-3xl lg:text-4xl font-serif font-normal text-[var(--ink)]">Ledger</h1>
+          <h1 className="text-3xl lg:text-4xl font-serif font-normal text-[var(--ink)]">Money in &amp; out</h1>
           <p className="text-[var(--muted)] mt-2 font-medium">
             {totals.count === 0
               ? `Nothing recorded in ${formatPeriod(active)}`
@@ -133,16 +134,9 @@ async function LedgerContent({ tenantId, timeZone, period }: { tenantId: string;
       )}
 
       {totals.count === 0 ? (
-        <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-16 text-center">
-          <span className="flex items-center justify-center w-16 h-16 rounded-2xl bg-emerald-50 text-emerald-600 mx-auto mb-5 material-symbols-outlined text-[32px]">
-            account_balance_wallet
-          </span>
-          <h3 className="text-xl font-bold text-[var(--ink)] mb-2">This month is empty</h3>
-          <p className="text-[var(--muted)] max-w-md mx-auto">
-            The ledger fills itself from the cash register, collected installments and cleared
-            checks. Nothing here is typed twice.
-          </p>
-        </div>
+        <EmptyState icon="account_balance_wallet" action={{ href: "/cash", label: "Open the register" }} title="This month is empty">
+          The ledger fills itself from the cash register, collected installments and cleared checks. Nothing here is typed twice.
+        </EmptyState>
       ) : (
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
           <div className="xl:col-span-2">

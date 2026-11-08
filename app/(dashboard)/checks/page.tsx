@@ -15,6 +15,7 @@ import {
 import { createCheck, moveCheck, deleteCheck } from "./actions";
 import ConfirmSubmitButton from "@/components/confirm-submit-button";
 import { normalizeTimeZone } from "@/lib/timezone";
+import EmptyState from "@/components/empty-state";
 
 export const dynamic = "force-dynamic";
 
@@ -105,7 +106,7 @@ async function ChecksContent({ tenantId, timeZone, error }: { tenantId: string; 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-6 h-fit">
           <h2 className="text-lg font-serif font-normal text-[var(--ink)] mb-4">Log a check</h2>
-          <form action={createCheck} className="flex flex-col gap-3">
+          <form id="new" action={createCheck} className="scroll-mt-24 flex flex-col gap-3">
             <Field label="Direction">
               <SelectField
                 name="direction"
@@ -163,16 +164,9 @@ async function ChecksContent({ tenantId, timeZone, error }: { tenantId: string; 
 
         <div className="xl:col-span-2">
           {checks.length === 0 ? (
-            <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-16 text-center">
-              <span className="flex items-center justify-center w-16 h-16 rounded-2xl bg-emerald-50 text-emerald-600 mx-auto mb-5 material-symbols-outlined text-[32px]">
-                request_quote
-              </span>
-              <h3 className="text-xl font-bold text-[var(--ink)] mb-2">No checks logged</h3>
-              <p className="text-[var(--muted)] max-w-md mx-auto">
-                A check only becomes money in the ledger when you mark it cleared — and if it
-                bounces, that entry comes straight back out.
-              </p>
-            </div>
+            <EmptyState icon="request_quote" action={{ href: "#new", label: "Log a check" }} title="No checks logged">
+              A check only becomes money in the ledger when you mark it cleared — and if it bounces, that entry comes straight back out.
+            </EmptyState>
           ) : (
             <div className="flex flex-col gap-6">
               <Section title="Waiting" checks={outstanding} today={today} />

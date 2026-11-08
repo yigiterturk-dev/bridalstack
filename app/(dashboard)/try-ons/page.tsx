@@ -7,6 +7,7 @@ import { uploadsEnabled } from "@/lib/uploads";
 import { addTryOn } from "./actions";
 import SelectField from "@/components/select-field";
 import SubmitButton from "@/components/submit-button";
+import EmptyState from "@/components/empty-state";
 
 const REACTIONS = [
   { value: "loved", emoji: "😍", label: "Loved it" },
@@ -73,7 +74,7 @@ async function TryOnsContent({ tenantId }: { tenantId: string }) {
         {/* New Try-On Form */}
         <div className="bg-white rounded-2xl border border-gray-200 p-6">
           <h2 className="text-lg font-serif font-normal text-gray-900 mb-4">Log a Try-On</h2>
-          <form action={addTryOn} className="flex flex-col gap-3">
+          <form id="new" action={addTryOn} className="scroll-mt-24 flex flex-col gap-3">
             <div>
               <label htmlFor="customer_id-select" className="block text-sm font-medium text-gray-700 mb-1">Bride *</label>
               <SelectField
@@ -198,11 +199,9 @@ async function TryOnsContent({ tenantId }: { tenantId: string }) {
               })}
             </div>
           ) : (
-            <div className="bg-white rounded-2xl border border-gray-200 p-16 text-center">
-              <span className="material-symbols-outlined text-4xl text-gray-300 mb-4 block">checkroom</span>
-              <h3 className="text-lg font-semibold text-gray-900 mb-1">No try-ons yet</h3>
-              <p className="text-sm text-gray-500">Log gown try-ons during appointments to build bride profiles.</p>
-            </div>
+            <EmptyState icon="checkroom" action={{ href: "#new", label: "Log a try-on" }} title="No try-ons yet">
+              Log gown try-ons during appointments to build bride profiles.
+            </EmptyState>
           )}
         </div>
       </div>

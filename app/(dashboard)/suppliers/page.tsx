@@ -8,6 +8,7 @@ import { todayISO } from "@/lib/finance";
 import { normalizeTimeZone } from "@/lib/timezone";
 import { isLate, summarize } from "@/lib/purchasing";
 import { createSupplier, toggleSupplier, deleteSupplier } from "./actions";
+import EmptyState from "@/components/empty-state";
 
 export const dynamic = "force-dynamic";
 
@@ -79,7 +80,7 @@ async function SuppliersContent({ tenantId, timeZone }: { tenantId: string; time
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-6 h-fit">
           <h2 className="text-lg font-serif font-normal text-[var(--ink)] mb-4">Add supplier</h2>
-          <form action={createSupplier} className="flex flex-col gap-3">
+          <form id="new" action={createSupplier} className="scroll-mt-24 flex flex-col gap-3">
             <Field label="Name *">
               <input name="name" required maxLength={120} className={INPUT} placeholder="e.g. Maggie Sottero" />
             </Field>
@@ -116,16 +117,9 @@ async function SuppliersContent({ tenantId, timeZone }: { tenantId: string; time
 
         <div className="xl:col-span-2">
           {suppliers.length === 0 ? (
-            <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-16 text-center">
-              <span className="flex items-center justify-center w-16 h-16 rounded-2xl bg-violet-50 text-violet-500 mx-auto mb-5 material-symbols-outlined text-[32px]">
-                local_shipping
-              </span>
-              <h3 className="text-xl font-bold text-[var(--ink)] mb-2">No suppliers yet</h3>
-              <p className="text-[var(--muted)] max-w-md mx-auto">
-                Add the designers and wholesalers you order from. Lead times here become the delivery
-                dates you promise your brides.
-              </p>
-            </div>
+            <EmptyState icon="local_shipping" action={{ href: "#new", label: "Add a supplier" }} title="No suppliers yet">
+              Add the designers and wholesalers you order from. Lead times here become the delivery dates you promise your brides.
+            </EmptyState>
           ) : (
             <div className="flex flex-col gap-3">
               {suppliers.map((s) => {

@@ -22,6 +22,7 @@ import MovementForm from "./movement-form";
 import { closeCashSession, deleteMovement, openCashSession } from "./actions";
 import ConfirmSubmitButton from "@/components/confirm-submit-button";
 import { normalizeTimeZone } from "@/lib/timezone";
+import EmptyState from "@/components/empty-state";
 
 export const dynamic = "force-dynamic";
 
@@ -226,16 +227,9 @@ async function CashContent({ tenantId, timeZone, date, error }: { tenantId: stri
 
         <div className="xl:col-span-2">
           {movements.length === 0 ? (
-            <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-16 text-center">
-              <span className="flex items-center justify-center w-16 h-16 rounded-2xl bg-emerald-50 text-emerald-600 mx-auto mb-5 material-symbols-outlined text-[32px]">
-                account_balance
-              </span>
-              <h3 className="text-xl font-bold text-[var(--ink)] mb-2">Nothing today</h3>
-              <p className="text-[var(--muted)] max-w-md mx-auto">
-                Every deposit, balance and expense you record here rolls straight into the ledger.
-                Installment payments land here on their own.
-              </p>
-            </div>
+            <EmptyState icon="account_balance" title="Nothing today">
+              Every deposit, balance and expense you record here rolls straight into the ledger. Installment payments land here on their own.
+            </EmptyState>
           ) : (
             <>
               <div className="flex flex-wrap gap-2 mb-4">

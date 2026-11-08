@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentTenant } from "@/lib/tenant";
 import { createTrunkShow } from "./actions";
 import SubmitButton from "@/components/submit-button";
+import EmptyState from "@/components/empty-state";
 
 const ERRORS: Record<string, string> = {
   required: "Enter an event name and both dates.",
@@ -47,7 +48,7 @@ export default async function TrunkShowsPage({ searchParams }: Props) {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="bg-white rounded-2xl border border-gray-200 p-6">
           <h2 className="text-lg font-serif font-normal text-gray-900 mb-4">New Trunk Show</h2>
-          <form action={createTrunkShow} className="flex flex-col gap-3">
+          <form id="new" action={createTrunkShow} className="scroll-mt-24 flex flex-col gap-3">
             <div>
               <label htmlFor="trunk-show-name" className="block text-sm font-medium text-gray-700 mb-1">Event Name *</label>
               <input id="trunk-show-name" name="name" required className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none" placeholder="e.g. Pronovias Spring 2026" />
@@ -104,10 +105,9 @@ export default async function TrunkShowsPage({ searchParams }: Props) {
               })}
             </div>
           ) : (
-            <div className="bg-white rounded-2xl border border-gray-200 p-16 text-center">
-              <span className="material-symbols-outlined text-4xl text-gray-300 mb-4 block">event_note</span>
-              <h3 className="text-lg font-semibold text-gray-900">No trunk shows yet</h3>
-            </div>
+            <EmptyState icon="event_note" action={{ href: "#new", label: "Plan a trunk show" }} title="No trunk shows yet">
+              A few days when a designer’s full collection is in your shop. Invite the brides who’d love it.
+            </EmptyState>
           )}
         </div>
       </div>

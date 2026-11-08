@@ -9,6 +9,7 @@ import ModuleGuard from "@/components/module-guard";
 import SelectField from "@/components/select-field";
 import { PO_STATUS_LABELS, isLate, summarize, type PoStatus } from "@/lib/purchasing";
 import { createPurchaseOrder } from "./actions";
+import EmptyState from "@/components/empty-state";
 
 export const dynamic = "force-dynamic";
 
@@ -70,7 +71,7 @@ async function PurchaseOrdersContent({ tenantId, timeZone, error }: { tenantId: 
   return (
     <div className="animate-fade-in-up">
       <div className="mb-10">
-        <h1 className="text-3xl lg:text-4xl font-serif font-normal text-[var(--ink)]">Purchase Orders</h1>
+        <h1 className="text-3xl lg:text-4xl font-serif font-normal text-[var(--ink)]">Buying</h1>
         <p className="text-[var(--muted)] mt-2 font-medium">
           {open.length === 0
             ? "Gowns on their way in — ordered, received, and costed"
@@ -85,27 +86,14 @@ async function PurchaseOrdersContent({ tenantId, timeZone, error }: { tenantId: 
       )}
 
       {suppliers.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-16 text-center">
-          <span className="flex items-center justify-center w-16 h-16 rounded-2xl bg-violet-50 text-violet-500 mx-auto mb-5 material-symbols-outlined text-[32px]">
-            local_shipping
-          </span>
-          <h3 className="text-xl font-bold text-[var(--ink)] mb-2">Add a supplier first</h3>
-          <p className="text-[var(--muted)] max-w-md mx-auto mb-6">
-            A purchase order is placed with somebody. Add the house you buy from and its lead time,
-            then come back here.
-          </p>
-          <Link
-            href="/suppliers"
-            className="inline-block px-5 py-2.5 bg-stone-900 text-white rounded-xl text-sm font-semibold hover:bg-gold transition-colors"
-          >
-            Go to suppliers
-          </Link>
-        </div>
+        <EmptyState icon="local_shipping" action={{ href: "/suppliers", label: "Add a supplier" }} title="Add a supplier first">
+          A purchase order is placed with somebody. Add the house you buy from and its lead time, then come back here.
+        </EmptyState>
       ) : (
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
           <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-6 h-fit">
             <h2 className="text-lg font-serif font-normal text-[var(--ink)] mb-4">Start an order</h2>
-            <form action={createPurchaseOrder} className="flex flex-col gap-3">
+            <form id="new" action={createPurchaseOrder} className="scroll-mt-24 flex flex-col gap-3">
               <Field label="Supplier">
                 <SelectField
                   name="supplier_id"
@@ -141,16 +129,9 @@ async function PurchaseOrdersContent({ tenantId, timeZone, error }: { tenantId: 
 
           <div className="xl:col-span-2">
             {orders.length === 0 ? (
-              <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-16 text-center">
-                <span className="flex items-center justify-center w-16 h-16 rounded-2xl bg-violet-50 text-violet-500 mx-auto mb-5 material-symbols-outlined text-[32px]">
-                  inbox
-                </span>
-                <h3 className="text-xl font-bold text-[var(--ink)] mb-2">No purchase orders yet</h3>
-                <p className="text-[var(--muted)] max-w-md mx-auto">
-                  This is how stock gets in. Order from a supplier, tick off what actually arrives,
-                  and the rail and the ledger both follow on their own.
-                </p>
-              </div>
+              <EmptyState icon="inbox" action={{ href: "#new", label: "Order from a supplier" }} title="Nothing ordered yet">
+                This is how stock gets in. Order from a supplier, tick off what actually arrives, and the rail and the ledger both follow on their own.
+              </EmptyState>
             ) : (
               <div className="flex flex-col gap-3">
                 {orders.map((o) => {

@@ -81,7 +81,7 @@ export const MODULES: Record<ModuleId, ModuleDefinition> = {
     pack: "sales",
     routes: ["/invoices", "/invoices/new", "/invoices/[id]"],
     navItems: [
-      { href: "/invoices", label: "Invoices", icon: "description" },
+      { href: "/invoices", label: "Balances due", icon: "description" },
     ],
     dependencies: ["sales"],
   },
@@ -106,8 +106,8 @@ export const MODULES: Record<ModuleId, ModuleDefinition> = {
     routes: ["/cash", "/installments", "/ledger", "/checks"],
     navItems: [
       { href: "/cash", label: "Cash", icon: "account_balance" },
-      { href: "/installments", label: "Installments", icon: "receipt" },
-      { href: "/ledger", label: "Ledger", icon: "account_balance_wallet" },
+      { href: "/installments", label: "Payment plans", icon: "receipt" },
+      { href: "/ledger", label: "Money in & out", icon: "account_balance_wallet" },
       { href: "/checks", label: "Checks", icon: "request_quote" },
     ],
     dependencies: ["sales"],
@@ -130,7 +130,7 @@ export const MODULES: Record<ModuleId, ModuleDefinition> = {
       { href: "/try-ons", label: "Try-Ons", icon: "favorite" },
       { href: "/trunk-shows", label: "Trunk Shows", icon: "event_note" },
       { href: "/suppliers", label: "Suppliers", icon: "local_shipping" },
-      { href: "/purchase-orders", label: "Purchase Orders", icon: "inbox" },
+      { href: "/purchase-orders", label: "Buying", icon: "inbox" },
       { href: "/inventory-count", label: "Stock Count", icon: "inventory" },
       { href: "/returns", label: "Returns", icon: "swap_horiz" },
       { href: "/rentals", label: "Rentals", icon: "event_available" },

@@ -5,6 +5,7 @@ import { getCurrentTenant } from "@/lib/tenant";
 import ModuleGuard from "@/components/module-guard";
 import { summarizeCount } from "@/lib/inventory";
 import { startCount } from "./actions";
+import EmptyState from "@/components/empty-state";
 
 export const dynamic = "force-dynamic";
 
@@ -77,7 +78,7 @@ async function CountsContent({ tenantId, error }: { tenantId: string; error?: st
           <p className="text-sm text-[var(--muted)] mb-4">
             Today&apos;s stock levels are frozen as the expected figures the moment you start.
           </p>
-          <form action={startCount} className="flex flex-col sm:flex-row gap-3">
+          <form id="new" action={startCount} className="scroll-mt-24 flex flex-col sm:flex-row gap-3">
             <input
               name="reference"
               maxLength={80}
@@ -97,15 +98,9 @@ async function CountsContent({ tenantId, error }: { tenantId: string; error?: st
       <h2 className="text-sm font-serif font-normal text-[var(--muted)] uppercase tracking-wider mb-4">History</h2>
 
       {counts.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-16 text-center">
-          <span className="flex items-center justify-center w-16 h-16 rounded-2xl bg-violet-50 text-violet-500 mx-auto mb-5 material-symbols-outlined text-[32px]">
-            inventory
-          </span>
-          <h3 className="text-xl font-bold text-[var(--ink)] mb-2">No counts yet</h3>
-          <p className="text-[var(--muted)] max-w-md mx-auto">
-            A count tells you what quietly walked out of the shop. Most boutiques run one every quarter.
-          </p>
-        </div>
+        <EmptyState icon="inventory" action={{ href: "#new", label: "Start a count" }} title="No counts yet">
+          A count tells you what quietly walked out of the shop. Most boutiques run one every quarter.
+        </EmptyState>
       ) : (
         <div className="flex flex-col gap-3">
           {counts.map((c) => {
