@@ -76,6 +76,8 @@ export async function POST(req: NextRequest) {
   const customerId = typeof data.customer?.customer_id === "string" ? data.customer.customer_id : null;
   const metadata = data.metadata && typeof data.metadata === "object" ? data.metadata : {};
   const metadataTenantId = typeof metadata.tenant_id === "string" ? metadata.tenant_id : null;
+  const metadataInterval =
+    metadata.interval === "annual" ? "annual" : metadata.interval === "monthly" ? "monthly" : undefined;
   const pack = typeof data.product_id === "string" ? packForProductId(data.product_id) : null;
 
   if (!subscriptionId || !pack) {
@@ -106,6 +108,7 @@ export async function POST(req: NextRequest) {
       pack,
       subscriptionId,
       customerId,
+      interval: metadataInterval,
     });
 
     await prisma.$transaction(async (tx) => {

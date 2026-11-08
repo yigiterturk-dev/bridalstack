@@ -49,10 +49,10 @@ Displayed prices come from `config/modules.ts`; the amount actually charged come
 from the Dodo product. When you change a price, create a new Dodo product and
 update the ID, or the screen and the charge will disagree.
 
-Annual billing applies to **new** subscriptions. Moving a shop that already pays
-monthly to the annual price is not supported from the app yet: cancel that
-subscription and re-subscribe on the annual plan, or handle it in the Dodo
-dashboard.
+Switching an existing subscription between monthly and annual is supported from
+`/settings`: the old subscription is cancelled and the pack is purchased again at
+the selected interval. The switch only succeeds when the target interval's four
+product IDs are configured.
 
 ## 2. Resend (transactional email)
 

@@ -1,4 +1,4 @@
-import { PAID_PACK_IDS, type PaidPackId } from "./dodo-state.ts";
+import { PAID_PACK_IDS, type BillingInterval, type PaidPackId } from "./dodo-state.ts";
 
 /**
  * Dodo yapılandırmasının saf kısmı.
@@ -11,7 +11,7 @@ import { PAID_PACK_IDS, type PaidPackId } from "./dodo-state.ts";
  * Dodo ürünüyle satar; webhook tarafında iki kimlik de aynı pakete çözülür.
  */
 
-export type BillingInterval = "monthly" | "annual";
+export type { BillingInterval };
 
 function fromEnv(env: Record<string, string | undefined>, key: string): string {
   return (env[key] || "").trim();

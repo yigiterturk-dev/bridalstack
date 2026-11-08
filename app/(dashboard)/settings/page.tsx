@@ -6,7 +6,7 @@ import { PACKS, MODULES, ALL_PACK_IDS, calculateMonthlyPrice, annualPrice, isPac
 import { hasPermission, ROLE_LABELS, normalizeRole } from "@/lib/rbac";
 import { UpgradeButton, ManageBillingButton } from "@/components/billing-buttons";
 import { BILLING_CONFIGURED, BILLING_ANNUAL_CONFIGURED } from "@/lib/dodo";
-import { readDodoState } from "@/lib/dodo-state";
+import { currentBillingInterval, readDodoState } from "@/lib/dodo-state";
 import SignOutButton from "@/components/sign-out-button";
 import CopyField from "@/components/copy-field";
 import SubmitButton from "@/components/submit-button";
@@ -65,7 +65,9 @@ export default async function SettingsPage({ searchParams }: Props) {
   const trialEligible = canEdit && canStartTrial(tenant);
   const hasDemoData = tenant.settings?.demo_data === true;
   const bookingUrl = `${origin}/book/${tenant.slug}`;
-  const dodoCustomerId = readDodoState(tenant.settings as Record<string, unknown>).customerId;
+  const dodoState = readDodoState(tenant.settings as Record<string, unknown>);
+  const dodoCustomerId = dodoState.customerId;
+  const currentInterval = currentBillingInterval(dodoState);
   const timeZone = normalizeTimeZone((tenant.settings as Record<string, unknown>)?.time_zone);
 
   return (
@@ -294,9 +296,21 @@ export default async function SettingsPage({ searchParams }: Props) {
             <div className="text-sm font-medium text-gray-500">{formatPrice(currentPrice)}/mo</div>
           </div>
           <div className="flex gap-3">
-            <UpgradeButton currentPacks={tenant.packs} billingConfigured={BILLING_CONFIGURED} billingAnnualConfigured={BILLING_ANNUAL_CONFIGURED} />
+            <UpgradeButton currentPacks={tenant.packs} currentInterval={currentInterval} billingConfigured={BILLING_CONFIGURED} billingAnnualConfigured={BILLING_ANNUAL_CONFIGURED} />
             {Boolean(dodoCustomerId) && <ManageBillingButton />}
           </div>
+          {canEdit && (
+            <p className="mt-4 text-xs text-gray-500">
+              Run more than one shop?{" "}
+              <a
+                href="mailto:hello@bridalstack.com?subject=Multi-location%20BridalStack"
+                className="font-semibold text-gray-700 underline underline-offset-2 hover:text-rose-600 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
+              >
+                Talk to us about multi-location
+              </a>
+              .
+            </p>
+          )}
         </div>
 
         {/* Active Packs */}

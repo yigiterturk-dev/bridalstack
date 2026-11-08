@@ -119,6 +119,7 @@ export async function createDodoCheckout(input: {
   customerId?: string | null;
   tenantId: string;
   packs: PackId[];
+  interval: BillingInterval;
   returnUrl: string;
   cancelUrl: string;
 }): Promise<{ url: string }> {
@@ -140,6 +141,7 @@ export async function createDodoCheckout(input: {
       metadata: {
         tenant_id: input.tenantId,
         packs: JSON.stringify(input.packs),
+        interval: input.interval,
       },
     },
   });

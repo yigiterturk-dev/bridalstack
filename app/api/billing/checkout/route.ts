@@ -13,7 +13,7 @@ import {
   createDodoCheckout,
   DodoError,
 } from "@/lib/dodo";
-import { PAID_PACK_IDS, readDodoState, removeSubscription } from "@/lib/dodo-state";
+import { PAID_PACK_IDS, readDodoState, removeSubscription, subscriptionDiff } from "@/lib/dodo-state";
 import { clientIp, rateLimit } from "@/lib/ratelimit";
 
 /**
@@ -82,9 +82,9 @@ export async function POST(req: NextRequest) {
     (PAID_PACK_IDS as string[]).includes(p)
   );
   const state = readDodoState(tenant.settings as Record<string, unknown>);
-  const currentPaid = PAID_PACK_IDS.filter((pack) => Boolean(state.subscriptions[pack]));
-  const toCancel = currentPaid.filter((pack) => !requestedPaid.includes(pack));
-  const toBuy = requestedPaid.filter((pack) => !currentPaid.includes(pack));
+  // Aralık değişikliği (aylık ↔ yıllık) eski aboneliğin iptalini ve yeni
+  // aralıkta yeniden satın almayı gerektirir; aynı paket "değişmedi" sayılmaz.
+  const { toCancel, toBuy } = subscriptionDiff(state, requestedPaid, interval);
 
   // 1) Kaldırılan modüller: önce sağlayıcıda iptal, sonra yerel plan.
   if (toCancel.length > 0) {
@@ -106,13 +106,18 @@ export async function POST(req: NextRequest) {
       const subscriptionId = state.subscriptions[pack];
       if (subscriptionId) nextSettings = removeSubscription(nextSettings, subscriptionId).settings;
     }
-    const nextPacks = [...FREE_PACK_IDS, ...requestedPaid];
+    // İptal edilen (kaldırılan veya aralığı değişen) paket, yeni ödeme
+    // onaylanana kadar AÇIK KALMAZ — aksi hâlde checkout'u yarıda bırakan
+    // kiracı ücretli modülü bedava kullanmaya devam ederdi.
+    const remainingPaid = requestedPaid.filter(
+      (pack) => Boolean(state.subscriptions[pack]) && !toCancel.includes(pack),
+    );
     await prisma.tenant.update({
       where: { id: tenant.id },
       data: {
         settings: nextSettings as object,
-        packs: nextPacks,
-        plan: requestedPaid.length > 0 ? "starter" : "free",
+        packs: [...FREE_PACK_IDS, ...remainingPaid],
+        plan: remainingPaid.length > 0 ? "starter" : "free",
       },
     });
   }
@@ -149,6 +154,7 @@ export async function POST(req: NextRequest) {
       customerId: state.customerId,
       tenantId: tenant.id,
       packs: [...FREE_PACK_IDS, ...requestedPaid],
+      interval,
       returnUrl: `${req.nextUrl.origin}/settings?success=subscribed`,
       cancelUrl: `${req.nextUrl.origin}/settings?cancelled=1`,
     });

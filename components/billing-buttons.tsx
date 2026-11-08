@@ -17,10 +17,12 @@ type Interval = "monthly" | "annual";
 
 export function UpgradeButton({
   currentPacks,
+  currentInterval,
   billingConfigured,
   billingAnnualConfigured = false,
 }: {
   currentPacks: PackId[];
+  currentInterval?: "monthly" | "annual";
   billingConfigured: boolean;
   billingAnnualConfigured?: boolean;
 }) {
@@ -28,7 +30,9 @@ export function UpgradeButton({
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [billingInterval, setBillingInterval] = useState<Interval>(billingConfigured ? "monthly" : "annual");
+  const [billingInterval, setBillingInterval] = useState<Interval>(
+    currentInterval ?? (billingConfigured ? "monthly" : "annual")
+  );
 
   const paidSelected = selectedPacks.filter((p) => p !== "base");
   const newMonthly = calculateMonthlyPrice(paidSelected);
@@ -37,7 +41,11 @@ export function UpgradeButton({
   const allMonthly = calculateMonthlyPrice(SELLABLE_PACK_IDS);
   const allAnnual = calculateAnnualPrice(SELLABLE_PACK_IDS);
   const allSelected = SELLABLE_PACK_IDS.every((p) => selectedPacks.includes(p));
-  const hasChanges = JSON.stringify([...selectedPacks].sort()) !== JSON.stringify([...currentPacks].sort());
+  const packsChanged = JSON.stringify([...selectedPacks].sort()) !== JSON.stringify([...currentPacks].sort());
+  // Aralık tek başına da bir değişikliktir: mevcut ücretli paket varsa
+  // aylık → yıllık geçişi checkout'u tetiklemeli.
+  const intervalChanged = paidSelected.length > 0 && Boolean(currentInterval) && billingInterval !== currentInterval;
+  const hasChanges = packsChanged || intervalChanged;
 
   function togglePack(packId: PackId) {
     if (packId === "base" || !isPackSellable(packId)) return;

@@ -16,9 +16,12 @@ import { FREE_PACK_IDS, type PackId } from "../config/modules.ts";
 export type PaidPackId = "sales" | "finance" | "inventory" | "pro";
 export const PAID_PACK_IDS: PaidPackId[] = ["sales", "finance", "inventory", "pro"];
 
+export type BillingInterval = "monthly" | "annual";
+
 export type DodoState = {
   customerId: string | null;
   subscriptions: Partial<Record<PaidPackId, string>>;
+  intervals: Partial<Record<PaidPackId, BillingInterval>>;
 };
 
 export class DodoStateError extends Error {}
@@ -39,9 +42,17 @@ export function readDodoState(settings: Record<string, unknown> | null | undefin
     const id = rawSubscriptions[pack];
     if (typeof id === "string" && id.trim()) subscriptions[pack] = id.trim();
   }
+  // Aralık kaydı yoksa (bu alan eklenmeden önce açılmış abonelik) aylık sayılır.
+  const rawIntervals = isRecord(root.intervals) ? root.intervals : {};
+  const intervals: Partial<Record<PaidPackId, BillingInterval>> = {};
+  for (const pack of PAID_PACK_IDS) {
+    const value = rawIntervals[pack];
+    if (value === "monthly" || value === "annual") intervals[pack] = value;
+  }
   return {
     customerId: typeof root.customer_id === "string" && root.customer_id.trim() ? root.customer_id.trim() : null,
     subscriptions,
+    intervals,
   };
 }
 
@@ -54,6 +65,7 @@ function writeDodoState(settings: Record<string, unknown> | null | undefined, st
       ...previousDodo,
       customer_id: state.customerId,
       subscriptions: state.subscriptions,
+      intervals: state.intervals,
     },
   };
 }
@@ -82,7 +94,7 @@ export type SubscriptionChange = {
 /** `subscription.active` / `subscription.renewed`: paketi aboneliğe bağlar. */
 export function applyActiveSubscription(
   settings: Record<string, unknown> | null | undefined,
-  input: { pack: PaidPackId; subscriptionId: string; customerId?: string | null },
+  input: { pack: PaidPackId; subscriptionId: string; customerId?: string | null; interval?: BillingInterval },
 ): SubscriptionChange {
   if (!isPaidPack(input.pack)) throw new DodoStateError("Unknown paid pack.");
   if (!input.subscriptionId.trim()) throw new DodoStateError("Subscription id is required.");
@@ -92,6 +104,9 @@ export function applyActiveSubscription(
   const state: DodoState = {
     customerId: input.customerId?.trim() || previous.customerId,
     subscriptions: { ...previous.subscriptions, [input.pack]: input.subscriptionId.trim() },
+    intervals: input.interval
+      ? { ...previous.intervals, [input.pack]: input.interval }
+      : previous.intervals,
   };
   const packs = packsFromState(state);
   const paidNow = paidPacksFromState(state).length > 0;
@@ -131,7 +146,9 @@ export function removeSubscription(
 
   const subscriptions = { ...previous.subscriptions };
   delete subscriptions[removedPack];
-  const state: DodoState = { customerId: previous.customerId, subscriptions };
+  const intervals = { ...previous.intervals };
+  delete intervals[removedPack];
+  const state: DodoState = { customerId: previous.customerId, subscriptions, intervals };
   const packs = packsFromState(state);
   return {
     settings: writeDodoState(settings, state),
@@ -140,5 +157,39 @@ export function removeSubscription(
     plan: planFromPacks(packs),
     converted: false,
     removedPack,
+  };
+}
+
+/** Bir paketin faturalama aralığı; kayıt yoksa aylık kabul edilir. */
+export function effectiveInterval(state: DodoState, pack: PaidPackId): BillingInterval {
+  return state.intervals[pack] ?? "monthly";
+}
+
+/** Kiracının mevcut aralığı (ilk ücretli paket); hiç paket yoksa undefined. */
+export function currentBillingInterval(state: DodoState): BillingInterval | undefined {
+  const paid = paidPacksFromState(state);
+  return paid.length > 0 ? effectiveInterval(state, paid[0]) : undefined;
+}
+
+/**
+ * İstenen planı mevcut aboneliklerle karşılaştırır.
+ *
+ * Aralık değişikliği (aylık ↔ yıllık) aynı pakette "değişiklik yok" sayılamaz:
+ * eski abonelik iptal edilip yeni aralıkta yeniden satın alınmalıdır. Aralık
+ * kaydı olmayan eski abonelikler aylık kabul edilir.
+ */
+export function subscriptionDiff(
+  state: DodoState,
+  requestedPaid: PaidPackId[],
+  requestedInterval: BillingInterval,
+): { toCancel: PaidPackId[]; toBuy: PaidPackId[] } {
+  const requested = new Set(requestedPaid);
+  const current = paidPacksFromState(state);
+  const mismatch = (pack: PaidPackId) => effectiveInterval(state, pack) !== requestedInterval;
+  return {
+    toCancel: current.filter((pack) => !requested.has(pack) || mismatch(pack)),
+    toBuy: PAID_PACK_IDS.filter(
+      (pack) => requested.has(pack) && (!state.subscriptions[pack] || mismatch(pack)),
+    ),
   };
 }
