@@ -7,7 +7,7 @@ import { formatPrice } from "@/config/modules";
 import RangeFilter from "./range-filter";
 import PageHead from "@/components/page-head";
 import EmptyState from "@/components/empty-state";
-import { dateInTimeZone, normalizeTimeZone, startOfDayInTimeZone } from "@/lib/timezone";
+import { addCalendarDays, dateInTimeZone, normalizeTimeZone, startOfDayInTimeZone } from "@/lib/timezone";
 
 export const dynamic = "force-dynamic";
 
@@ -16,14 +16,6 @@ const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const LOW_STOCK_THRESHOLD = 3;
 
 type Props = { searchParams: Promise<{ range?: string }> };
-
-/** Pazartesi 00:00 — haftalık doluluk grafiğinin başlangıcı. */
-function startOfWeek(d: Date) {
-  const start = new Date(d);
-  start.setDate(start.getDate() - ((start.getDay() + 6) % 7));
-  start.setHours(0, 0, 0, 0);
-  return start;
-}
 
 /** "09:00" — "18:00" arasını saat cinsinden verir; bozuk değerde 0 döner. */
 function hoursBetween(start: string, end: string) {
@@ -57,11 +49,13 @@ export default async function AnalyticsPage({ searchParams }: Props) {
   };
   const revenueStartDate = `${monthKey(tzYear, tzMonth - 1 - 5)}-01`;
   const revenueStart = startOfDayInTimeZone(revenueStartDate, tz);
-  const weekStart = startOfWeek(now);
-  const weekEnd = new Date(weekStart);
-  weekEnd.setDate(weekEnd.getDate() + 7);
-  const weekStartStr = weekStart.toISOString().split("T")[0];
-  const weekEndStr = weekEnd.toISOString().split("T")[0];
+  // Hafta (Pzt–Paz) da dükkânın saat dilimine göre.
+  const todayStr = dateInTimeZone(now, tz);
+  const weekdayOf = (iso: string) => (new Date(`${iso}T12:00:00Z`).getUTCDay() + 6) % 7; // Pzt=0
+  const weekStartStr = addCalendarDays(todayStr, -weekdayOf(todayStr));
+  const weekEndStr = addCalendarDays(weekStartStr, 7);
+  const weekStart = startOfDayInTimeZone(weekStartStr, tz);
+  const weekEnd = startOfDayInTimeZone(weekEndStr, tz);
 
   const [
     orderAgg,
@@ -174,7 +168,7 @@ export default async function AnalyticsPage({ searchParams }: Props) {
   }
   const bookedByDay = new Array(7).fill(0) as number[];
   for (const a of weekAppointments) {
-    bookedByDay[(a.appointment_date.getDay() + 6) % 7] += 1;
+    bookedByDay[weekdayOf(dateInTimeZone(a.appointment_date, tz))] += 1;
   }
   const fillSeries = DAYS.map((label, i) => ({
     label,

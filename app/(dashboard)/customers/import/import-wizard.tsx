@@ -68,25 +68,25 @@ export default function ImportWizard() {
 
   if (done) {
     return (
-      <div className="bg-white rounded-2xl border border-gray-200 p-8 text-center">
+      <div className="bg-white rounded-2xl border border-[var(--line)] p-8 text-center">
         <span className="material-symbols-outlined text-4xl text-green-500 mb-3 block">
           task_alt
         </span>
-        <h2 className="text-lg font-serif font-normal text-gray-900 mb-1">Import complete</h2>
-        <p className="text-sm text-gray-500 mb-6">
+        <h2 className="text-lg font-serif font-normal text-[var(--ink)] mb-1">Import complete</h2>
+        <p className="text-sm text-[var(--muted)] mb-6">
           {done.inserted} {done.inserted === 1 ? "customer" : "customers"} added
           {done.skipped > 0 ? `, ${done.skipped} ${done.skipped === 1 ? "row" : "rows"} skipped` : ""}.
         </p>
         <div className="flex gap-3 justify-center">
           <button
             onClick={() => router.push("/customers")}
-            className="px-5 py-2.5 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-800"
+            className="px-5 py-2.5 bg-[var(--ink)] text-white rounded-xl text-sm font-medium hover:bg-stone-800"
           >
             View customers
           </button>
           <button
             onClick={reset}
-            className="px-5 py-2.5 border border-gray-300 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50"
+            className="px-5 py-2.5 border border-stone-300 rounded-xl text-sm font-medium text-[var(--ink)] hover:bg-stone-50"
           >
             Start another import
           </button>
@@ -97,13 +97,13 @@ export default function ImportWizard() {
 
   return (
     <div className="space-y-4">
-      <div className="bg-white rounded-2xl border border-gray-200 p-6">
+      <div className="bg-white rounded-2xl border border-[var(--line)] p-6">
         <label className="block">
-          <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer hover:border-gold transition-colors">
-            <span className="material-symbols-outlined text-3xl text-gray-400 mb-2 block">
+          <div className="border-2 border-dashed border-stone-300 rounded-xl p-8 text-center cursor-pointer hover:border-gold transition-colors">
+            <span className="material-symbols-outlined text-3xl text-[var(--muted)] mb-2 block">
               upload_file
             </span>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-[var(--muted)]">
               {fileName || "Click to choose a CSV file"}
             </p>
             <input
@@ -119,10 +119,10 @@ export default function ImportWizard() {
         </label>
 
         <details className="mt-3">
-          <summary className="text-xs text-gray-500 cursor-pointer hover:text-gray-700">
+          <summary className="text-xs text-[var(--muted)] cursor-pointer hover:text-[var(--ink)]">
             Example format
           </summary>
-          <pre className="mt-2 p-3 bg-gray-50 rounded-lg text-[11px] text-gray-600 overflow-x-auto">
+          <pre className="mt-2 p-3 bg-stone-50 rounded-lg text-[11px] text-[var(--muted)] overflow-x-auto">
             {SAMPLE}
           </pre>
         </details>
@@ -134,22 +134,22 @@ export default function ImportWizard() {
         </div>
       )}
 
-      {parsing && <p className="text-sm text-gray-500">Parsing…</p>}
+      {parsing && <p className="text-sm text-[var(--muted)]">Parsing…</p>}
 
       {rows.length > 0 && (
-        <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+        <div className="bg-white rounded-2xl border border-[var(--line)] overflow-hidden">
+          <div className="px-6 py-4 border-b border-[var(--line)] flex items-center justify-between">
             <div className="text-sm">
               <span className="font-semibold text-green-600">{validCount} valid</span>
               {errorCount > 0 && (
                 <span className="text-red-500 ml-2">{errorCount} errors</span>
               )}
-              <span className="text-gray-400 ml-2">/ {rows.length} rows</span>
+              <span className="text-[var(--muted)] ml-2">/ {rows.length} rows</span>
             </div>
             <button
               onClick={handleImport}
               disabled={importing || validCount === 0}
-              className="px-5 py-2.5 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-800 disabled:opacity-50"
+              className="px-5 py-2.5 bg-[var(--ink)] text-white rounded-xl text-sm font-medium hover:bg-stone-800 disabled:opacity-50"
             >
               {importing ? "Importing…" : `Import ${validCount} ${validCount === 1 ? "customer" : "customers"}`}
             </button>
@@ -157,19 +157,19 @@ export default function ImportWizard() {
           <div className="overflow-x-auto max-h-96 overflow-y-auto">
             <table className="w-full text-sm">
               <thead className="sticky top-0 bg-white">
-                <tr className="border-b border-gray-100">
-                  <th className="text-left px-4 py-2 text-xs font-semibold text-gray-500 uppercase">Name</th>
-                  <th className="text-left px-4 py-2 text-xs font-semibold text-gray-500 uppercase">Phone</th>
-                  <th className="text-left px-4 py-2 text-xs font-semibold text-gray-500 uppercase">Email</th>
-                  <th className="text-left px-4 py-2 text-xs font-semibold text-gray-500 uppercase">Status</th>
+                <tr className="border-b border-[var(--line)]">
+                  <th className="text-left px-4 py-2 text-xs font-semibold text-[var(--muted)] uppercase">Name</th>
+                  <th className="text-left px-4 py-2 text-xs font-semibold text-[var(--muted)] uppercase">Phone</th>
+                  <th className="text-left px-4 py-2 text-xs font-semibold text-[var(--muted)] uppercase">Email</th>
+                  <th className="text-left px-4 py-2 text-xs font-semibold text-[var(--muted)] uppercase">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-50">
+              <tbody className="divide-y divide-[var(--line)]">
                 {rows.slice(0, 200).map((r, i) => (
                   <tr key={i} className={r._error ? "bg-red-50" : ""}>
-                    <td className="px-4 py-2 text-gray-900">{r.name || "—"}</td>
-                    <td className="px-4 py-2 text-gray-600">{r.phone || "—"}</td>
-                    <td className="px-4 py-2 text-gray-600">{r.email || "—"}</td>
+                    <td className="px-4 py-2 text-[var(--ink)]">{r.name || "—"}</td>
+                    <td className="px-4 py-2 text-[var(--muted)]">{r.phone || "—"}</td>
+                    <td className="px-4 py-2 text-[var(--muted)]">{r.email || "—"}</td>
                     <td className="px-4 py-2">
                       {r._error ? (
                         <span className="text-xs text-red-600">{r._error}</span>
@@ -182,7 +182,7 @@ export default function ImportWizard() {
               </tbody>
             </table>
             {rows.length > 200 && (
-              <p className="px-4 py-2 text-xs text-gray-400">
+              <p className="px-4 py-2 text-xs text-[var(--muted)]">
                 Showing the first 200 rows…
               </p>
             )}

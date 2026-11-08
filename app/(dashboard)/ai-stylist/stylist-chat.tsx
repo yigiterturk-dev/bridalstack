@@ -38,16 +38,16 @@ export default function StylistChat() {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
-          <div className="bg-white rounded-2xl border border-gray-200 p-6">
+          <div className="bg-white rounded-2xl border border-[var(--line)] p-6">
             <form onSubmit={(e) => { e.preventDefault(); handleAsk(query); }} className="flex gap-3 mb-6">
               <input
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Ask anything about your shop..."
-                className="flex-1 px-4 py-3 rounded-xl border border-gray-300 text-sm outline-none focus:ring-2 focus:ring-gold/40"
+                className="flex-1 px-4 py-3 rounded-xl border border-stone-300 text-sm outline-none focus:ring-2 focus:ring-gold/40"
               />
-              <button type="submit" disabled={loading || !query.trim()} className="px-6 py-3 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-800 disabled:opacity-50">
+              <button type="submit" disabled={loading || !query.trim()} className="px-6 py-3 bg-[var(--ink)] text-white rounded-xl text-sm font-medium hover:bg-stone-800 disabled:opacity-50">
                 {loading ? "Thinking..." : "Ask AI"}
               </button>
             </form>
@@ -56,30 +56,30 @@ export default function StylistChat() {
               <div className="p-6 rounded-xl bg-gold-soft border border-gold/30">
                 <div className="flex items-center gap-2 mb-3">
                   <span className="material-symbols-outlined text-gold">auto_awesome</span>
-                  <span className="text-sm font-semibold text-gray-900">AI Stylist</span>
+                  <span className="text-sm font-semibold text-[var(--ink)]">AI Stylist</span>
                 </div>
-                <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{result}</div>
+                <div className="text-sm text-[var(--ink)] leading-relaxed whitespace-pre-wrap">{result}</div>
               </div>
             )}
 
             {!result && !loading && (
               <div className="text-center py-12">
-                <span className="material-symbols-outlined text-5xl text-gray-200 mb-4 block">auto_awesome</span>
-                <p className="text-gray-400">Ask a question to get started</p>
+                <span className="material-symbols-outlined text-5xl text-stone-200 mb-4 block">auto_awesome</span>
+                <p className="text-[var(--muted)]">Ask a question to get started</p>
               </div>
             )}
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl border border-gray-200 p-6">
-          <h2 className="font-serif font-normal text-gray-900 mb-4">Quick Questions</h2>
+        <div className="bg-white rounded-2xl border border-[var(--line)] p-6">
+          <h2 className="font-serif font-normal text-[var(--ink)] mb-4">Quick Questions</h2>
           <div className="flex flex-col gap-2">
             {presets.map((p) => (
               <button
                 key={p}
                 onClick={() => handleAsk(p)}
                 disabled={loading}
-                className="text-left p-3 rounded-xl border border-gray-100 text-sm text-gray-700 hover:border-gray-300 hover:bg-gray-50 transition-all disabled:opacity-50"
+                className="text-left p-3 rounded-xl border border-[var(--line)] text-sm text-[var(--ink)] hover:border-stone-300 hover:bg-stone-50 transition-all disabled:opacity-50"
               >
                 {p}
               </button>

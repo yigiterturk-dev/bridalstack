@@ -31,7 +31,7 @@ export default async function TrunkShowsPage({ searchParams }: Props) {
 
   const STATUS_STYLE: Record<string, string> = {
     upcoming: "bg-blue-100 text-blue-700", active: "bg-green-100 text-green-700",
-    completed: "bg-gray-100 text-gray-700", cancelled: "bg-red-100 text-red-700",
+    completed: "bg-stone-100 text-[var(--ink)]", cancelled: "bg-red-100 text-red-700",
   };
 
   return (
@@ -50,28 +50,28 @@ export default async function TrunkShowsPage({ searchParams }: Props) {
         <AddPanel title="Plan a trunk show">
           <form id="new" action={createTrunkShow} className="scroll-mt-24 flex flex-col gap-3">
             <div>
-              <label htmlFor="trunk-show-name" className="block text-sm font-medium text-gray-700 mb-1">Event Name *</label>
-              <input id="trunk-show-name" name="name" required className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none" placeholder="e.g. Pronovias Spring 2026" />
+              <label htmlFor="trunk-show-name" className="block text-sm font-medium text-[var(--ink)] mb-1">Event Name *</label>
+              <input id="trunk-show-name" name="name" required className="w-full px-4 py-2.5 rounded-xl border border-stone-300 text-sm outline-none" placeholder="e.g. Pronovias Spring 2026" />
             </div>
             <div>
-              <label htmlFor="trunk-show-vendor" className="block text-sm font-medium text-gray-700 mb-1">Vendor</label>
-              <input id="trunk-show-vendor" name="vendor" className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none" placeholder="Designer / Brand" />
+              <label htmlFor="trunk-show-vendor" className="block text-sm font-medium text-[var(--ink)] mb-1">Vendor</label>
+              <input id="trunk-show-vendor" name="vendor" className="w-full px-4 py-2.5 rounded-xl border border-stone-300 text-sm outline-none" placeholder="Designer / Brand" />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label htmlFor="trunk-show-start" className="block text-sm font-medium text-gray-700 mb-1">Start</label>
-                <input id="trunk-show-start" name="start_date" type="date" required className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none" />
+                <label htmlFor="trunk-show-start" className="block text-sm font-medium text-[var(--ink)] mb-1">Start</label>
+                <input id="trunk-show-start" name="start_date" type="date" required className="w-full px-4 py-2.5 rounded-xl border border-stone-300 text-sm outline-none" />
               </div>
               <div>
-                <label htmlFor="trunk-show-end" className="block text-sm font-medium text-gray-700 mb-1">End</label>
-                <input id="trunk-show-end" name="end_date" type="date" required className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none" />
+                <label htmlFor="trunk-show-end" className="block text-sm font-medium text-[var(--ink)] mb-1">End</label>
+                <input id="trunk-show-end" name="end_date" type="date" required className="w-full px-4 py-2.5 rounded-xl border border-stone-300 text-sm outline-none" />
               </div>
             </div>
             <div>
-              <label htmlFor="trunk-show-notes" className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
-              <textarea id="trunk-show-notes" name="notes" rows={2} className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none resize-y" />
+              <label htmlFor="trunk-show-notes" className="block text-sm font-medium text-[var(--ink)] mb-1">Notes</label>
+              <textarea id="trunk-show-notes" name="notes" rows={2} className="w-full px-4 py-2.5 rounded-xl border border-stone-300 text-sm outline-none resize-y" />
             </div>
-            <SubmitButton pendingLabel="Creating event…" className="mt-2 py-2.5 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-800 disabled:opacity-60 disabled:cursor-wait">Create Event</SubmitButton>
+            <SubmitButton pendingLabel="Creating event…" className="mt-2 py-2.5 bg-[var(--ink)] text-white rounded-xl text-sm font-medium hover:bg-stone-800 disabled:opacity-60 disabled:cursor-wait">Create Event</SubmitButton>
           </form>
         </AddPanel>
 
@@ -81,25 +81,25 @@ export default async function TrunkShowsPage({ searchParams }: Props) {
               {list.map((s) => {
                 const items = s.trunk_show_items as { id: string; gown_name: string; status: string; try_count: number }[] ?? [];
                 return (
-                  <div key={s.id} className="bg-white rounded-2xl border border-gray-200 p-6">
+                  <div key={s.id} className="bg-white rounded-2xl border border-[var(--line)] p-6">
                     <div className="flex items-center justify-between mb-3">
                       <div>
-                        <h3 className="font-semibold text-gray-900">{s.name}</h3>
-                        <p className="text-xs text-gray-500">{s.vendor ?? "—"} · {new Date(s.start_date).toLocaleDateString("en-US", { month: "short", day: "numeric" })} - {new Date(s.end_date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</p>
+                        <h3 className="font-semibold text-[var(--ink)]">{s.name}</h3>
+                        <p className="text-xs text-[var(--muted)]">{s.vendor ?? "—"} · {new Date(s.start_date).toLocaleDateString("en-US", { month: "short", day: "numeric" })} - {new Date(s.end_date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</p>
                       </div>
                       <span className={`text-xs px-2.5 py-0.5 rounded-full font-medium ${STATUS_STYLE[s.status] ?? STATUS_STYLE.upcoming}`}>{s.status}</span>
                     </div>
                     {items.length > 0 && (
                       <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 mt-3">
                         {items.map((item) => (
-                          <div key={item.id} className="p-2.5 rounded-lg bg-gray-50 text-xs">
-                            <span className="font-medium text-gray-900">{item.gown_name}</span>
-                            <span className="text-gray-400 ml-1">· {item.try_count} tries</span>
+                          <div key={item.id} className="p-2.5 rounded-lg bg-stone-50 text-xs">
+                            <span className="font-medium text-[var(--ink)]">{item.gown_name}</span>
+                            <span className="text-[var(--muted)] ml-1">· {item.try_count} tries</span>
                           </div>
                         ))}
                       </div>
                     )}
-                    {items.length === 0 && <p className="text-xs text-gray-400 mt-2">No gowns added yet</p>}
+                    {items.length === 0 && <p className="text-xs text-[var(--muted)] mt-2">No gowns added yet</p>}
                   </div>
                 );
               })}

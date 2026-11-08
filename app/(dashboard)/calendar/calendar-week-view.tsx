@@ -66,20 +66,20 @@ export default function CalendarWeekView({
   return (
     <div>
       <div className="flex items-center justify-between mb-6 gap-3 flex-wrap">
-        <h1 className="text-2xl font-serif font-normal text-gray-900">{heading}</h1>
+        <h1 className="font-serif text-3xl font-normal text-[var(--ink)] lg:text-4xl">{heading}</h1>
         <div className="flex gap-2 items-center">
-          <div className="flex rounded-xl border border-gray-200 overflow-hidden mr-1">
+          <div className="flex rounded-xl border border-[var(--line)] overflow-hidden mr-1">
             <button
               onClick={() => router.push(`/calendar?month=${first[0]}-${first[1]}`)}
-              className="px-3 h-9 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+              className="px-3 h-9 text-sm font-medium text-[var(--muted)] hover:bg-stone-50 transition-colors"
             >
               Month
             </button>
-            <button className="px-3 h-9 text-sm font-semibold bg-gray-900 text-white">Week</button>
+            <button className="px-3 h-9 text-sm font-semibold bg-[var(--ink)] text-white">Week</button>
           </div>
-          <button onClick={() => go(shiftWeek(start, -1))} className="w-9 h-9 inline-flex items-center justify-center rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors" aria-label="Previous week"><span className="material-symbols-outlined text-lg">chevron_left</span></button>
-          <button onClick={() => go(today)} className="px-3.5 h-9 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">This week</button>
-          <button onClick={() => go(shiftWeek(start, 1))} className="w-9 h-9 inline-flex items-center justify-center rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors" aria-label="Next week"><span className="material-symbols-outlined text-lg">chevron_right</span></button>
+          <button onClick={() => go(shiftWeek(start, -1))} className="w-9 h-9 inline-flex items-center justify-center rounded-xl border border-[var(--line)] text-[var(--muted)] hover:bg-stone-50 transition-colors" aria-label="Previous week"><span className="material-symbols-outlined text-lg">chevron_left</span></button>
+          <button onClick={() => go(today)} className="px-3.5 h-9 rounded-xl border border-[var(--line)] text-sm font-medium text-[var(--ink)] hover:bg-stone-50 transition-colors">This week</button>
+          <button onClick={() => go(shiftWeek(start, 1))} className="w-9 h-9 inline-flex items-center justify-center rounded-xl border border-[var(--line)] text-[var(--muted)] hover:bg-stone-50 transition-colors" aria-label="Next week"><span className="material-symbols-outlined text-lg">chevron_right</span></button>
         </div>
       </div>
 
@@ -93,18 +93,18 @@ export default function CalendarWeekView({
             return (
               <div
                 key={date}
-                className={`min-h-[220px] border-b sm:border-r border-gray-50 p-2 ${isToday ? "bg-[var(--accent-soft)]/60" : ""}`}
+                className={`min-h-[220px] border-b sm:border-r border-[var(--line)] p-2 ${isToday ? "bg-[var(--accent-soft)]/60" : ""}`}
               >
                 <div className="flex items-baseline gap-1.5 mb-2">
-                  <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">{DAY_NAMES[i]}</span>
-                  <span className={`text-xs inline-flex items-center justify-center min-w-5 h-5 rounded-full px-1 ${isToday ? "bg-[var(--accent)] text-white font-semibold" : "text-gray-500 font-medium"}`}>
+                  <span className="text-[11px] font-semibold text-[var(--muted)] uppercase tracking-wider">{DAY_NAMES[i]}</span>
+                  <span className={`text-xs inline-flex items-center justify-center min-w-5 h-5 rounded-full px-1 ${isToday ? "bg-[var(--accent)] text-white font-semibold" : "text-[var(--muted)] font-medium"}`}>
                     {Number(date.slice(8, 10))}
                   </span>
                 </div>
 
                 <div className="flex flex-col gap-1">
                   {actionable.length === 0 && outCount === 0 && (
-                    <span className="text-[11px] text-gray-300">—</span>
+                    <span className="text-[11px] text-stone-300">—</span>
                   )}
 
                   {/* Haftada kırpma yok: günün işi tamamen görünür. */}
@@ -130,11 +130,11 @@ export default function CalendarWeekView({
                     }
                     const time = new Date(e.date).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
                     return (
-                      <div key={e.id} className="flex items-start gap-1 px-1.5 py-1 rounded-md text-[11px] bg-gray-100/80" title={`${e.customerName} — ${e.title}`}>
+                      <div key={e.id} className="flex items-start gap-1 px-1.5 py-1 rounded-md text-[11px] bg-stone-100/80" title={`${e.customerName} — ${e.title}`}>
                         <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 mt-1.5 ${STATUS_COLOR[e.status] ?? STATUS_COLOR.pending}`} />
-                        <span className="leading-4 text-gray-700 break-words">
+                        <span className="leading-4 text-[var(--ink)] break-words">
                           {time} {e.customerName}
-                          <span className="block text-[10px] text-gray-400">{e.title}</span>
+                          <span className="block text-[10px] text-[var(--muted)]">{e.title}</span>
                         </span>
                       </div>
                     );

@@ -47,12 +47,12 @@ export default async function ServicesPage() {
         <AddPanel title="Add a service">
           <form id="new" action={createService} className="scroll-mt-24 flex flex-col gap-3">
             <div>
-              <label htmlFor="service-name" className="block text-sm font-medium text-gray-700 mb-1">Name *</label>
-              <input id="service-name" name="name" required className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none" placeholder="e.g. Bridal Consultation" />
+              <label htmlFor="service-name" className="block text-sm font-medium text-[var(--ink)] mb-1">Name *</label>
+              <input id="service-name" name="name" required className="w-full px-4 py-2.5 rounded-xl border border-stone-300 text-sm outline-none" placeholder="e.g. Bridal Consultation" />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label htmlFor="category-select" className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                <label htmlFor="category-select" className="block text-sm font-medium text-[var(--ink)] mb-1">Category</label>
                 <SelectField
                   name="category"
                   defaultValue={CATEGORIES[0]}
@@ -61,7 +61,7 @@ export default async function ServicesPage() {
                 />
               </div>
               <div>
-                <label htmlFor="duration-select" className="block text-sm font-medium text-gray-700 mb-1">Duration</label>
+                <label htmlFor="duration-select" className="block text-sm font-medium text-[var(--ink)] mb-1">Duration</label>
                 <SelectField
                   name="duration"
                   defaultValue={String(DURATIONS[1])}
@@ -75,19 +75,19 @@ export default async function ServicesPage() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-              <label htmlFor="service-price" className="block text-sm font-medium text-gray-700 mb-1">Price ({CURRENCY_SYMBOL})</label>
-                <input id="service-price" name="price" type="number" step="0.01" min="0" className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none" placeholder="40" />
+              <label htmlFor="service-price" className="block text-sm font-medium text-[var(--ink)] mb-1">Price ({CURRENCY_SYMBOL})</label>
+                <input id="service-price" name="price" type="number" step="0.01" min="0" className="w-full px-4 py-2.5 rounded-xl border border-stone-300 text-sm outline-none" placeholder="40" />
               </div>
               <div>
-              <label htmlFor="service-max-price" className="block text-sm font-medium text-gray-700 mb-1">Max Price ({CURRENCY_SYMBOL})</label>
-                <input id="service-max-price" name="price_max" type="number" step="0.01" min="0" className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none" placeholder="Optional" />
+              <label htmlFor="service-max-price" className="block text-sm font-medium text-[var(--ink)] mb-1">Max Price ({CURRENCY_SYMBOL})</label>
+                <input id="service-max-price" name="price_max" type="number" step="0.01" min="0" className="w-full px-4 py-2.5 rounded-xl border border-stone-300 text-sm outline-none" placeholder="Optional" />
               </div>
             </div>
             <div>
-              <label htmlFor="service-description" className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-              <textarea id="service-description" name="description" rows={2} className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none resize-y" placeholder="Optional..." />
+              <label htmlFor="service-description" className="block text-sm font-medium text-[var(--ink)] mb-1">Description</label>
+              <textarea id="service-description" name="description" rows={2} className="w-full px-4 py-2.5 rounded-xl border border-stone-300 text-sm outline-none resize-y" placeholder="Optional..." />
             </div>
-            <SubmitButton pendingLabel="Adding service…" className="mt-1 py-2.5 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-800 disabled:opacity-60 disabled:cursor-wait">Add Service</SubmitButton>
+            <SubmitButton pendingLabel="Adding service…" className="mt-1 py-2.5 bg-[var(--ink)] text-white rounded-xl text-sm font-medium hover:bg-stone-800 disabled:opacity-60 disabled:cursor-wait">Add Service</SubmitButton>
           </form>
         </AddPanel>
 
@@ -96,17 +96,17 @@ export default async function ServicesPage() {
             <div className="flex flex-col gap-6">
               {Object.entries(grouped).map(([category, items]) => (
                 <div key={category}>
-                  <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">{category}</h3>
+                  <h3 className="text-sm font-semibold text-[var(--muted)] uppercase tracking-wider mb-3">{category}</h3>
                   <div className="flex flex-col gap-2">
                     {items.map(s => (
-                      <div key={s.id} className={`bg-white rounded-xl border border-gray-200 p-4 flex items-center justify-between ${!s.is_active ? "opacity-50" : ""}`}>
+                      <div key={s.id} className={`bg-white rounded-xl border border-[var(--line)] p-4 flex items-center justify-between ${!s.is_active ? "opacity-50" : ""}`}>
                         <div className="flex items-center gap-4">
                           <div className="w-10 h-10 rounded-lg bg-gold-soft flex items-center justify-center">
                             <span className="material-symbols-outlined text-gold text-lg">content_cut</span>
                           </div>
                           <div>
-                            <h4 className="font-medium text-gray-900 text-sm">{s.name}</h4>
-                            <p className="text-xs text-gray-500">
+                            <h4 className="font-medium text-[var(--ink)] text-sm">{s.name}</h4>
+                            <p className="text-xs text-[var(--muted)]">
                               {s.duration >= 60 ? `${Math.floor(s.duration / 60)}h${s.duration % 60 ? ` ${s.duration % 60}m` : ""}` : `${s.duration}min`}
                               {s.description && ` · ${s.description}`}
                             </p>
@@ -114,7 +114,7 @@ export default async function ServicesPage() {
                         </div>
                         <div className="flex items-center gap-4">
                           <div className="text-right">
-                            <span className="font-semibold text-gray-900 text-sm">
+                            <span className="font-semibold text-[var(--ink)] text-sm">
                               {formatPrice(Number(s.price))}
                               {s.price_max ? ` - ${formatPrice(Number(s.price_max))}` : ""}
                             </span>
@@ -123,7 +123,7 @@ export default async function ServicesPage() {
                             <form action={toggleService}>
                               <input type="hidden" name="id" value={s.id} />
                               <input type="hidden" name="is_active" value={s.is_active ? "false" : "true"} />
-                              <button type="submit" className={`text-xs px-2 py-1 rounded-lg ${s.is_active ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>
+                              <button type="submit" className={`text-xs px-2 py-1 rounded-lg ${s.is_active ? "bg-green-100 text-green-700" : "bg-stone-100 text-[var(--muted)]"}`}>
                                 {s.is_active ? "On" : "Off"}
                               </button>
                             </form>

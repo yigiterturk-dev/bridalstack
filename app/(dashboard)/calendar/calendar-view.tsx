@@ -53,25 +53,25 @@ export default function CalendarView({
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-serif font-normal text-gray-900">{MONTHS[month - 1]} {year}</h1>
+        <h1 className="font-serif text-3xl font-normal text-[var(--ink)] lg:text-4xl">{MONTHS[month - 1]} {year}</h1>
         <div className="flex gap-2 items-center">
-          <div className="flex rounded-xl border border-gray-200 overflow-hidden mr-1">
-            <button className="px-3 h-9 text-sm font-semibold bg-gray-900 text-white">Month</button>
+          <div className="flex rounded-xl border border-[var(--line)] overflow-hidden mr-1">
+            <button className="px-3 h-9 text-sm font-semibold bg-[var(--ink)] text-white">Month</button>
             <button
               onClick={() => router.push("/calendar?view=week")}
-              className="px-3 h-9 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+              className="px-3 h-9 text-sm font-medium text-[var(--muted)] hover:bg-stone-50 transition-colors"
             >
               Week
             </button>
           </div>
-          <button onClick={() => router.push(`/calendar?month=${prevMonth}`)} className="w-9 h-9 inline-flex items-center justify-center rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors" aria-label="Previous month"><span className="material-symbols-outlined text-lg">chevron_left</span></button>
-          <button onClick={() => router.push(`/calendar?month=${today.getFullYear()}-${today.getMonth() + 1}`)} className="px-3.5 h-9 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">Today</button>
-          <button onClick={() => router.push(`/calendar?month=${nextMonth}`)} className="w-9 h-9 inline-flex items-center justify-center rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors" aria-label="Next month"><span className="material-symbols-outlined text-lg">chevron_right</span></button>
+          <button onClick={() => router.push(`/calendar?month=${prevMonth}`)} className="w-9 h-9 inline-flex items-center justify-center rounded-xl border border-[var(--line)] text-[var(--muted)] hover:bg-stone-50 transition-colors" aria-label="Previous month"><span className="material-symbols-outlined text-lg">chevron_left</span></button>
+          <button onClick={() => router.push(`/calendar?month=${today.getFullYear()}-${today.getMonth() + 1}`)} className="px-3.5 h-9 rounded-xl border border-[var(--line)] text-sm font-medium text-[var(--ink)] hover:bg-stone-50 transition-colors">Today</button>
+          <button onClick={() => router.push(`/calendar?month=${nextMonth}`)} className="w-9 h-9 inline-flex items-center justify-center rounded-xl border border-[var(--line)] text-[var(--muted)] hover:bg-stone-50 transition-colors" aria-label="Next month"><span className="material-symbols-outlined text-lg">chevron_right</span></button>
         </div>
       </div>
 
       {hasRentals && (
-        <div className="flex items-center gap-4 mb-3 text-[11px] text-gray-400 flex-wrap">
+        <div className="flex items-center gap-4 mb-3 text-[11px] text-[var(--muted)] flex-wrap">
           <span className="inline-flex items-center gap-1">
             <span className="material-symbols-outlined text-[13px] text-violet-500">arrow_upward</span>
             gown picked up
@@ -89,14 +89,14 @@ export default function CalendarView({
       )}
 
       <div className="bs-card overflow-hidden">
-        <div className="grid grid-cols-7 border-b border-gray-100 bg-gray-50/50">
+        <div className="grid grid-cols-7 border-b border-[var(--line)] bg-stone-50/50">
           {DAYS.map((d) => (
-            <div key={d} className="px-2 py-3 text-center text-[11px] font-semibold text-gray-400 uppercase tracking-wider">{d}</div>
+            <div key={d} className="px-2 py-3 text-center text-[11px] font-semibold text-[var(--muted)] uppercase tracking-wider">{d}</div>
           ))}
         </div>
         <div className="grid grid-cols-7">
           {Array.from({ length: startDow }).map((_, i) => (
-            <div key={`empty-${i}`} className="min-h-[104px] border-b border-r border-gray-50 bg-gray-50/40" />
+            <div key={`empty-${i}`} className="min-h-[104px] border-b border-r border-[var(--line)] bg-stone-50/40" />
           ))}
           {Array.from({ length: daysInMonth }).map((_, i) => {
             const day = i + 1;
@@ -104,8 +104,8 @@ export default function CalendarView({
             const outCount = countOut(dayEvents);
             const actionable = dayEvents.filter((e) => !(e.kind === "rental" && e.role === "out"));
             return (
-              <div key={day} className={`min-h-[104px] border-b border-r border-gray-50 p-1.5 transition-colors ${isToday(day) ? "bg-[var(--accent-soft)]/60" : "hover:bg-gray-50/40"}`}>
-                <div className={`text-xs mb-1 inline-flex items-center justify-center min-w-5 h-5 rounded-full px-1 ${isToday(day) ? "bg-[var(--accent)] text-white font-semibold" : "text-gray-500 font-medium"}`}>{day}</div>
+              <div key={day} className={`min-h-[104px] border-b border-r border-[var(--line)] p-1.5 transition-colors ${isToday(day) ? "bg-[var(--accent-soft)]/60" : "hover:bg-stone-50/40"}`}>
+                <div className={`text-xs mb-1 inline-flex items-center justify-center min-w-5 h-5 rounded-full px-1 ${isToday(day) ? "bg-[var(--accent)] text-white font-semibold" : "text-[var(--muted)] font-medium"}`}>{day}</div>
                 <div className="flex flex-col gap-0.5">
                   {/* "Sadece dışarıda" satırları hücreyi doldurmasın: tek sayıya iner. */}
                   {actionable.slice(0, 3).map((e) => {
@@ -127,14 +127,14 @@ export default function CalendarView({
                     }
                     const time = new Date(e.date).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
                     return (
-                      <div key={e.id} className="flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] bg-gray-100/80 truncate" title={`${e.customerName} — ${e.title}`}>
+                      <div key={e.id} className="flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] bg-stone-100/80 truncate" title={`${e.customerName} — ${e.title}`}>
                         <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${STATUS_COLOR[e.status] ?? STATUS_COLOR.pending}`} />
-                        <span className="truncate text-gray-700">{time} {e.customerName}</span>
+                        <span className="truncate text-[var(--ink)]">{time} {e.customerName}</span>
                       </div>
                     );
                   })}
                   {actionable.length > 3 && (
-                    <div className="text-[10px] text-gray-400 px-1.5">+{actionable.length - 3} more</div>
+                    <div className="text-[10px] text-[var(--muted)] px-1.5">+{actionable.length - 3} more</div>
                   )}
                   {outCount > 0 && (
                     <div className="text-[10px] text-violet-400 px-1.5" title={`${outCount} gown${outCount === 1 ? "" : "s"} out on loan`}>

@@ -29,7 +29,7 @@ export default function RangeFilter({ current }: { current: string }) {
           className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
             current === o.value
               ? "bg-[var(--accent-soft)] border-[var(--accent-ring)] text-[var(--accent-hover)]"
-              : "bg-white border-gray-200 text-gray-600 hover:bg-gray-50"
+              : "bg-white border-[var(--line)] text-[var(--muted)] hover:bg-stone-50"
           }`}
         >
           {o.label}

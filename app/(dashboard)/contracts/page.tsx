@@ -27,7 +27,7 @@ export default async function ContractsPage() {
   const list = contractRows.map(({ customer, ...c }) => ({ ...c, customers: customer }));
 
   const STATUS_STYLE: Record<string, string> = {
-    draft: "bg-gray-100 text-gray-700", sent: "bg-blue-100 text-blue-700", viewed: "bg-amber-100 text-amber-700",
+    draft: "bg-stone-100 text-[var(--ink)]", sent: "bg-blue-100 text-blue-700", viewed: "bg-amber-100 text-amber-700",
     signed: "bg-green-100 text-green-700", expired: "bg-red-100 text-red-700",
   };
 
@@ -44,7 +44,7 @@ export default async function ContractsPage() {
         <AddPanel title="Write a contract">
           <form id="new" action={createContract} className="scroll-mt-24 flex flex-col gap-3">
             <div>
-              <label htmlFor="customer_id-select" className="block text-sm font-medium text-gray-700 mb-1">Customer *</label>
+              <label htmlFor="customer_id-select" className="block text-sm font-medium text-[var(--ink)] mb-1">Customer *</label>
               <SelectField
                 name="customer_id"
                 required
@@ -53,7 +53,7 @@ export default async function ContractsPage() {
               />
             </div>
             <div>
-              <label htmlFor="order_id-select" className="block text-sm font-medium text-gray-700 mb-1">Link to Order</label>
+              <label htmlFor="order_id-select" className="block text-sm font-medium text-[var(--ink)] mb-1">Link to Order</label>
               <SelectField
                 name="order_id"
                 placeholder="None"
@@ -65,18 +65,18 @@ export default async function ContractsPage() {
               />
             </div>
             <div>
-              <label htmlFor="contract-title" className="block text-sm font-medium text-gray-700 mb-1">Title *</label>
-              <input id="contract-title" name="title" required className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none" placeholder="Bridal Gown Purchase Agreement" />
+              <label htmlFor="contract-title" className="block text-sm font-medium text-[var(--ink)] mb-1">Title *</label>
+              <input id="contract-title" name="title" required className="w-full px-4 py-2.5 rounded-xl border border-stone-300 text-sm outline-none" placeholder="Bridal Gown Purchase Agreement" />
             </div>
             <div>
-              <label htmlFor="contract-total-amount" className="block text-sm font-medium text-gray-700 mb-1">Total Amount ({CURRENCY_SYMBOL})</label>
-              <input id="contract-total-amount" name="total_amount" type="number" step="0.01" className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none" placeholder="0" />
+              <label htmlFor="contract-total-amount" className="block text-sm font-medium text-[var(--ink)] mb-1">Total Amount ({CURRENCY_SYMBOL})</label>
+              <input id="contract-total-amount" name="total_amount" type="number" step="0.01" className="w-full px-4 py-2.5 rounded-xl border border-stone-300 text-sm outline-none" placeholder="0" />
             </div>
             <div>
-              <label htmlFor="contract-content" className="block text-sm font-medium text-gray-700 mb-1">Contract Content *</label>
-              <textarea id="contract-content" name="content" rows={6} required className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none resize-y" placeholder="Terms and conditions..." />
+              <label htmlFor="contract-content" className="block text-sm font-medium text-[var(--ink)] mb-1">Contract Content *</label>
+              <textarea id="contract-content" name="content" rows={6} required className="w-full px-4 py-2.5 rounded-xl border border-stone-300 text-sm outline-none resize-y" placeholder="Terms and conditions..." />
             </div>
-            <button type="submit" className="mt-2 py-2.5 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-800">Create & Send</button>
+            <button type="submit" className="mt-2 py-2.5 bg-[var(--ink)] text-white rounded-xl text-sm font-medium hover:bg-stone-800">Create & Send</button>
           </form>
         </AddPanel>
 
@@ -86,15 +86,15 @@ export default async function ContractsPage() {
               {list.map((c) => {
                 const cust = (Array.isArray(c.customers) ? c.customers[0] : c.customers) as { name: string } | null;
                 return (
-                  <div key={c.id} className="bg-white rounded-2xl border border-gray-200 p-5 flex items-center justify-between">
+                  <div key={c.id} className="bg-white rounded-2xl border border-[var(--line)] p-5 flex items-center justify-between">
                     <div>
-                      <h3 className="font-medium text-gray-900 text-sm">{c.title}</h3>
-                      <p className="text-xs text-gray-500 mt-0.5">{cust?.name ?? "—"} · {formatPrice(Number(c.total_amount))} · {new Date(c.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</p>
+                      <h3 className="font-medium text-[var(--ink)] text-sm">{c.title}</h3>
+                      <p className="text-xs text-[var(--muted)] mt-0.5">{cust?.name ?? "—"} · {formatPrice(Number(c.total_amount))} · {new Date(c.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</p>
                     </div>
                     <div className="flex items-center gap-3">
                       <span className={`text-xs px-2.5 py-0.5 rounded-full font-medium ${STATUS_STYLE[c.status] ?? STATUS_STYLE.draft}`}>{c.status}</span>
-                      <button onClick={() => navigator.clipboard.writeText(`${window.location.origin}/contracts/${c.token}`)} className="text-xs text-gray-500 hover:text-gray-900">Copy Link</button>
-                      <Link href={`/print/contract/${c.id}`} className="text-xs text-gray-500 hover:text-gray-900 inline-flex items-center gap-1">
+                      <button onClick={() => navigator.clipboard.writeText(`${window.location.origin}/contracts/${c.token}`)} className="text-xs text-[var(--muted)] hover:text-[var(--ink)]">Copy Link</button>
+                      <Link href={`/print/contract/${c.id}`} className="text-xs text-[var(--muted)] hover:text-[var(--ink)] inline-flex items-center gap-1">
                         <span className="material-symbols-outlined text-[14px]">print</span>
                         Print
                       </Link>

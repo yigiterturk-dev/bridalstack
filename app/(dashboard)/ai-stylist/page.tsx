@@ -28,14 +28,14 @@ export default async function AIStylistPage() {
         </p>
       </div>
 
-      <div className="bg-white rounded-2xl border border-gray-200 p-6 mb-6">
+      <div className="bg-white rounded-2xl border border-[var(--line)] p-6 mb-6">
         <div className="flex items-center gap-2 mb-4">
           <span className="material-symbols-outlined text-gold">bolt</span>
-          <h2 className="font-serif font-normal text-gray-900">Today at {tenant.name}</h2>
+          <h2 className="font-serif font-normal text-[var(--ink)]">Today at {tenant.name}</h2>
         </div>
 
         {briefing.length === 0 ? (
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-[var(--muted)]">
             Nothing needs chasing right now. No unpaid installments, no unanswered bookings, and
             every bride who loved a gown has ordered.
           </p>
@@ -47,19 +47,19 @@ export default async function AIStylistPage() {
                 <Link
                   key={item.id}
                   href={item.href}
-                  className="group flex items-start gap-4 p-4 rounded-xl border border-gray-100 hover:border-gray-300 hover:bg-gray-50/60 transition-all"
+                  className="group flex items-start gap-4 p-4 rounded-xl border border-[var(--line)] hover:border-stone-300 hover:bg-stone-50/60 transition-all"
                 >
                   <span className={`mt-1.5 w-2 h-2 rounded-full flex-shrink-0 ${tone.dot}`} />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-medium text-gray-900">{item.title}</span>
+                      <span className="font-medium text-[var(--ink)]">{item.title}</span>
                       <span className={`text-[11px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full border ${tone.chip}`}>
                         {tone.label}
                       </span>
                     </div>
-                    <p className="text-sm text-gray-500 mt-0.5">{item.detail}</p>
+                    <p className="text-sm text-[var(--muted)] mt-0.5">{item.detail}</p>
                   </div>
-                  <span className="material-symbols-outlined text-gray-300 group-hover:text-gray-500 group-hover:translate-x-0.5 transition-all flex-shrink-0">
+                  <span className="material-symbols-outlined text-stone-300 group-hover:text-[var(--muted)] group-hover:translate-x-0.5 transition-all flex-shrink-0">
                     arrow_forward
                   </span>
                 </Link>

@@ -44,38 +44,38 @@ export default async function WorkflowsPage() {
         <AddPanel title="Add an automation">
           <form id="new" action={createWorkflow} className="scroll-mt-24 flex flex-col gap-3">
             <div>
-              <label htmlFor="workflow-name" className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-              <input id="workflow-name" name="name" required className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none focus-visible:ring-2 focus-visible:ring-gray-500 focus-visible:ring-offset-1" placeholder="e.g. Send reminder before appointment" />
+              <label htmlFor="workflow-name" className="block text-sm font-medium text-[var(--ink)] mb-1">Name</label>
+              <input id="workflow-name" name="name" required className="w-full px-4 py-2.5 rounded-xl border border-stone-300 text-sm outline-none focus-visible:ring-2 focus-visible:ring-gold/40 focus-visible:ring-offset-1" placeholder="e.g. Send reminder before appointment" />
             </div>
             <fieldset>
-              <legend className="block text-sm font-medium text-gray-700 mb-2">When this happens...</legend>
+              <legend className="block text-sm font-medium text-[var(--ink)] mb-2">When this happens...</legend>
               <div className="flex flex-col gap-1.5">
                 {TRIGGERS.map((t) => (
-                  <label key={t.value} className="flex items-center gap-2 p-2.5 rounded-xl border border-gray-200 cursor-pointer has-[:checked]:border-gray-900 has-[:checked]:bg-gray-50">
-                    <input type="radio" name="trigger_type" value={t.value} required className="accent-gray-900" />
-                    <span className="material-symbols-outlined text-sm text-gray-500">{t.icon}</span>
-                    <span className="text-sm text-gray-700">{t.label}</span>
+                  <label key={t.value} className="flex items-center gap-2 p-2.5 rounded-xl border border-[var(--line)] cursor-pointer has-[:checked]:border-stone-900 has-[:checked]:bg-stone-50">
+                    <input type="radio" name="trigger_type" value={t.value} required className="accent-[var(--ink)]" />
+                    <span className="material-symbols-outlined text-sm text-[var(--muted)]">{t.icon}</span>
+                    <span className="text-sm text-[var(--ink)]">{t.label}</span>
                   </label>
                 ))}
               </div>
             </fieldset>
             <fieldset>
-              <legend className="block text-sm font-medium text-gray-700 mb-2">Do this...</legend>
+              <legend className="block text-sm font-medium text-[var(--ink)] mb-2">Do this...</legend>
               <div className="flex flex-col gap-1.5">
                 {ACTIONS.map((a) => (
-                  <label key={a.value} className="flex items-center gap-2 p-2.5 rounded-xl border border-gray-200 cursor-pointer has-[:checked]:border-gray-900 has-[:checked]:bg-gray-50">
-                    <input type="radio" name="action_type" value={a.value} required className="accent-gray-900" />
-                    <span className="material-symbols-outlined text-sm text-gray-500">{a.icon}</span>
-                    <span className="text-sm text-gray-700">{a.label}</span>
+                  <label key={a.value} className="flex items-center gap-2 p-2.5 rounded-xl border border-[var(--line)] cursor-pointer has-[:checked]:border-stone-900 has-[:checked]:bg-stone-50">
+                    <input type="radio" name="action_type" value={a.value} required className="accent-[var(--ink)]" />
+                    <span className="material-symbols-outlined text-sm text-[var(--muted)]">{a.icon}</span>
+                    <span className="text-sm text-[var(--ink)]">{a.label}</span>
                   </label>
                 ))}
               </div>
             </fieldset>
             <div>
-              <label htmlFor="workflow-delay" className="block text-sm font-medium text-gray-700 mb-1">Delay (minutes)</label>
-              <input id="workflow-delay" name="delay_minutes" type="number" min="0" max={365 * 24 * 60} defaultValue="0" className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none focus-visible:ring-2 focus-visible:ring-gray-500 focus-visible:ring-offset-1" />
+              <label htmlFor="workflow-delay" className="block text-sm font-medium text-[var(--ink)] mb-1">Delay (minutes)</label>
+              <input id="workflow-delay" name="delay_minutes" type="number" min="0" max={365 * 24 * 60} defaultValue="0" className="w-full px-4 py-2.5 rounded-xl border border-stone-300 text-sm outline-none focus-visible:ring-2 focus-visible:ring-gold/40 focus-visible:ring-offset-1" />
             </div>
-            <SubmitButton pendingLabel="Creating…" className="mt-2 py-2.5 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-800 disabled:opacity-60 disabled:cursor-wait focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-500 focus-visible:ring-offset-2">Create Workflow</SubmitButton>
+            <SubmitButton pendingLabel="Creating…" className="mt-2 py-2.5 bg-[var(--ink)] text-white rounded-xl text-sm font-medium hover:bg-stone-800 disabled:opacity-60 disabled:cursor-wait focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40 focus-visible:ring-offset-2">Create Workflow</SubmitButton>
           </form>
         </AddPanel>
 
@@ -86,11 +86,11 @@ export default async function WorkflowsPage() {
                 const trigger = TRIGGERS.find((t) => t.value === w.trigger_type);
                 const action = ACTIONS.find((a) => a.value === w.action_type);
                 return (
-                  <div key={w.id} className={`bg-white rounded-2xl border border-gray-200 p-5 ${!w.is_active ? "opacity-50" : ""}`}>
+                  <div key={w.id} className={`bg-white rounded-2xl border border-[var(--line)] p-5 ${!w.is_active ? "opacity-50" : ""}`}>
                     <div className="flex items-center justify-between">
                       <div>
-                        <h3 className="font-medium text-gray-900 text-sm">{w.name}</h3>
-                        <p className="text-xs text-gray-500 mt-1 flex items-center gap-1">
+                        <h3 className="font-medium text-[var(--ink)] text-sm">{w.name}</h3>
+                        <p className="text-xs text-[var(--muted)] mt-1 flex items-center gap-1">
                           <span className="material-symbols-outlined text-xs">{trigger?.icon ?? "bolt"}</span>
                           {trigger?.label ?? w.trigger_type}
                           <span className="mx-1">→</span>
@@ -103,7 +103,7 @@ export default async function WorkflowsPage() {
                         <form action={toggleWorkflow}>
                           <input type="hidden" name="id" value={w.id} />
                           <input type="hidden" name="is_active" value={w.is_active ? "false" : "true"} />
-                          <button type="submit" className={`text-xs px-3 py-1 rounded-lg font-medium ${w.is_active ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>
+                          <button type="submit" className={`text-xs px-3 py-1 rounded-lg font-medium ${w.is_active ? "bg-green-100 text-green-700" : "bg-stone-100 text-[var(--muted)]"}`}>
                             {w.is_active ? "Active" : "Off"}
                           </button>
                         </form>

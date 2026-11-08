@@ -16,11 +16,11 @@ export default async function ImportCustomersPage() {
 
   return (
     <div className="max-w-3xl">
-      <Link href="/customers" className="text-sm text-gray-500 hover:text-gray-900 mb-4 inline-block">
+      <Link href="/customers" className="text-sm text-[var(--muted)] hover:text-[var(--ink)] mb-4 inline-block">
         ← Back to customers
       </Link>
-      <h1 className="text-2xl font-serif font-normal text-gray-900 mb-1">Bulk customer import</h1>
-      <p className="text-sm text-gray-500 mb-6">
+      <h1 className="font-serif text-3xl font-normal text-[var(--ink)] lg:text-4xl mb-1">Bulk customer import</h1>
+      <p className="text-sm text-[var(--muted)] mb-6">
         Upload a CSV file. Columns: <strong>name, phone, email, notes</strong>. A header row is detected automatically.
       </p>
       <ImportWizard />
