@@ -39,6 +39,14 @@ export default function Sidebar({
   // Ana listedeki sayfalar (Today sabit, sayılmaz).
   const pins = (groups[0]?.items ?? []).filter((n) => n.href !== "/dashboard").map((n) => n.href);
 
+  function moveUp(href: string) {
+    const i = pins.indexOf(href);
+    if (i <= 0) return;
+    const next = [...pins];
+    [next[i - 1], next[i]] = [next[i], next[i - 1]];
+    startSaving(() => saveNavPins(next));
+  }
+
   function togglePin(href: string) {
     const next = pins.includes(href) ? pins.filter((h) => h !== href) : [...pins, href];
     startSaving(() => saveNavPins(next));
@@ -131,6 +139,17 @@ export default function Sidebar({
                     <div key={item.href} className="flex items-center gap-3 px-3.5 py-2 rounded-xl text-[13.5px] font-medium text-[var(--ink)]">
                       <span aria-hidden="true" className="material-symbols-outlined w-5 shrink-0 text-center text-[20px] leading-none text-stone-400">{item.icon}</span>
                       <span className="flex-1 truncate">{item.label}</span>
+                      {pinned && !fixed && pins.indexOf(item.href) > 0 && (
+                        <button
+                          type="button"
+                          disabled={saving}
+                          onClick={() => moveUp(item.href)}
+                          aria-label={`Move ${item.label} up`}
+                          className="flex h-7 w-7 items-center justify-center rounded-lg text-stone-400 transition-colors hover:bg-stone-100 hover:text-[var(--ink)] disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40"
+                        >
+                          <span aria-hidden="true" className="material-symbols-outlined text-[18px] leading-none">arrow_upward</span>
+                        </button>
+                      )}
                       {!fixed && (
                         <button
                           type="button"
@@ -181,7 +200,7 @@ export default function Sidebar({
               </button>
             )}
             {gi === 0 && editing && (
-              <p className="px-3.5 pt-3 text-[12px] leading-snug text-[var(--muted)]">Tap + to put a page in your menu, − to take it out.</p>
+              <p className="px-3.5 pt-3 text-[12px] leading-snug text-[var(--muted)]">Tap + to add a page, − to take it out, ↑ to move it up.</p>
             )}
           </div>
           );

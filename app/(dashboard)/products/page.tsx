@@ -6,6 +6,11 @@ import { getCurrentTenant } from "@/lib/tenant";
 import ModuleGuard from "@/components/module-guard";
 import SearchBar from "@/components/search-bar";
 import { formatPrice } from "@/config/modules";
+import PageHead, { BTN_PRIMARY } from "@/components/page-head";
+import ListRow, { ListBox } from "@/components/list-row";
+import EmptyState from "@/components/empty-state";
+
+const LOW = 3; // Analytics'teki "running low" eşiğiyle aynı
 
 type PageProps = { searchParams?: Promise<{ q?: string }> };
 
@@ -55,114 +60,70 @@ async function ProductsContent({ tenantId, query }: { tenantId: string; query: s
   const count = totals.length;
   const totalValue = totals.reduce((s, p) => s + p.price * p.stock_quantity, 0);
 
+  const low = list.filter((p) => p.stock_quantity <= LOW).sort((a, b) => a.stock_quantity - b.stock_quantity);
+  const rest = list.filter((p) => p.stock_quantity > LOW);
+
+  const row = (p: (typeof list)[number]) => {
+    const left = p.stock_quantity;
+    return (
+      <ListRow
+        key={p.id}
+        lead={
+          p.image_url ? (
+            <Image unoptimized src={p.image_url} alt="" width={40} height={40} className="h-10 w-10 shrink-0 rounded-lg border border-[var(--line)] object-cover" />
+          ) : (
+            <span aria-hidden="true" className="material-symbols-outlined flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-stone-50 text-[20px] text-stone-400">checkroom</span>
+          )
+        }
+        title={p.name}
+        sub={[p.category, p.sku].filter(Boolean).join(" · ") || undefined}
+        tone={left <= 0 ? "late" : left <= LOW ? "behind" : "none"}
+        value={left <= 0 ? "Sold out" : `${left} left`}
+        valueTone={left <= 0 ? "late" : "ink"}
+        valueSub={formatPrice(p.price)}
+      />
+    );
+  };
+
   return (
     <div className="animate-fade-in-up">
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-10">
-        <div>
-          <h1 className="text-3xl lg:text-4xl font-serif font-normal text-[var(--ink)] flex items-center gap-3">
-            Inventory
-          </h1>
-          <p className="text-[var(--muted)] mt-2 font-medium">
-            {count === 0
-              ? "No pieces in the collection yet"
-              : `${count} exclusive ${count === 1 ? "piece" : "pieces"} · ${formatPrice(totalValue)} total retail value`}
-          </p>
-        </div>
-        <div className="flex gap-3">
-          <Link href="/products/new" className="flex items-center gap-2 px-6 py-3 rounded-xl bg-stone-900 text-white font-medium text-sm hover:bg-gold transition-all duration-300">
-            <span className="material-symbols-outlined text-[20px]">add</span>
-            Add to Collection
-          </Link>
-        </div>
-      </div>
+      <PageHead
+        title="Stock"
+        sub={count === 0 ? "Nothing on the racks yet" : `${count} ${count === 1 ? "piece" : "pieces"} · ${formatPrice(totalValue)} at selling price`}
+      >
+        <Link href="/products/new" className={BTN_PRIMARY}>
+          <span aria-hidden="true" className="material-symbols-outlined text-[20px]">add</span>
+          Add a piece
+        </Link>
+      </PageHead>
 
-      <div className="mb-8 max-w-md">
-        <SearchBar placeholder="Search by name, SKU, or category..." basePath="/products" />
+      <div className="mb-6 max-w-md">
+        <SearchBar placeholder="Search by name, code or category" basePath="/products" />
       </div>
 
       {list.length > 0 ? (
-        <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-stone-50/50 border-b border-[var(--line)]">
-                  <th className="px-8 py-5 text-xs font-bold text-[var(--muted)] uppercase tracking-wider">Product</th>
-                  <th className="px-8 py-5 text-xs font-bold text-[var(--muted)] uppercase tracking-wider">SKU</th>
-                  <th className="px-8 py-5 text-xs font-bold text-[var(--muted)] uppercase tracking-wider">Category</th>
-                  <th className="px-8 py-5 text-xs font-bold text-[var(--muted)] uppercase tracking-wider text-right">Price</th>
-                  <th className="px-8 py-5 text-xs font-bold text-[var(--muted)] uppercase tracking-wider text-right">Margin</th>
-                  <th className="px-8 py-5 text-xs font-bold text-[var(--muted)] uppercase tracking-wider text-right">Stock</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[var(--line)]">
-                {list.map((p) => {
-                  const margin = p.price > 0 && p.cost > 0 ? Math.round(((p.price - p.cost) / p.price) * 100) : null;
-                  return (
-                    <tr key={p.id} className="hover:bg-stone-50 transition-colors group">
-                      <td className="px-8 py-6">
-                        <div className="flex items-center gap-4">
-                          {p.image_url ? (
-                            <Image
-                              unoptimized
-                              src={p.image_url}
-                              alt={p.name}
-                              width={48}
-                              height={48}
-                              className="w-12 h-12 rounded-2xl object-cover border border-stone-200"
-                            />
-                          ) : (
-                            <div className="w-12 h-12 rounded-2xl bg-stone-100 flex items-center justify-center text-stone-400 group-hover:bg-gold-soft group-hover:text-gold transition-colors">
-                              <span className="material-symbols-outlined text-[24px]">checkroom</span>
-                            </div>
-                          )}
-                          <div>
-                            <div className="font-bold text-[var(--ink)] group-hover:text-gold transition-colors">{p.name}</div>
-                            <div className="text-[11px] text-stone-400 font-mono mt-1">{p.barcode ?? ""}</div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-8 py-6 text-sm font-medium text-stone-600">{p.sku ?? "—"}</td>
-                      <td className="px-8 py-6">
-                        {p.category ? (
-                          <span className={`inline-flex items-center px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-widest ${p.category.toLowerCase() === "gowns" ? "bg-gold-soft text-gold" : "bg-stone-100 text-stone-600"}`}>
-                            {p.category}
-                          </span>
-                        ) : "—"}
-                      </td>
-                      <td className="px-8 py-6 text-right text-sm font-bold text-[var(--ink)] tabular-nums">
-                        {formatPrice(p.price)}
-                      </td>
-                      <td className="px-8 py-6 text-right tabular-nums">
-                        {margin !== null ? (
-                          <span className={`text-sm font-bold ${margin >= 60 ? "text-emerald-600" : margin >= 40 ? "text-amber-600" : "text-gold"}`}>
-                            {margin}%
-                          </span>
-                        ) : "—"}
-                      </td>
-                      <td className="px-8 py-6 text-right">
-                        <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold ${p.stock_quantity <= 0 ? "bg-gold-soft text-gold" : "bg-stone-50 text-stone-700"}`}>
-                          {p.stock_quantity}
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      ) : (
-        <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-16 text-center">
-          <span className="flex items-center justify-center w-16 h-16 rounded-2xl bg-gold-soft text-gold mx-auto mb-5 material-symbols-outlined text-[32px]">checkroom</span>
-          <h3 className="text-xl font-bold text-[var(--ink)] mb-2">{query ? "No results found" : "No products yet"}</h3>
-          <p className="text-[var(--muted)] mb-8">{query ? "Try a different search term." : "Add your beautiful gowns and accessories to start tracking."}</p>
-          {!query && (
-            <Link href="/products/new" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-stone-900 text-white font-medium text-sm hover:bg-gold transition-all duration-300">
-              <span className="material-symbols-outlined text-[20px]">add</span>
-              Add to Collection
-            </Link>
+        <div className="flex flex-col gap-6">
+          {low.length > 0 && (
+            <section>
+              <h2 className="mb-2 font-serif text-lg text-[var(--ink)]">Running low</h2>
+              <ListBox>{low.map(row)}</ListBox>
+            </section>
+          )}
+          {rest.length > 0 && (
+            <section>
+              {low.length > 0 && <h2 className="mb-2 font-serif text-lg text-[var(--ink)]">Plenty left</h2>}
+              <ListBox>{rest.map(row)}</ListBox>
+            </section>
           )}
         </div>
+      ) : (
+        <EmptyState
+          icon="checkroom"
+          title={query ? "Nothing matches that search" : "Nothing on the racks yet"}
+          action={query ? undefined : { href: "/products/new", label: "Add the first piece" }}
+        >
+          {query ? "Try a name, code or category." : "Add your gowns and accessories so you always know what is left."}
+        </EmptyState>
       )}
     </div>
   );

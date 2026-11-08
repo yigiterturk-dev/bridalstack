@@ -66,3 +66,10 @@ test("yıllık plan 12 ayın bedeli 10 aydır (2 ay bedava)", () => {
   }
   assert.equal(calculateAnnualPrice(SELLABLE_PACK_IDS), calculateMonthlyPrice(SELLABLE_PACK_IDS) * ANNUAL_BILLING_MONTHS);
 });
+
+test("formatPrice: kesirli tutarda iki hane, tamda hiç", () => {
+  assert.equal(formatPrice(2971.5), "$2,971.50");
+  assert.equal(formatPrice(2740), "$2,740");
+  assert.equal(formatPrice(-250), "−$250");
+  assert.equal(formatPrice(0.1 + 0.2), "$0.30");
+});

@@ -4,11 +4,12 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentTenant } from "@/lib/tenant";
 import { formatPrice } from "@/config/modules";
 import ModuleGuard from "@/components/module-guard";
+import PageHead from "@/components/page-head";
+import ListRow, { ListBox } from "@/components/list-row";
+import EmptyState from "@/components/empty-state";
 import {
   buildReceivables,
-  summarizeAging,
   totalOutstanding,
-  AGING_LABELS,
   type AgingBucket,
 } from "@/lib/receivables";
 
@@ -17,13 +18,6 @@ export const dynamic = "force-dynamic";
 type Props = { searchParams?: Promise<{ bucket?: string }> };
 
 const BUCKET_ORDER: AgingBucket[] = ["current", "d1_30", "d31_60", "d61_plus"];
-
-const BUCKET_STYLE: Record<AgingBucket, string> = {
-  current: "text-stone-600",
-  d1_30: "text-amber-600",
-  d31_60: "text-orange-600",
-  d61_plus: "text-gold",
-};
 
 export default async function InvoicesPage({ searchParams }: Props) {
   const params = await searchParams;
@@ -55,11 +49,10 @@ async function InvoicesContent({ tenantId, bucket }: { tenantId: string; bucket?
   ]);
 
   const all = buildReceivables(orders, installments);
-  const summary = summarizeAging(all);
   const outstanding = totalOutstanding(all);
 
-  const active = BUCKET_ORDER.includes(bucket as AgingBucket) ? (bucket as AgingBucket) : null;
-  const rows = active ? all.filter((r) => r.bucket === active) : all;
+  const active = bucket === "late" ? "late" : BUCKET_ORDER.includes(bucket as AgingBucket) ? (bucket as AgingBucket) : null;
+  const rows = active === "late" ? all.filter((r) => r.daysOverdue > 0) : active ? all.filter((r) => r.bucket === active) : all;
 
   const customerIds = [...new Set(rows.map((r) => r.customer_id))];
   const customers = customerIds.length
@@ -70,135 +63,54 @@ async function InvoicesContent({ tenantId, bucket }: { tenantId: string; bucket?
     : [];
   const customerById = new Map(customers.map((c) => [c.id, c]));
 
+  const lateRows = all.filter((r) => r.daysOverdue > 0);
+  const lateAmount = lateRows.reduce((n, r) => n + r.outstanding, 0);
+  const shortDate = (d: string) => new Date(`${d}T00:00:00Z`).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" });
+  // Geciken üstte (en çok geciken ilk), sonra en çok borcu olan.
+  const sorted = [...rows].sort((x, y) => y.daysOverdue - x.daysOverdue || y.outstanding - x.outstanding);
+
   return (
     <div className="animate-fade-in-up">
-      <div className="mb-8">
-        <h1 className="text-3xl lg:text-4xl font-serif font-normal text-[var(--ink)] flex items-center gap-3">
-          Balances due
-        </h1>
-        <p className="text-[var(--muted)] mt-2 font-medium">
-          {all.length === 0
-            ? "Nothing outstanding — every order is paid in full"
-            : `${formatPrice(Math.round(outstanding))} outstanding across ${all.length} ${all.length === 1 ? "order" : "orders"}`}
-        </p>
-      </div>
+      <PageHead
+        title="Balances due"
+        sub={all.length === 0 ? "Everything is paid" : `${formatPrice(outstanding)} still owed on ${all.length} ${all.length === 1 ? "order" : "orders"}`}
+      />
 
-      {all.length > 0 && (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          {BUCKET_ORDER.map((b) => {
-            const isActive = active === b;
-            return (
-              <Link
-                key={b}
-                href={isActive ? "/invoices" : `/invoices?bucket=${b}`}
-                className={`bg-white rounded-2xl p-5 border transition-all duration-300 ${
-                  isActive
-                    ? "border-stone-900 shadow-sm"
-                    : "border-[var(--line)] hover:border-stone-300"
-                }`}
-              >
-                <div className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-2">
-                  {AGING_LABELS[b]}
-                </div>
-                <div className={`text-2xl font-extrabold tabular-nums ${BUCKET_STYLE[b]}`}>
-                  {formatPrice(Math.round(summary[b].amount))}
-                </div>
-                <div className="text-xs text-stone-400 mt-1">
-                  {summary[b].count} {summary[b].count === 1 ? "order" : "orders"}
-                </div>
-              </Link>
-            );
-          })}
-        </div>
+      {lateRows.length > 0 && (
+        <Link
+          href={active ? "/invoices" : "/invoices?bucket=late"}
+          className="mb-6 flex items-center gap-3 rounded-2xl border border-late/20 bg-late-soft px-4 py-3 text-sm text-late"
+        >
+          <span aria-hidden="true" className="h-2 w-2 shrink-0 rounded-full bg-late" />
+          <span className="flex-1"><strong className="font-semibold">{formatPrice(lateAmount)} is late</strong> from {lateRows.length} {lateRows.length === 1 ? "bride" : "brides"}.</span>
+        </Link>
       )}
 
-      {rows.length > 0 ? (
-        <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-stone-50/50 border-b border-[var(--line)]">
-                  <th className="px-6 py-4 text-xs font-bold text-[var(--muted)] uppercase tracking-wider">Reference</th>
-                  <th className="px-6 py-4 text-xs font-bold text-[var(--muted)] uppercase tracking-wider">Customer</th>
-                  <th className="px-6 py-4 text-xs font-bold text-[var(--muted)] uppercase tracking-wider">Next due</th>
-                  <th className="px-6 py-4 text-xs font-bold text-[var(--muted)] uppercase tracking-wider text-right">Total</th>
-                  <th className="px-6 py-4 text-xs font-bold text-[var(--muted)] uppercase tracking-wider text-right">Collected</th>
-                  <th className="px-6 py-4 text-xs font-bold text-[var(--muted)] uppercase tracking-wider text-right">Outstanding</th>
-                  <th className="px-6 py-4 text-xs font-bold text-[var(--muted)] uppercase tracking-wider text-right">Invoice</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[var(--line)]">
-                {rows.map((r) => {
-                  const c = customerById.get(r.customer_id);
-                  return (
-                    <tr key={r.orderId} className="hover:bg-stone-50 transition-colors group">
-                      <td className="px-6 py-5">
-                        <Link href={`/orders/${r.orderId}`} className="font-mono text-sm font-bold text-[var(--ink)] group-hover:text-gold transition-colors">
-                          {r.ref_no}
-                        </Link>
-                        {r.installmentCount > 0 && (
-                          <div className="text-[11px] text-stone-400 mt-0.5">
-                            {r.paidCount}/{r.installmentCount} installments paid
-                          </div>
-                        )}
-                      </td>
-                      <td className="px-6 py-5">
-                        <div className="text-sm font-semibold text-stone-800">{c?.name ?? "—"}</div>
-                        {c?.phone && <div className="text-xs text-stone-400">{c.phone}</div>}
-                      </td>
-                      <td className="px-6 py-5">
-                        {r.nextDueDate ? (
-                          <>
-                            <div className="text-sm text-stone-700">
-                              {new Date(`${r.nextDueDate}T00:00:00`).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                            </div>
-                            {r.daysOverdue > 0 && (
-                              <div className={`text-xs font-semibold ${BUCKET_STYLE[r.bucket]}`}>
-                                {r.daysOverdue} {r.daysOverdue === 1 ? "day" : "days"} overdue
-                              </div>
-                            )}
-                          </>
-                        ) : (
-                          <span className="text-sm text-stone-400">No plan</span>
-                        )}
-                      </td>
-                      <td className="px-6 py-5 text-right text-sm text-[var(--muted)] tabular-nums">{formatPrice(r.total)}</td>
-                      <td className="px-6 py-5 text-right text-sm text-emerald-600 tabular-nums">{formatPrice(r.collected)}</td>
-                      <td className="px-6 py-5 text-right text-sm font-bold text-[var(--ink)] tabular-nums">{formatPrice(r.outstanding)}</td>
-                      <td className="px-6 py-5 text-right">
-                        <Link
-                          href={`/print/order/${r.orderId}`}
-                          className="inline-flex items-center gap-1 text-xs font-medium text-[var(--muted)] hover:text-[var(--ink)] transition-colors"
-                        >
-                          <span className="material-symbols-outlined text-[16px]">print</span>
-                          Print
-                        </Link>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
+      {sorted.length > 0 ? (
+        <ListBox>
+          {sorted.map((r) => {
+            const c = customerById.get(r.customer_id);
+            const when = r.daysOverdue > 0
+              ? `${r.daysOverdue} ${r.daysOverdue === 1 ? "day" : "days"} late`
+              : r.nextDueDate ? `next payment ${shortDate(r.nextDueDate)}` : "no payment plan";
+            return (
+              <ListRow
+                key={r.orderId}
+                href={`/orders/${r.orderId}`}
+                title={c?.name ?? "No bride"}
+                sub={`${when} · paid ${formatPrice(r.collected)} of ${formatPrice(r.total)} · ${r.ref_no}`}
+                tone={r.daysOverdue > 0 ? "late" : "ok"}
+                value={formatPrice(r.outstanding)}
+                valueTone={r.daysOverdue > 0 ? "late" : "ink"}
+                valueSub="left to pay"
+              />
+            );
+          })}
+        </ListBox>
       ) : (
-        <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-16 text-center">
-          <span className="flex items-center justify-center w-16 h-16 rounded-2xl bg-emerald-50 text-emerald-500 mx-auto mb-5 material-symbols-outlined text-[32px]">
-            task_alt
-          </span>
-          <h3 className="text-xl font-bold text-[var(--ink)] mb-2">
-            {active ? "Nothing in this range" : "Everything is paid"}
-          </h3>
-          <p className="text-[var(--muted)]">
-            {active ? (
-              <Link href="/invoices" className="font-semibold text-stone-700 hover:text-gold">
-                Show all outstanding invoices
-              </Link>
-            ) : (
-              "No order has money still owed on it."
-            )}
-          </p>
-        </div>
+        <EmptyState icon="task_alt" title={active ? "Nothing late" : "Everything is paid"} action={active ? { href: "/invoices", label: "Show everything owed" } : undefined}>
+          {active ? "No bride is behind on a payment." : "No order has money still owed on it."}
+        </EmptyState>
       )}
     </div>
   );

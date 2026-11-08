@@ -1,9 +1,11 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getCurrentTenant } from "@/lib/tenant";
 import { RevenueBars, FillLine, StaffBars, DistributionPie } from "@/components/analytics-charts";
 import { formatPrice } from "@/config/modules";
 import RangeFilter from "./range-filter";
+import PageHead from "@/components/page-head";
 import EmptyState from "@/components/empty-state";
 
 export const dynamic = "force-dynamic";
@@ -186,73 +188,74 @@ export default async function AnalyticsPage({ searchParams }: Props) {
     .sort((a, b) => b.value - a.value);
 
   // Her kart tek bir soruya cevap verir; alt satır cevabın neyi saydığını söyler.
+  // Söyleyecek bir şeyi olmayan kart çıkmaz ("$0 styling", "0 of 0" gibi).
   const kpis = [
     hasSales && { label: "How much did I sell?", value: formatPrice(totalRevenue), sub: `Orders in the last ${rangeDays} days, cancelled left out` },
-    hasBooking && { label: "What did styling bring in?", value: formatPrice(bookingRevenue), sub: `Completed bookings with tips, last ${rangeDays} days` },
-    hasAppointments && { label: "How many appointments went ahead?", value: `${fillRate}%`, sub: `${apptDone} of ${apptTotal} booked, last ${rangeDays} days` },
-    hasInventory && { label: "What is my stock worth?", value: formatPrice(stockValue), sub: "Everything on the racks, at selling price" },
-    hasInventory && { label: "How many pieces are running low?", value: String(lowStock), sub: `${LOW_STOCK_THRESHOLD} or fewer left in stock` },
-  ].filter(Boolean) as { label: string; value: string; sub: string }[];
+    hasBooking && bookingRevenue > 0 && { label: "What did styling bring in?", value: formatPrice(bookingRevenue), sub: `Completed bookings with tips, last ${rangeDays} days` },
+    hasAppointments && apptTotal > 0 && { label: "How many appointments went ahead?", value: `${fillRate}%`, sub: `${apptDone} of ${apptTotal} that were due, last ${rangeDays} days` },
+    hasInventory && products.length > 0 && { label: "What is my stock worth?", value: formatPrice(stockValue), sub: "Everything on the racks, at selling price" },
+    hasInventory && lowStock > 0 && { label: "How many pieces are running low?", value: String(lowStock), sub: `${LOW_STOCK_THRESHOLD} or fewer left`, href: "/products" },
+].filter(Boolean) as { label: string; value: string; sub: string; href?: string }[];
 
   const hasRevenueData = revenueSeries.some((r) => r.value > 0);
   const hasFillData = fillSeries.some((f) => f.booked > 0);
 
   return (
-    <div className="animate-fade-in-up space-y-10">
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
-        <div>
-          <h1 className="text-3xl lg:text-4xl font-serif font-normal text-[var(--ink)] flex items-center gap-3">
-            Analytics
-          </h1>
-          <p className="text-[var(--muted)] mt-2 font-medium">{tenant.name} — business performance</p>
-        </div>
-        <div>
-          <RangeFilter current={String(rangeDays)} />
-        </div>
-      </div>
+    <div className="animate-fade-in-up space-y-8">
+      <PageHead title="Analytics" sub="How the shop is doing">
+        <RangeFilter current={String(rangeDays)} />
+      </PageHead>
 
       {kpis.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-[repeat(auto-fit,minmax(13rem,1fr))] gap-5 lg:gap-6">
-          {kpis.map((k, i) => (
-            <div key={k.label} className="bg-white rounded-2xl p-6 border border-[var(--line)] shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] hover:border-late/30 transition-all duration-300 group" style={{ animationDelay: `${i * 100}ms` }}>
-              <div className="text-xs font-bold text-[var(--muted)] uppercase tracking-wider mb-2">{k.label}</div>
-              <div className="text-4xl font-extrabold text-[var(--ink)] tabular-nums tracking-tight mb-1">{k.value}</div>
-              <div className="text-sm font-medium text-stone-400">{k.sub}</div>
-            </div>
-          ))}
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-[repeat(auto-fit,minmax(13rem,1fr))]">
+          {kpis.map((k) => {
+            const inner = (
+              <>
+                <div className="text-sm text-[var(--muted)]">{k.label}</div>
+                <div className="mt-1 font-serif text-4xl tabular-nums text-[var(--ink)]">{k.value}</div>
+                <div className="mt-1 text-sm text-stone-400">{k.sub}</div>
+              </>
+            );
+            const cls = "block rounded-2xl border border-[var(--line)] bg-white p-5";
+            return k.href ? (
+              <Link key={k.label} href={k.href} className={`${cls} transition-colors hover:border-gold`}>{inner}</Link>
+            ) : (
+              <div key={k.label} className={cls}>{inner}</div>
+            );
+          })}
         </div>
       )}
 
       {hasRevenueData || hasFillData || staffSeries.length > 0 || inventorySeries.length > 0 ? (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           {hasSales && hasRevenueData && (
-            <div className="bg-white rounded-2xl p-8 border border-[var(--line)] shadow-sm hover:shadow-md transition-shadow">
-              <h3 className="text-lg font-bold text-[var(--ink)] mb-6 flex items-center gap-2"><span className="material-symbols-outlined text-gold">trending_up</span> How much did I sell each month?</h3>
-              <p className="text-sm text-[var(--muted)] -mt-4 mb-6">Last 6 months, cancelled orders left out</p>
+            <div className="rounded-2xl border border-[var(--line)] bg-white p-6">
+              <h3 className="font-serif text-lg text-[var(--ink)]">How much did I sell each month?</h3>
+              <p className="mb-5 mt-0.5 text-sm text-[var(--muted)]">Last 6 months, cancelled orders left out</p>
               <RevenueBars data={revenueSeries} />
             </div>
           )}
 
           {hasAppointments && hasFillData && (
-            <div className="bg-white rounded-2xl p-8 border border-[var(--line)] shadow-sm hover:shadow-md transition-shadow">
-              <h3 className="text-lg font-bold text-[var(--ink)] mb-6 flex items-center gap-2"><span className="material-symbols-outlined text-gold">calendar_month</span> How full is this week?</h3>
-              <p className="text-sm text-[var(--muted)] -mt-4 mb-6">Appointments booked against staff hours, Mon–Sun</p>
+            <div className="rounded-2xl border border-[var(--line)] bg-white p-6">
+              <h3 className="font-serif text-lg text-[var(--ink)]">How full is this week?</h3>
+              <p className="mb-5 mt-0.5 text-sm text-[var(--muted)]">Appointments booked against staff hours, Mon–Sun</p>
               <FillLine data={fillSeries} />
             </div>
           )}
 
           {staffSeries.length > 0 && (
-            <div className="bg-white rounded-2xl p-8 border border-[var(--line)] shadow-sm hover:shadow-md transition-shadow">
-              <h3 className="text-lg font-bold text-[var(--ink)] mb-6 flex items-center gap-2"><span className="material-symbols-outlined text-gold">award_star</span> Which stylist brought in the most this week?</h3>
-              <p className="text-sm text-[var(--muted)] -mt-4 mb-6">Completed bookings, Mon–Sun</p>
+            <div className="rounded-2xl border border-[var(--line)] bg-white p-6">
+              <h3 className="font-serif text-lg text-[var(--ink)]">Which stylist brought in the most this week?</h3>
+              <p className="mb-5 mt-0.5 text-sm text-[var(--muted)]">Completed bookings, Mon–Sun</p>
               <StaffBars data={staffSeries} valueLabel="Revenue" />
             </div>
           )}
 
           {inventorySeries.length > 0 && (
-            <div className="bg-white rounded-2xl p-8 border border-[var(--line)] shadow-sm hover:shadow-md transition-shadow">
-              <h3 className="text-lg font-bold text-[var(--ink)] mb-6 flex items-center gap-2"><span className="material-symbols-outlined text-gold">pie_chart</span> What is on my racks?</h3>
-              <p className="text-sm text-[var(--muted)] -mt-4 mb-6">Pieces in stock, by category</p>
+            <div className="rounded-2xl border border-[var(--line)] bg-white p-6">
+              <h3 className="font-serif text-lg text-[var(--ink)]">What is on my racks?</h3>
+              <p className="mb-5 mt-0.5 text-sm text-[var(--muted)]">Pieces in stock, by category</p>
               <DistributionPie data={inventorySeries} />
             </div>
           )}

@@ -383,5 +383,9 @@ export const CURRENCY_SYMBOL = process.env.NEXT_PUBLIC_CURRENCY_SYMBOL ?? "$";
 export function formatPrice(amount: number): string {
   // Eksi işareti para biriminin önüne gelir: "$-250" değil "−$250".
   const sign = amount < 0 ? "−" : "";
-  return `${sign}${CURRENCY_SYMBOL}${Math.abs(amount).toLocaleString()}`;
+  // Tam sayıda kuruş yok ("$2,740"); kesirliyse hep iki hane ("$2,971.50", "$2,971.5" değil).
+  const abs = Math.abs(amount);
+  const cents = Math.round(abs * 100) % 100 !== 0;
+  const text = abs.toLocaleString("en-US", { minimumFractionDigits: cents ? 2 : 0, maximumFractionDigits: cents ? 2 : 0 });
+  return `${sign}${CURRENCY_SYMBOL}${text}`;
 }

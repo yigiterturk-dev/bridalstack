@@ -5,37 +5,21 @@ import { getCurrentTenant } from "@/lib/tenant";
 import ModuleGuard from "@/components/module-guard";
 import SearchBar from "@/components/search-bar";
 import { formatPrice } from "@/config/modules";
+import PageHead, { BTN_PRIMARY } from "@/components/page-head";
+import ListRow, { ListBox } from "@/components/list-row";
+import EmptyState from "@/components/empty-state";
 
 type PageProps = { searchParams?: Promise<{ q?: string }> };
 
-function statusStyle(status: string) {
-  switch (status) {
-    case "confirmed":
-      return "bg-blue-50 text-blue-600 border border-blue-100";
-    case "in_progress":
-      return "bg-amber-50 text-amber-600 border border-amber-100";
-    case "completed":
-    case "delivered":
-      return "bg-emerald-50 text-emerald-600 border border-emerald-100";
-    case "cancelled":
-      return "bg-gold-soft text-gold border border-gold/30";
-    default:
-      return "bg-stone-50 text-stone-600 border border-stone-200";
-  }
-}
-
-function typeStyle(type: string) {
-  switch (type) {
-    case "sale":
-      return "text-emerald-700 bg-emerald-50/50";
-    case "rental":
-      return "text-gold bg-gold-soft";
-    case "custom":
-      return "text-amber-700 bg-amber-50/50";
-    default:
-      return "text-stone-700 bg-stone-50/50";
-  }
-}
+const STATUS: Record<string, string> = {
+  draft: "Draft",
+  confirmed: "Confirmed",
+  in_progress: "Being made",
+  delivered: "Picked up",
+  completed: "Done",
+  cancelled: "Cancelled",
+};
+const TYPE: Record<string, string> = { rental: "Rental", custom: "Custom" };
 
 export default async function OrdersPage({ searchParams }: PageProps) {
   const params = await searchParams;
@@ -83,97 +67,58 @@ async function OrdersContent({ tenantId, query }: { tenantId: string; query: str
   const totalRevenue = agg._sum.discounted_total ?? 0;
   const orderCount = agg._count;
 
+  const open = list.filter((o) => o.status !== "cancelled" && o.remaining_balance > 0).reduce((n, o) => n + o.remaining_balance, 0);
+
   return (
     <div className="animate-fade-in-up">
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-10">
-        <div>
-          <h1 className="text-3xl lg:text-4xl font-serif font-normal text-[var(--ink)] flex items-center gap-3">
-            Orders
-          </h1>
-          <p className="text-[var(--muted)] mt-2 font-medium">
-            {orderCount === 0
-              ? "No orders yet"
-              : `${orderCount} active ${orderCount === 1 ? "order" : "orders"} · ${formatPrice(totalRevenue)} total revenue`}
-          </p>
-        </div>
-        <div className="flex gap-3">
-          <Link href="/orders/new" className="flex items-center gap-2 px-6 py-3 rounded-xl bg-stone-900 text-white font-medium text-sm hover:bg-gold transition-all duration-300">
-            <span className="material-symbols-outlined text-[20px]">add</span>
-            New Order
-          </Link>
-        </div>
-      </div>
+      <PageHead
+        title="Orders"
+        sub={orderCount === 0 ? "No orders yet" : `${orderCount} ${orderCount === 1 ? "order" : "orders"} · ${formatPrice(totalRevenue)} sold · ${formatPrice(open)} still to collect`}
+      >
+        <Link href="/orders/new" className={BTN_PRIMARY}>
+          <span aria-hidden="true" className="material-symbols-outlined text-[20px]">add</span>
+          New order
+        </Link>
+      </PageHead>
 
-      <div className="mb-8 max-w-md">
-        <SearchBar placeholder="Search by reference or customer..." basePath="/orders" />
+      <div className="mb-6 max-w-md">
+        <SearchBar placeholder="Search by bride or order number" basePath="/orders" />
       </div>
 
       {list.length > 0 ? (
-        <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-stone-50/50 border-b border-[var(--line)]">
-                  <th className="px-8 py-5 text-xs font-bold text-[var(--muted)] uppercase tracking-wider">Reference</th>
-                  <th className="px-8 py-5 text-xs font-bold text-[var(--muted)] uppercase tracking-wider">Customer</th>
-                  <th className="px-8 py-5 text-xs font-bold text-[var(--muted)] uppercase tracking-wider">Type</th>
-                  <th className="px-8 py-5 text-xs font-bold text-[var(--muted)] uppercase tracking-wider">Date</th>
-                  <th className="px-8 py-5 text-xs font-bold text-[var(--muted)] uppercase tracking-wider text-right">Total</th>
-                  <th className="px-8 py-5 text-xs font-bold text-[var(--muted)] uppercase tracking-wider text-right">Balance</th>
-                  <th className="px-8 py-5 text-xs font-bold text-[var(--muted)] uppercase tracking-wider">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[var(--line)]">
-                {list.map((o) => {
-                  const shownDate = o.order_date ? new Date(`${o.order_date}T00:00:00`) : o.created_at;
-                  return (
-                    <tr key={o.id} className="hover:bg-stone-50 transition-colors group">
-                      <td className="px-8 py-6">
-                        <Link href={`/orders/${o.id}`} className="font-mono text-sm font-bold text-[var(--ink)] group-hover:text-gold transition-colors">
-                          {o.ref_no}
-                        </Link>
-                      </td>
-                      <td className="px-8 py-6 text-sm font-bold text-stone-800">{o.customer?.name ?? "—"}</td>
-                      <td className="px-8 py-6">
-                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-widest ${typeStyle(o.order_type)}`}>
-                          {o.order_type}
-                        </span>
-                      </td>
-                      <td className="px-8 py-6 text-sm font-medium text-[var(--muted)]">
-                        {shownDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                      </td>
-                      <td className="px-8 py-6 text-right text-sm font-bold text-[var(--ink)] tabular-nums">
-                        {formatPrice(o.discounted_total)}
-                      </td>
-                      <td className="px-8 py-6 text-right tabular-nums">
-                        <span className={`text-sm font-bold ${o.remaining_balance > 0 ? "text-gold" : "text-emerald-600"}`}>
-                          {formatPrice(o.remaining_balance)}
-                        </span>
-                      </td>
-                      <td className="px-8 py-6">
-                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold tracking-wide uppercase ${statusStyle(o.status)}`}>
-                          {o.status.replace(/_/g, " ")}
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <ListBox>
+          {list.map((o) => {
+            const shownDate = o.order_date ? new Date(`${o.order_date}T00:00:00`) : o.created_at;
+            const cancelled = o.status === "cancelled";
+            const owes = !cancelled && o.remaining_balance > 0;
+            const sub = [
+              TYPE[o.order_type],
+              STATUS[o.status] ?? o.status.replace(/_/g, " "),
+              shownDate.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+              o.ref_no,
+            ].filter(Boolean).join(" · ");
+            return (
+              <ListRow
+                key={o.id}
+                href={`/orders/${o.id}`}
+                title={o.customer?.name ?? "No bride"}
+                sub={sub}
+                tone={cancelled ? "done" : owes ? "ok" : "done"}
+                value={cancelled ? "Cancelled" : owes ? `${formatPrice(o.remaining_balance)} left` : "Paid"}
+                valueTone={cancelled || !owes ? "muted" : "ink"}
+                valueSub={`of ${formatPrice(o.discounted_total)}`}
+              />
+            );
+          })}
+        </ListBox>
       ) : (
-        <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-16 text-center">
-          <span className="flex items-center justify-center w-16 h-16 rounded-2xl bg-gold-soft text-gold mx-auto mb-5 material-symbols-outlined text-[32px]">receipt_long</span>
-          <h3 className="text-xl font-bold text-[var(--ink)] mb-2">{query ? "No results found" : "No orders yet"}</h3>
-          <p className="text-[var(--muted)] mb-8">{query ? "Try a different search term." : "Create your first sale, rental, or custom order."}</p>
-          {!query && (
-            <Link href="/orders/new" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-stone-900 text-white font-medium text-sm hover:bg-gold transition-all duration-300">
-              <span className="material-symbols-outlined text-[20px]">add</span>
-              Create Order
-            </Link>
-          )}
-        </div>
+        <EmptyState
+          icon="receipt_long"
+          title={query ? "Nothing matches that search" : "No orders yet"}
+          action={query ? undefined : { href: "/orders/new", label: "Write the first order" }}
+        >
+          {query ? "Try a bride's name or an order number." : "When a bride says yes to a dress, write it here."}
+        </EmptyState>
       )}
     </div>
   );
