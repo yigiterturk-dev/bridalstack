@@ -1,272 +1,137 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { getCurrentTenant } from "@/lib/tenant";
-import { MODULES, isModuleLive } from "@/config/modules";
-import { buildFollowUps } from "@/lib/follow-ups";
-import { RevenueChart, AppointmentChart, StatusPieChart } from "@/components/charts";
+import { getCurrentTenant, getCurrentUserId } from "@/lib/tenant";
+import { formatPrice } from "@/config/modules";
+import { addCalendarDays, dateInTimeZone, normalizeTimeZone, startOfDayInTimeZone } from "@/lib/timezone";
+import { buildJourney, sortForAttention } from "@/lib/journey";
+import BrideRow from "@/components/bride-row";
 
-const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const OPEN_INSTALLMENT = ["pending", "due", "overdue"];
 
-const STATUS_LABELS: Record<string, string> = {
-  draft: "Draft",
-  confirmed: "Confirmed",
-  in_progress: "In Progress",
-  completed: "Completed",
-  delivered: "Delivered",
-  cancelled: "Cancelled",
-};
-
-/** Pazartesi 00:00 — haftalık randevu grafiğinin başlangıcı. */
-function startOfWeek(d: Date) {
-  const start = new Date(d);
-  const dow = (start.getDay() + 6) % 7; // Pazartesi = 0
-  start.setDate(start.getDate() - dow);
-  start.setHours(0, 0, 0, 0);
-  return start;
-}
-
-export default async function DashboardPage() {
-  const tenant = await getCurrentTenant();
+export default async function TodayPage() {
+  const [tenant, userId] = await Promise.all([getCurrentTenant(), getCurrentUserId()]);
   if (!tenant) redirect("/onboarding");
 
-  const hour = new Date().getHours();
-  const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
-
-  const modules = tenant.enabled_modules;
-  const hasSales = modules.includes("sales");
-  const hasAppointments = modules.includes("appointments");
-  const hasInventory = modules.includes("inventory");
-  const hasCrm = modules.includes("crm");
-
+  const tz = normalizeTimeZone((tenant.settings as Record<string, unknown> | null)?.time_zone);
   const now = new Date();
-  const weekStart = startOfWeek(now);
-  const weekEnd = new Date(weekStart);
-  weekEnd.setDate(weekEnd.getDate() + 7);
+  const today = dateInTimeZone(now, tz);
+  const dayStart = startOfDayInTimeZone(today, tz);
+  const dayEnd = startOfDayInTimeZone(addCalendarDays(today, 1), tz);
+  const weekEnd = addCalendarDays(today, 6);
+  const t = tenant.id;
 
-  // Gelir grafiği son 6 ayı kapsar.
-  const revenueStart = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+  const [user, customerCount, apptToday, alterFitToday, dueWeek, brides] = await Promise.all([
+    userId ? prisma.user.findUnique({ where: { id: userId }, select: { name: true } }) : null,
+    prisma.customer.count({ where: { tenant_id: t } }),
+    prisma.appointment.count({ where: { tenant_id: t, appointment_date: { gte: dayStart, lt: dayEnd }, status: { not: "cancelled" } } }),
+    prisma.alteration.count({ where: { tenant_id: t, fitting_date: today, status: { notIn: ["cancelled", "delivered"] } } }),
+    prisma.installment.aggregate({ where: { tenant_id: t, status: { in: OPEN_INSTALLMENT }, due_date: { gte: today, lte: weekEnd } }, _sum: { amount: true } }),
+    // Yaklaşan düğünü olan ya da bir şeyi geciken gelinler — geri kalanı Today'i meşgul etmez.
+    prisma.customer.findMany({
+      where: {
+        tenant_id: t,
+        OR: [
+          { event_date: { gte: today } },
+          { alterations: { some: { status: { in: ["requested", "in_progress", "ready"] }, promised_date: { lt: today } } } },
+          { installments: { some: { status: "overdue" } } },
+        ],
+      },
+      take: 300,
+      select: {
+        id: true, name: true, event_date: true,
+        orders: { select: { status: true } },
+        appointments: { select: { status: true, appointment_date: true } },
+        alterations: { select: { kind: true, status: true, promised_date: true } },
+        installments: { select: { status: true } },
+      },
+    }),
+  ]);
 
-  const [customerCount, upcomingAppointments, orderCount, productCount, weekAppointments, recentOrders, statusGroups, tryOnSignals, allOrderSignals] =
-    await Promise.all([
-      hasCrm ? prisma.customer.count({ where: { tenant_id: tenant.id } }) : 0,
-      hasAppointments
-        ? prisma.appointment.count({
-            where: {
-              tenant_id: tenant.id,
-              appointment_date: { gte: now },
-              status: { notIn: ["cancelled", "completed"] },
-            },
-          })
-        : 0,
-      hasSales ? prisma.order.count({ where: { tenant_id: tenant.id } }) : 0,
-      hasInventory
-        ? prisma.product.aggregate({ where: { tenant_id: tenant.id }, _sum: { stock_quantity: true } })
-            .then((r) => r._sum.stock_quantity ?? 0)
-        : 0,
-      hasAppointments
-        ? prisma.appointment.findMany({
-            where: {
-              tenant_id: tenant.id,
-              appointment_date: { gte: weekStart, lt: weekEnd },
-              status: { not: "cancelled" },
-            },
-            select: { appointment_date: true },
-          })
-        : [],
-      hasSales
-        ? prisma.order.findMany({
-            where: {
-              tenant_id: tenant.id,
-              status: { not: "cancelled" },
-              created_at: { gte: revenueStart },
-            },
-            select: { created_at: true, discounted_total: true },
-          })
-        : [],
-      hasSales
-        ? prisma.order.groupBy({
-            by: ["status"],
-            where: { tenant_id: tenant.id },
-            _count: { _all: true },
-          })
-        : [],
-      hasCrm
-        ? prisma.tryOn.findMany({
-            where: { tenant_id: tenant.id },
-            orderBy: { created_at: "desc" },
-            take: 500,
-            select: { customer_id: true, product_id: true, reaction: true, rating: true, created_at: true },
-          })
-        : [],
-      hasCrm
-        ? prisma.order.findMany({
-            where: { tenant_id: tenant.id, status: { not: "cancelled" } },
-            select: { customer_id: true, created_at: true },
-          })
-        : [],
-    ]);
+  const rows = brides.map((c) => ({
+    id: c.id,
+    name: c.name,
+    journey: buildJourney({
+      eventDate: c.event_date,
+      today,
+      orders: c.orders,
+      appointments: c.appointments.map((a) => ({ status: a.status, date: dateInTimeZone(a.appointment_date, tz) })),
+      alterations: c.alterations,
+      installments: c.installments,
+    }),
+  }));
+  const active = rows.filter((r) => r.journey.risk !== "married");
+  const attention = sortForAttention(active.filter((r) => r.journey.risk === "late" || r.journey.risk === "behind"));
+  const upcoming = active
+    .filter((r) => r.journey.daysToWedding !== null && r.journey.daysToWedding <= 60)
+    .sort((a, b) => (a.journey.daysToWedding ?? 0) - (b.journey.daysToWedding ?? 0));
+  const lateCount = active.filter((r) => r.journey.risk === "late").length;
 
-  // Bayıldığı elbiseyi almamış gelinler — en yüksek dönüşümlü takip listesi.
-  const followUps = buildFollowUps(tryOnSignals, allOrderSignals);
-
-  const stats = [
-    { label: "Registered Brides", value: customerCount, icon: "groups", href: "/customers", module: "crm" as const },
-    { label: "Upcoming Appointments", value: upcomingAppointments, icon: "event", href: "/appointments", module: "appointments" as const },
-    { label: "Orders & Contracts", value: orderCount, icon: "receipt_long", href: "/orders", module: "sales" as const },
-    { label: "Gowns in Inventory", value: productCount, icon: "checkroom", href: "/products", module: "inventory" as const },
-  ].filter((s) => modules.includes(s.module));
-  const isEmptyWorkspace = stats.length > 0 && stats.every((stat) => stat.value === 0);
-
-  // Son 6 ay için ay bazlı gelir toplamı — kayıt olmayan aylar sıfır kalır.
-  const revenueBuckets: { key: string; month: string; revenue: number }[] = [];
-  for (let i = 5; i >= 0; i--) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    revenueBuckets.push({ key: `${d.getFullYear()}-${d.getMonth()}`, month: MONTHS[d.getMonth()], revenue: 0 });
-  }
-  for (const o of recentOrders) {
-    const key = `${o.created_at.getFullYear()}-${o.created_at.getMonth()}`;
-    const bucket = revenueBuckets.find((b) => b.key === key);
-    if (bucket) bucket.revenue += o.discounted_total;
-  }
-  const revenueData = revenueBuckets.map(({ month, revenue }) => ({ month, revenue }));
-
-  const dayCounts = new Array(7).fill(0) as number[];
-  for (const a of weekAppointments) {
-    dayCounts[(a.appointment_date.getDay() + 6) % 7] += 1;
-  }
-  const appointmentData = DAYS.map((day, i) => ({ day, count: dayCounts[i] }));
-
-  const orderStatusData = statusGroups
-    .map((g) => ({ name: STATUS_LABELS[g.status] ?? g.status.replace(/_/g, " "), value: g._count._all }))
-    .filter((s) => s.value > 0);
-
-  const hasRevenue = revenueData.some((r) => r.revenue > 0);
-  const hasWeekAppointments = appointmentData.some((a) => a.count > 0);
+  const hour = Number(new Intl.DateTimeFormat("en-US", { timeZone: tz, hour: "numeric", hourCycle: "h23" }).format(now));
+  const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+  const firstName = user?.name?.split(" ")[0];
+  const dateLabel = new Date(`${today}T12:00:00Z`).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", timeZone: "UTC" });
 
   return (
-    <div>
-      <div className="mb-8 animate-fade-in-up">
-        <h1 className="text-2xl lg:text-3xl font-extrabold text-stone-900 tracking-tight flex items-center gap-2">
-          {greeting}, {tenant.name} <span className="text-rose-400">✧</span>
-        </h1>
-        <p className="text-stone-500 mt-2 font-medium">
-          {now.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}
-        </p>
-      </div>
+    <div className="flex flex-col gap-10">
+      <header>
+        <p className="text-sm text-[var(--muted)]">{dateLabel}</p>
+        <h1 className="mt-1 font-serif text-3xl sm:text-4xl text-[var(--ink)]">{greeting}{firstName ? `, ${firstName}` : ""}</h1>
+      </header>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-5 mb-8">
-        {stats.map((stat, i) => (
-          <Link key={stat.label} href={stat.href} className="bg-white/75 backdrop-blur-md rounded-2xl p-5 border border-stone-200/70 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] hover:border-rose-200 hover:shadow-[0_10px_30px_-10px_rgba(225,29,72,0.15)] hover:-translate-y-0.5 transition-all duration-300 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-4" style={{ animationDelay: `${i * 100}ms` }}>
-            <div className="flex items-center justify-between mb-3">
-              <span aria-hidden="true" className="flex items-center justify-center w-10 h-10 rounded-xl bg-rose-50 text-rose-500 material-symbols-outlined text-[22px] group-hover:bg-rose-500 group-hover:text-white transition-colors duration-300">{stat.icon}</span>
-              <span aria-hidden="true" className="material-symbols-outlined text-stone-300 text-xl opacity-0 group-hover:opacity-100 group-hover:-translate-y-1 group-hover:translate-x-1 transition-all duration-300">arrow_outward</span>
-            </div>
-            <div className="text-3xl font-extrabold text-stone-900 tabular-nums tracking-tight">{stat.value}</div>
-            <div className="text-xs font-semibold text-stone-500 mt-1 uppercase tracking-[0.08em]">{stat.label}</div>
-          </Link>
-        ))}
-      </div>
-
-      {isEmptyWorkspace && (
-        <section className="mb-8 rounded-2xl border border-stone-200/70 bg-white/75 p-6 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)]" aria-labelledby="getting-started-title">
-          <div className="flex flex-col gap-1 mb-5">
-            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-rose-500">Getting started</p>
-            <h2 id="getting-started-title" className="text-lg font-bold text-stone-900">Set up your boutique in a few steps</h2>
-            <p className="text-sm text-stone-500">Add your first records and your dashboard will start working for you.</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            {[
-              hasCrm && { href: "/customers/new", icon: "person_add", title: "Add your first bride", description: "Create a profile with wedding details and notes." },
-              hasAppointments && { href: "/appointments", icon: "event", title: "Book an appointment", description: "Keep consultations and fittings in one calendar." },
-              hasInventory && { href: "/products/new", icon: "checkroom", title: "Add a gown", description: "Start tracking stock, try-ons, and availability." },
-            ].filter(Boolean).map((step) => {
-              const item = step as { href: string; icon: string; title: string; description: string };
-              return (
-                <Link key={item.href} href={item.href} className="group flex items-start gap-3 rounded-xl border border-stone-200/80 bg-stone-50/60 p-4 hover:border-rose-200 hover:bg-rose-50/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2">
-                  <span aria-hidden="true" className="material-symbols-outlined text-rose-500 text-[22px] mt-0.5">{item.icon}</span>
-                  <span className="min-w-0">
-                    <span className="block text-sm font-semibold text-stone-900 group-hover:text-rose-700">{item.title}</span>
-                    <span className="block text-xs leading-relaxed text-stone-500 mt-1">{item.description}</span>
-                  </span>
-                  <span aria-hidden="true" className="material-symbols-outlined text-stone-300 text-lg ml-auto group-hover:text-rose-400">arrow_forward</span>
-                </Link>
-              );
-            })}
-          </div>
+      {customerCount === 0 ? (
+        <section className="rounded-2xl border border-[var(--line)] p-10 text-center">
+          <h2 className="font-serif text-2xl text-[var(--ink)]">No brides yet</h2>
+          <p className="mt-2 text-[var(--muted)]">Add a bride with her wedding date and Today will tell you who needs you.</p>
+          <Link href="/customers/new" className="mt-6 inline-block rounded-xl bg-[var(--ink)] px-5 py-2.5 text-sm font-medium text-white">Add your first bride</Link>
         </section>
-      )}
+      ) : (
+        <>
+          <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <Stat label="Fittings today" value={String(apptToday + alterFitToday)} href="/appointments" />
+            <Stat label="Late" value={String(lateCount)} tone={lateCount ? "late" : undefined} href="#attention" />
+            <Stat label="Payments due this week" value={formatPrice(dueWeek._sum.amount ?? 0)} href="/installments" />
+          </section>
 
-      {followUps.length > 0 && (
-        <Link
-          href="/follow-ups"
-          className="group block mb-8 rounded-2xl border border-rose-200/70 bg-gradient-to-r from-rose-50/80 to-white p-5 hover:border-rose-300 hover:shadow-[0_10px_30px_-12px_rgba(225,29,72,0.25)] transition-all duration-300"
-        >
-          <div className="flex items-center gap-5">
-          <span aria-hidden="true" className="flex items-center justify-center w-12 h-12 rounded-2xl bg-rose-500 text-white material-symbols-outlined text-[24px] flex-shrink-0">
-              notifications_active
-            </span>
-            <div className="min-w-0">
-              <div className="font-bold text-stone-900">
-                {followUps.length} {followUps.length === 1 ? "bride" : "brides"} loved a gown but have not ordered
+          <section id="attention">
+            <h2 className="mb-3 font-serif text-xl text-[var(--ink)]">Needs attention</h2>
+            {attention.length === 0 ? (
+              <p className="rounded-2xl border border-[var(--line)] px-4 py-6 text-[var(--muted)]">Nothing is late. Nice.</p>
+            ) : (
+              <div className="divide-y divide-[var(--line)] rounded-2xl border border-[var(--line)]">
+                {attention.map((r) => (
+                  <BrideRow key={r.id} id={r.id} name={r.name} reason={r.journey.reasons[0] ?? null} daysToWedding={r.journey.daysToWedding} steps={r.journey.steps} risk={r.journey.risk} />
+                ))}
               </div>
-              <div className="text-sm text-stone-500 mt-0.5">
-                The longest has been waiting {followUps[followUps.length - 1].daysSince} days. Call them back.
+            )}
+          </section>
+
+          <section>
+            <h2 className="mb-3 font-serif text-xl text-[var(--ink)]">Upcoming weddings <span className="text-base text-[var(--muted)]">· next 60 days</span></h2>
+            {upcoming.length === 0 ? (
+              <div className="rounded-2xl border border-[var(--line)] px-4 py-6 text-[var(--muted)]">
+                No weddings in the next 60 days. Add wedding dates to your brides to see them here.
+                <Link href="/customers" className="ml-2 font-medium text-[var(--ink)] underline">Open brides</Link>
               </div>
-            </div>
-            <span aria-hidden="true" className="material-symbols-outlined text-stone-300 ml-auto group-hover:text-rose-400 group-hover:translate-x-1 transition-all flex-shrink-0">
-              arrow_forward
-            </span>
-          </div>
-        </Link>
+            ) : (
+              <div className="divide-y divide-[var(--line)] rounded-2xl border border-[var(--line)]">
+                {upcoming.map((r) => (
+                  <BrideRow key={r.id} id={r.id} name={r.name} reason={r.journey.reasons[0] ?? null} daysToWedding={r.journey.daysToWedding} steps={r.journey.steps} risk={r.journey.risk} />
+                ))}
+              </div>
+            )}
+          </section>
+        </>
       )}
-
-      {/* Charts */}
-      {(hasRevenue || hasWeekAppointments || orderStatusData.length > 0) && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-8">
-          {hasSales && hasRevenue && (
-            <div className="bg-white/70 backdrop-blur-md rounded-2xl p-6 border border-stone-200/60 shadow-sm hover:shadow-md transition-shadow">
-              <h2 className="text-lg font-bold text-stone-900 mb-6 flex items-center gap-2"><span className="material-symbols-outlined text-rose-500">trending_up</span> Revenue Stream</h2>
-              <RevenueChart data={revenueData} />
-            </div>
-          )}
-          {hasAppointments && hasWeekAppointments && (
-            <div className="bg-white/70 backdrop-blur-md rounded-2xl p-6 border border-stone-200/60 shadow-sm hover:shadow-md transition-shadow">
-              <h2 className="text-lg font-bold text-stone-900 mb-6 flex items-center gap-2"><span className="material-symbols-outlined text-rose-500">calendar_month</span> Appointments This Week</h2>
-              <AppointmentChart data={appointmentData} />
-            </div>
-          )}
-          {hasSales && orderStatusData.length > 0 && (
-            <div className="bg-white/70 backdrop-blur-md rounded-[2rem] p-8 border border-stone-200/60 shadow-sm hover:shadow-md transition-shadow">
-              <StatusPieChart data={orderStatusData} title="Order Status" />
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Active Modules */}
-      <div className="bg-white/60 backdrop-blur-md rounded-2xl p-6 border border-stone-200/60 shadow-sm">
-        <h2 className="text-lg font-bold text-stone-900 mb-6">Active Modules</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-          {modules.map((moduleId) => {
-            const mod = MODULES[moduleId as keyof typeof MODULES];
-            // Henüz sayfası olmayan modülü kartlarda gösterme; 404'e götürür.
-            if (!mod || !isModuleLive(moduleId)) return null;
-            const target = mod.navItems.find((n) => !n.soon);
-            if (!target) return null;
-            return (
-              <Link key={moduleId} href={target.href} className="flex items-center gap-3 p-3.5 rounded-xl bg-white border border-stone-100 hover:border-rose-200 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2">
-                <span aria-hidden="true" className="flex items-center justify-center w-10 h-10 rounded-lg bg-stone-50 text-stone-600 material-symbols-outlined text-[22px] group-hover:bg-rose-50 group-hover:text-rose-500 transition-colors">{mod.icon}</span>
-                <div className="min-w-0">
-                  <div className="text-[15px] font-bold text-stone-900 truncate">{mod.name}</div>
-                  <div className="text-[13px] text-stone-500 truncate">{mod.description}</div>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
-      </div>
     </div>
+  );
+}
+
+function Stat({ label, value, href, tone }: { label: string; value: string; href: string; tone?: "late" }) {
+  return (
+    <Link href={href} className="rounded-2xl border border-[var(--line)] p-5 hover:border-stone-300 transition-colors">
+      <p className="text-sm text-[var(--muted)]">{label}</p>
+      <p className={`mt-2 font-serif text-4xl tabular-nums ${tone === "late" ? "text-late" : "text-[var(--ink)]"}`}>{value}</p>
+    </Link>
   );
 }
