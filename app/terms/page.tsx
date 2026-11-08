@@ -15,7 +15,7 @@ export default function Terms() {
   return (
     <LegalPage
       title="Terms of service"
-      updated="September 9, 2026"
+      updated="November 8, 2026"
       intro="Plain terms for using Bridal Stack. If anything here is unclear, ask before you rely on it."
       sections={[
         {
@@ -29,7 +29,8 @@ export default function Terms() {
           heading: "Free plan, trial and paid modules",
           body: [
             `Every new account opens with a ${TRIAL_DAYS}-day trial of the paid modules. When the trial ends nothing is deleted: the paid modules lock and the free plan keeps running with your records intact.`,
-            "Paid modules are billed monthly per module, at the prices shown on the pricing section of the site. You can add or remove modules at any time; removing one locks its screens at the end of the period you have paid for.",
+            "Paid modules are billed per module, monthly or yearly, at the prices shown on the pricing page. You can add or remove modules at any time; cancelling one locks its screens at the end of the period you have paid for.",
+            "Our order process is conducted by our online reseller Dodo Payments, the merchant of record for all our orders. Dodo Payments handles payment, invoicing, sales tax and refunds on our behalf.",
             "Prices can change. If they do, we will tell you by email before the change applies to your account.",
           ],
         },
@@ -50,7 +51,7 @@ export default function Terms() {
         {
           heading: "Ending the agreement",
           body: [
-            "You can stop using the product at any time; cancelling paid modules stops future charges and past periods are not refunded. We may close an account that is used to break the law, to send unsolicited mail, or to attack the service — in that case we will tell you and give you a chance to export your data unless doing so would cause further harm.",
+            "You can stop using the product at any time; cancelling paid modules stops future charges. Refunds follow the refund policy page. We may close an account that is used to break the law, to send unsolicited mail, or to attack the service — in that case we will tell you and give you a chance to export your data unless doing so would cause further harm.",
           ],
         },
       ]}
