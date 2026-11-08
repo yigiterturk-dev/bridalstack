@@ -1,3 +1,4 @@
+import { ACCESS_SECTIONS, isSectionOpen } from "@/lib/member-access";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getCurrentTenant, getCurrentMember, getCurrentUserId } from "@/lib/tenant";
@@ -8,7 +9,7 @@ import {
   ROLE_LABELS,
   ROLE_DESCRIPTIONS,
 } from "@/lib/rbac";
-import { addMember, updateRole, removeMember, revokeInvite } from "./actions";
+import { addMember, updateRole, removeMember, revokeInvite, toggleAccess } from "./actions";
 import SelectField from "@/components/select-field";
 import InviteLinkButton from "@/components/invite-link-button";
 import SubmitButton from "@/components/submit-button";
@@ -101,7 +102,8 @@ export default async function StaffPage({ searchParams }: PageProps) {
             const editable = canManage && role !== "owner" && !isSelf;
             const joined = new Date(m.created_at).toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" });
             return (
-              <div key={m.id} className="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:gap-4">
+              <div key={m.id} id={`member-${m.id}`} className="px-4 py-3">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
                 <div className="min-w-0 flex-1">
                   {/* Kimlik değil ad: "a9cad29f…" kimseye bir şey söylemiyor. */}
                   <div className="truncate font-medium text-[var(--ink)]">
@@ -134,6 +136,36 @@ export default async function StaffPage({ searchParams }: PageProps) {
                 ) : (
                   <div className="shrink-0 text-right font-serif text-lg text-[var(--ink)]">{ROLE_LABELS[role]}</div>
                 )}
+              </div>
+              {editable && (
+                <div className="mt-3">
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">What they can open · tap to switch</p>
+                  <div className="flex flex-wrap gap-2">
+                    {ACCESS_SECTIONS.map((sec) => {
+                      const open = isSectionOpen(m.hidden_modules, sec.key);
+                      return (
+                        <form key={sec.key} action={toggleAccess}>
+                          <input type="hidden" name="id" value={m.id} />
+                          <input type="hidden" name="section" value={sec.key} />
+                          <button
+                            type="submit"
+                            title={`${sec.hint} — ${open ? "open, tap to close" : "closed, tap to open"}`}
+                            aria-pressed={open}
+                            className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition-colors ${
+                              open
+                                ? "border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--ink)]"
+                                : "border-[var(--line)] bg-white text-[var(--muted)] line-through decoration-[var(--muted)]/50"
+                            }`}
+                          >
+                            <span aria-hidden="true" className="material-symbols-outlined text-[16px]">{open ? "check" : "block"}</span>
+                            {sec.label}
+                          </button>
+                        </form>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
               </div>
             );
           })}

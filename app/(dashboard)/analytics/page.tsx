@@ -1,4 +1,5 @@
 import Link from "next/link";
+import ClosedByOwner from "@/components/closed-by-owner";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getCurrentTenant } from "@/lib/tenant";
@@ -31,6 +32,7 @@ export default async function AnalyticsPage({ searchParams }: Props) {
 
   const tenant = await getCurrentTenant();
   if (!tenant) redirect("/onboarding");
+  if (!tenant.can_see_analytics) return <ClosedByOwner title="Analytics" />;
 
   const modules = tenant.enabled_modules;
   const hasSales = modules.includes("sales");

@@ -37,7 +37,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
     cookiePins = normalizeNavPins(JSON.parse((await cookies()).get("bs_nav_pins")?.value ?? "null"));
   } catch {}
   const tenantPins = normalizeNavPins((tenant.settings as Record<string, unknown> | null)?.nav_pins);
-  const navGroups = getNavForModules(tenant.enabled_modules, cookiePins ?? tenantPins);
+  const navGroups = getNavForModules(tenant.enabled_modules, cookiePins ?? tenantPins, tenant.can_see_analytics);
 
   // Ücretli plandaysa CTA yok. Değilse deneme bitişine kalan gün sayısı gösterilir.
   const isPaid = tenant.plan !== "free" || Boolean(tenant.converted_at);

@@ -9,6 +9,7 @@ import { createToken, expiresIn } from "@/lib/tokens";
 import { sendEmail, teamInviteEmail } from "@/lib/email";
 import { siteUrl } from "@/lib/site-url";
 import { inviteLink, isInviteActionable } from "@/lib/invitations";
+import { ACCESS_SECTIONS, toggleSection, type AccessKey } from "@/lib/member-access";
 
 // Yetki kapısı (fail-closed): staff.manage izni olmayan reddedilir.
 async function requireStaffManager() {
@@ -145,4 +146,26 @@ export async function revokeInvite(formData: FormData) {
 
   revalidatePath("/staff");
   redirect("/staff?success=invite_revoked");
+}
+
+/** Patron bir kişinin bir bölümünü açar ya da kapatır (tek tık). */
+export async function toggleAccess(formData: FormData) {
+  const { member } = await requireStaffManager();
+  const id = String(formData.get("id") || "").trim();
+  const key = String(formData.get("section") || "").trim() as AccessKey;
+  if (!id || !ACCESS_SECTIONS.some((s) => s.key === key)) redirect("/staff?error=forbidden");
+
+  // Kendi erişimini ve sahibinkini kimse değiştiremez; başka dükkânın üyesine dokunulmaz.
+  const target = await prisma.tenantMember.findFirst({
+    where: { id, tenant_id: member.tenantId, role: { not: "owner" }, NOT: { user_id: member.userId } },
+    select: { id: true, hidden_modules: true },
+  });
+  if (!target) redirect("/staff?error=forbidden");
+
+  await prisma.tenantMember.update({
+    where: { id: target.id },
+    data: { hidden_modules: toggleSection(target.hidden_modules, key) },
+  });
+  revalidatePath("/staff");
+  redirect(`/staff#member-${target.id}`);
 }

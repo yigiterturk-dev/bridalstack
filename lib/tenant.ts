@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { canSeeAnalytics, cleanHidden, visibleModules } from "@/lib/member-access";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -21,6 +22,9 @@ export type Tenant = {
   trial_packs: PackId[];
   trial_days_left: number | null;
   enabled_modules: ModuleId[];
+  /** Patronun bu kişiye kapattığı bölümler (sahip için hep boş). */
+  hidden_modules: string[];
+  can_see_analytics: boolean;
   settings: Record<string, unknown>;
   plan: "free" | "starter" | "growth" | "enterprise";
   created_at: string;
@@ -55,7 +59,7 @@ async function resolveMembership(userId: string) {
   const memberships = await prisma.tenantMember.findMany({
     where: { user_id: userId },
     orderBy: { created_at: "asc" },
-    select: { id: true, tenant_id: true, role: true, created_at: true, tenant: true },
+    select: { id: true, tenant_id: true, role: true, hidden_modules: true, created_at: true, tenant: true },
   });
   if (memberships.length === 0) return null;
 
@@ -94,7 +98,11 @@ export async function getCurrentTenant(): Promise<Tenant | null> {
     packs,
     trial_packs,
     trial_days_left: trial_packs.length > 0 ? trialDaysLeft(tenant.trial_ends_at, new Date()) : null,
-    enabled_modules: getModulesForPacks([...packs, ...trial_packs]),
+    // Tek kapı: patronun bu kişiye kapattığı bölümler menüden, sayfa kapısından ve
+    // komut paletinden aynı anda düşer.
+    enabled_modules: visibleModules(getModulesForPacks([...packs, ...trial_packs]), membership!.hidden_modules, membership!.role),
+    hidden_modules: membership!.role === "owner" ? [] : cleanHidden(membership!.hidden_modules),
+    can_see_analytics: canSeeAnalytics(membership!.hidden_modules, membership!.role),
     settings,
     plan: tenant.plan as Tenant["plan"],
     created_at: tenant.created_at.toISOString(),

@@ -1,5 +1,7 @@
 import { ModuleId, MODULES } from "@/config/modules";
 import Link from "next/link";
+import { getCurrentTenant } from "@/lib/tenant";
+import ClosedByOwner from "@/components/closed-by-owner";
 
 type Props = {
   moduleId: ModuleId;
@@ -7,12 +9,15 @@ type Props = {
   children: React.ReactNode;
 };
 
-export default function ModuleGuard({ moduleId, enabledModules, children }: Props) {
+export default async function ModuleGuard({ moduleId, enabledModules, children }: Props) {
   if (enabledModules.includes(moduleId)) {
     return <>{children}</>;
   }
 
   const mod = MODULES[moduleId];
+  // Kapalıysa sebebi ayır: patron mu kapattı, plan mı içermiyor?
+  const tenant = await getCurrentTenant();
+  if (tenant?.hidden_modules.includes(moduleId)) return <ClosedByOwner title={mod.name} />;
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">

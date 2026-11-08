@@ -287,9 +287,9 @@ export function normalizeNavPins(value: unknown): string[] | null {
   return out;
 }
 
-export function getNavForModules(enabledModules: ModuleId[], pins?: string[] | null) {
+export function getNavForModules(enabledModules: ModuleId[], pins?: string[] | null, showAnalytics = true) {
   const label = (n: NavItem): NavItem => ({ ...n, label: NAV_LABELS[n.href] ?? n.label });
-  const available: NavItem[] = [ANALYTICS_ITEM];
+  const available: NavItem[] = showAnalytics ? [ANALYTICS_ITEM] : [];
   for (const id of enabledModules) {
     available.push(...(MODULES[id]?.navItems ?? []).filter((n) => !n.soon));
   }
@@ -304,7 +304,7 @@ export function getNavForModules(enabledModules: ModuleId[], pins?: string[] | n
   const groups: { section?: string; items: NavItem[] }[] = [{ items: primary }];
 
   const sectionMap: { section: string; moduleIds: ModuleId[]; extra?: NavItem[] }[] = [
-    { section: "Numbers", moduleIds: ["reports"], extra: [ANALYTICS_ITEM] },
+    { section: "Numbers", moduleIds: ["reports"], extra: showAnalytics ? [ANALYTICS_ITEM] : [] },
     { section: "Clients & calendar", moduleIds: ["crm", "appointments"] },
     { section: "Sales", moduleIds: ["sales", "invoices"] },
     { section: "Styling", moduleIds: ["booking", "services"] },
