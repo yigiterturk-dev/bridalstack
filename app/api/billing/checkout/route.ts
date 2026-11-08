@@ -70,7 +70,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: `Unknown plan: ${unknown.join(", ")}` }, { status: 400 });
   }
 
-  const rejected = requestedPacks.filter((p) => p !== "base" && PACKS[p] && !isPackSellable(p));
+  // Ücretsiz paketler (base, salon) zaten herkeste; istemci mevcut seçimi
+  // gönderdiği için listede gelirler ve satış kontrolüne takılmamalıdırlar.
+  const rejected = requestedPacks.filter(
+    (p) => PACKS[p] && PACKS[p].monthlyPrice > 0 && !isPackSellable(p),
+  );
   if (rejected.length > 0) {
     return NextResponse.json(
       { error: `These plans are not available for purchase yet: ${rejected.join(", ")}` },
