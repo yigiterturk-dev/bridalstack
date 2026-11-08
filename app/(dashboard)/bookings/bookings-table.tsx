@@ -69,7 +69,7 @@ export default function BookingsTable({ bookings }: { bookings: Booking[] }) {
       {/* Title */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-gray-900">Bookings</h1>
+          <h1 className="text-2xl font-serif font-normal text-gray-900">Bookings</h1>
           <p className="text-sm text-gray-500 mt-1">Manage client online appointment bookings and statuses.</p>
         </div>
       </div>
@@ -91,8 +91,8 @@ export default function BookingsTable({ bookings }: { bookings: Booking[] }) {
           <div className="text-2xl font-bold text-amber-600 mt-1">{stats.pending}</div>
         </div>
         <div className="bg-white p-5 rounded-2xl border border-gray-200">
-          <div className="text-xs font-semibold text-gray-400 uppercase text-rose-600">Confirmed</div>
-          <div className="text-2xl font-bold text-rose-600 mt-1">{stats.confirmed}</div>
+          <div className="text-xs font-semibold text-gray-400 uppercase text-gold">Confirmed</div>
+          <div className="text-2xl font-bold text-gold mt-1">{stats.confirmed}</div>
         </div>
         <div className="bg-white p-5 rounded-2xl border border-gray-200">
           <div className="text-xs font-semibold text-gray-400 uppercase text-emerald-600">Completed</div>
@@ -112,7 +112,7 @@ export default function BookingsTable({ bookings }: { bookings: Booking[] }) {
             placeholder="Search by customer or service..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full px-4 py-2 bg-gray-50 border border-gray-250 rounded-xl text-sm outline-none focus:border-rose-500 focus:bg-white transition-all"
+            className="w-full px-4 py-2 bg-gray-50 border border-gray-250 rounded-xl text-sm outline-none focus:border-gold focus:bg-white transition-all"
           />
         </div>
 
@@ -123,7 +123,7 @@ export default function BookingsTable({ bookings }: { bookings: Booking[] }) {
               onClick={() => setStatusFilter(filter)}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold capitalize border transition-all ${
                 statusFilter === filter
-                  ? "bg-rose-50 border-rose-200 text-rose-700"
+                  ? "bg-gold-soft border-gold/30 text-gold"
                   : "bg-white border-gray-200 text-gray-600 hover:bg-gray-50"
               }`}
             >
@@ -190,7 +190,7 @@ export default function BookingsTable({ bookings }: { bookings: Booking[] }) {
                           b.status === "pending"
                             ? "bg-amber-50 border-amber-100 text-amber-700"
                             : b.status === "confirmed"
-                            ? "bg-rose-50 border-rose-100 text-rose-700"
+                            ? "bg-gold-soft border-gold/30 text-gold"
                             : b.status === "completed"
                             ? "bg-emerald-50 border-emerald-100 text-emerald-700"
                             : b.status === "cancelled"
@@ -210,7 +210,7 @@ export default function BookingsTable({ bookings }: { bookings: Booking[] }) {
                             <>
                               <button
                                 onClick={() => updateStatus(b.id, "confirmed")}
-                                className="px-2 py-1 bg-rose-500 hover:bg-rose-600 text-white rounded-lg text-xs font-semibold transition-colors"
+                                className="px-2 py-1 bg-gold hover:bg-gold text-white rounded-lg text-xs font-semibold transition-colors"
                               >
                                 Approve
                               </button>
@@ -241,7 +241,7 @@ export default function BookingsTable({ bookings }: { bookings: Booking[] }) {
                           {b.status === "cancelled" && (
                             <button
                               onClick={() => updateStatus(b.id, "confirmed")}
-                              className="px-2 py-1 bg-rose-500 hover:bg-rose-600 text-white rounded-lg text-xs font-semibold transition-colors"
+                              className="px-2 py-1 bg-gold hover:bg-gold text-white rounded-lg text-xs font-semibold transition-colors"
                             >
                               Reconfirm
                             </button>

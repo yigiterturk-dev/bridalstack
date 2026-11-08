@@ -23,7 +23,7 @@ const FILTERS = [
 ];
 
 const STATUS_STYLE: Record<string, string> = {
-  overdue: "bg-rose-50 text-rose-700 border-rose-100",
+  overdue: "bg-late-soft text-late border-late/30",
   due: "bg-amber-50 text-amber-700 border-amber-100",
   pending: "bg-stone-100 text-stone-600 border-stone-200",
   paid: "bg-emerald-50 text-emerald-700 border-emerald-100",
@@ -84,8 +84,8 @@ async function InstallmentsContent({
   return (
     <div className="animate-fade-in-up">
       <div className="mb-8">
-        <h1 className="text-3xl lg:text-4xl font-extrabold text-stone-900 tracking-tight">Installments</h1>
-        <p className="text-stone-500 mt-2 font-medium">
+        <h1 className="text-3xl lg:text-4xl font-serif font-normal text-[var(--ink)]">Installments</h1>
+        <p className="text-[var(--muted)] mt-2 font-medium">
           {openRows.length === 0
             ? "Every payment plan is settled"
             : `${formatPrice(Math.round(outstanding))} still to collect across ${openRows.length} payments`}
@@ -93,7 +93,7 @@ async function InstallmentsContent({
       </div>
 
       {error && (
-        <div className="mb-6 rounded-2xl border border-rose-200 bg-rose-50 px-5 py-3 text-sm font-medium text-rose-700">
+        <div className="mb-6 rounded-2xl border border-gold/30 bg-gold-soft px-5 py-3 text-sm font-medium text-gold">
           {ERRORS[error] ?? "Something went wrong."}
         </div>
       )}
@@ -121,12 +121,12 @@ async function InstallmentsContent({
       </div>
 
       {visible.length === 0 ? (
-        <div className="bg-white/60 backdrop-blur-xl rounded-[2rem] border border-stone-200/60 shadow-sm p-16 text-center">
-          <span className="flex items-center justify-center w-16 h-16 rounded-3xl bg-emerald-50 text-emerald-600 mx-auto mb-5 material-symbols-outlined text-[32px]">
+        <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-16 text-center">
+          <span className="flex items-center justify-center w-16 h-16 rounded-2xl bg-emerald-50 text-emerald-600 mx-auto mb-5 material-symbols-outlined text-[32px]">
             receipt
           </span>
-          <h3 className="text-xl font-bold text-stone-900 mb-2">Nothing here</h3>
-          <p className="text-stone-500 max-w-md mx-auto">
+          <h3 className="text-xl font-bold text-[var(--ink)] mb-2">Nothing here</h3>
+          <p className="text-[var(--muted)] max-w-md mx-auto">
             Payment plans are created on an order. Once a bride is on a plan, every instalment shows
             up here on its due date.
           </p>
@@ -134,12 +134,12 @@ async function InstallmentsContent({
       ) : (
         <div className="flex flex-col gap-2">
           {visible.map((r) => (
-            <div key={r.id} className="bg-white/70 backdrop-blur-xl rounded-2xl border border-stone-200/60 shadow-sm p-4 flex items-center gap-4 flex-wrap">
+            <div key={r.id} className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-4 flex items-center gap-4 flex-wrap">
               <div className="flex-1 min-w-[200px]">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-bold text-stone-900">
+                  <span className="font-bold text-[var(--ink)]">
                     {r.customer ? (
-                      <Link href={`/customers/${r.customer.id}`} className="hover:text-rose-600">
+                      <Link href={`/customers/${r.customer.id}`} className="hover:text-gold">
                         {r.customer.name}
                       </Link>
                     ) : (
@@ -163,7 +163,7 @@ async function InstallmentsContent({
               </div>
 
               <div className="text-right">
-                <div className="text-lg font-bold tabular-nums text-stone-900">
+                <div className="text-lg font-bold tabular-nums text-[var(--ink)]">
                   {formatPrice(Math.round(r.amount))}
                 </div>
                 {r.paid_at && (
@@ -181,7 +181,7 @@ async function InstallmentsContent({
                       message="Undo this payment? The cash entry and order balance will be reversed."
                       pendingLabel="Undoing…"
                       ariaLabel="Undo payment"
-                      className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-stone-200 text-stone-500 hover:bg-stone-50 disabled:opacity-60 disabled:cursor-wait"
+                      className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-stone-200 text-[var(--muted)] hover:bg-stone-50 disabled:opacity-60 disabled:cursor-wait"
                     >
                       Undo
                     </ConfirmSubmitButton>
@@ -196,7 +196,7 @@ async function InstallmentsContent({
                       message={`Mark ${formatPrice(Math.round(r.amount))} as collected in cash?`}
                       pendingLabel="Saving…"
                       ariaLabel={`Mark ${formatPrice(Math.round(r.amount))} as collected`}
-                      className="text-xs font-semibold px-3.5 py-2 rounded-lg bg-stone-900 text-white hover:bg-rose-600 disabled:opacity-60 disabled:cursor-wait"
+                      className="text-xs font-semibold px-3.5 py-2 rounded-lg bg-stone-900 text-white hover:bg-gold disabled:opacity-60 disabled:cursor-wait"
                     >
                       Mark collected
                     </ConfirmSubmitButton>
@@ -213,9 +213,9 @@ async function InstallmentsContent({
 
 function Stat({ label, value, tone }: { label: string; value: string; tone?: "rose" }) {
   return (
-    <div className="bg-white/70 backdrop-blur-xl rounded-2xl border border-stone-200/60 shadow-sm px-5 py-4">
+    <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm px-5 py-4">
       <div className="text-[11px] font-bold uppercase tracking-wide text-stone-400">{label}</div>
-      <div className={`text-2xl font-extrabold tabular-nums mt-1 ${tone === "rose" ? "text-rose-600" : "text-stone-900"}`}>
+      <div className={`text-2xl font-extrabold tabular-nums mt-1 ${tone === "rose" ? "text-gold" : "text-[var(--ink)]"}`}>
         {value}
       </div>
     </div>

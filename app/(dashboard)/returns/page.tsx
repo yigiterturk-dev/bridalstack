@@ -27,7 +27,7 @@ const STATUS_STYLE: Record<string, string> = {
   pending: "bg-amber-50 text-amber-700 border-amber-100",
   approved: "bg-sky-50 text-sky-700 border-sky-100",
   completed: "bg-emerald-50 text-emerald-700 border-emerald-100",
-  rejected: "bg-stone-100 text-stone-500 border-stone-200",
+  rejected: "bg-stone-100 text-[var(--muted)] border-stone-200",
 };
 
 const ACTION_LABEL: Record<string, string> = {
@@ -88,8 +88,8 @@ async function ReturnsContent({ tenantId, error }: { tenantId: string; error?: s
   return (
     <div className="animate-fade-in-up">
       <div className="mb-10">
-        <h1 className="text-3xl lg:text-4xl font-extrabold text-stone-900 tracking-tight">Returns</h1>
-        <p className="text-stone-500 mt-2 font-medium">
+        <h1 className="text-3xl lg:text-4xl font-serif font-normal text-[var(--ink)]">Returns</h1>
+        <p className="text-[var(--muted)] mt-2 font-medium">
           {open.length === 0
             ? "Gowns coming back — logged, approved, and put back on the rail"
             : `${open.length} open · ${formatPrice(Math.round(refundExposure))} in refunds pending`}
@@ -97,14 +97,14 @@ async function ReturnsContent({ tenantId, error }: { tenantId: string; error?: s
       </div>
 
       {error && (
-        <div className="mb-6 rounded-2xl border border-rose-200 bg-rose-50 px-5 py-3 text-sm font-medium text-rose-700">
+        <div className="mb-6 rounded-2xl border border-gold/30 bg-gold-soft px-5 py-3 text-sm font-medium text-gold">
           {ERRORS[error] ?? "Something went wrong."}
         </div>
       )}
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <div className="bg-white/70 backdrop-blur-xl rounded-[2rem] border border-stone-200/60 shadow-sm p-6 h-fit">
-          <h2 className="text-lg font-bold text-stone-900 mb-4">Log a return</h2>
+        <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-6 h-fit">
+          <h2 className="text-lg font-serif font-normal text-[var(--ink)] mb-4">Log a return</h2>
           <form action={createReturn} className="flex flex-col gap-3">
             <Field label="Bride">
               <SelectField
@@ -167,7 +167,7 @@ async function ReturnsContent({ tenantId, error }: { tenantId: string; error?: s
 
             <button
               type="submit"
-              className="mt-1 py-2.5 bg-stone-900 text-white rounded-xl text-sm font-semibold hover:bg-rose-600 transition-colors"
+              className="mt-1 py-2.5 bg-stone-900 text-white rounded-xl text-sm font-semibold hover:bg-gold transition-colors"
             >
               Log return
             </button>
@@ -176,12 +176,12 @@ async function ReturnsContent({ tenantId, error }: { tenantId: string; error?: s
 
         <div className="xl:col-span-2">
           {returns.length === 0 ? (
-            <div className="bg-white/60 backdrop-blur-xl rounded-[2rem] border border-stone-200/60 shadow-sm p-16 text-center">
-              <span className="flex items-center justify-center w-16 h-16 rounded-3xl bg-violet-50 text-violet-500 mx-auto mb-5 material-symbols-outlined text-[32px]">
+            <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-16 text-center">
+              <span className="flex items-center justify-center w-16 h-16 rounded-2xl bg-violet-50 text-violet-500 mx-auto mb-5 material-symbols-outlined text-[32px]">
                 swap_horiz
               </span>
-              <h3 className="text-xl font-bold text-stone-900 mb-2">No returns logged</h3>
-              <p className="text-stone-500 max-w-md mx-auto">
+              <h3 className="text-xl font-bold text-[var(--ink)] mb-2">No returns logged</h3>
+              <p className="text-[var(--muted)] max-w-md mx-auto">
                 Log every gown that comes back. Stock only moves when you mark it received, so an
                 approved return never inflates your rail.
               </p>
@@ -192,7 +192,7 @@ async function ReturnsContent({ tenantId, error }: { tenantId: string; error?: s
                 const units = restockUnits(r);
                 const next = allowedTransitions(r.status);
                 return (
-                  <div key={r.id} className="bg-white/70 backdrop-blur-xl rounded-2xl border border-stone-200/60 shadow-sm p-5">
+                  <div key={r.id} className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-5">
                     <div className="flex items-start gap-4">
                       {r.product?.image_url ? (
                         <Image unoptimized src={r.product.image_url} alt={r.product.name} width={48} height={48} className="w-12 h-12 rounded-xl object-cover border border-stone-200 flex-shrink-0" />
@@ -204,7 +204,7 @@ async function ReturnsContent({ tenantId, error }: { tenantId: string; error?: s
 
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <h3 className="font-bold text-stone-900">
+                          <h3 className="font-bold text-[var(--ink)]">
                             {r.product?.name ?? "Gown"}
                             {r.quantity > 1 && <span className="text-stone-400"> ×{r.quantity}</span>}
                           </h3>
@@ -246,8 +246,8 @@ async function ReturnsContent({ tenantId, error }: { tenantId: string; error?: s
                                 type="submit"
                                 className={`w-full text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors ${
                                   status === "rejected"
-                                    ? "border border-stone-200 text-stone-500 hover:bg-stone-50"
-                                    : "bg-stone-900 text-white hover:bg-rose-600"
+                                    ? "border border-stone-200 text-[var(--muted)] hover:bg-stone-50"
+                                    : "bg-stone-900 text-white hover:bg-gold"
                                 }`}
                               >
                                 {ACTION_LABEL[status] ?? status}
@@ -269,12 +269,12 @@ async function ReturnsContent({ tenantId, error }: { tenantId: string; error?: s
 }
 
 const INPUT =
-  "w-full px-4 py-2.5 rounded-xl border border-stone-200 bg-white text-sm text-stone-900 outline-none focus:border-stone-400 transition-colors";
+  "w-full px-4 py-2.5 rounded-xl border border-stone-200 bg-white text-sm text-[var(--ink)] outline-none focus:border-stone-400 transition-colors";
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <label className="block text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1">{label}</label>
+      <label className="block text-xs font-semibold text-[var(--muted)] uppercase tracking-wide mb-1">{label}</label>
       {children}
     </div>
   );

@@ -36,14 +36,14 @@ export default async function ServicesPage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Services</h1>
+          <h1 className="text-2xl font-serif font-normal text-gray-900">Services</h1>
           <p className="text-sm text-gray-500 mt-1">{list.length} services</p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="bg-white rounded-2xl border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Add Service</h2>
+          <h2 className="text-lg font-serif font-normal text-gray-900 mb-4">Add Service</h2>
           <form action={createService} className="flex flex-col gap-3">
             <div>
               <label htmlFor="service-name" className="block text-sm font-medium text-gray-700 mb-1">Name *</label>
@@ -100,8 +100,8 @@ export default async function ServicesPage() {
                     {items.map(s => (
                       <div key={s.id} className={`bg-white rounded-xl border border-gray-200 p-4 flex items-center justify-between ${!s.is_active ? "opacity-50" : ""}`}>
                         <div className="flex items-center gap-4">
-                          <div className="w-10 h-10 rounded-lg bg-rose-50 flex items-center justify-center">
-                            <span className="material-symbols-outlined text-rose-500 text-lg">content_cut</span>
+                          <div className="w-10 h-10 rounded-lg bg-gold-soft flex items-center justify-center">
+                            <span className="material-symbols-outlined text-gold text-lg">content_cut</span>
                           </div>
                           <div>
                             <h4 className="font-medium text-gray-900 text-sm">{s.name}</h4>
@@ -132,7 +132,7 @@ export default async function ServicesPage() {
                                 message={`Delete ${s.name}? This cannot be undone.`}
                                 ariaLabel={`Delete ${s.name}`}
                                 title="Delete service"
-                                className="text-xs text-red-400 hover:text-red-600 px-1 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 focus-visible:ring-offset-2"
+                                className="text-xs text-red-400 hover:text-red-600 px-1 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40 focus-visible:ring-offset-2"
                               >
                                 <span aria-hidden="true">✕</span>
                               </ConfirmSubmitButton>

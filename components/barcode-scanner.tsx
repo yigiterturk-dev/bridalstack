@@ -61,12 +61,12 @@ export default function BarcodeScanner({
   }, [onScanSuccess, onScanFailure]);
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 animate-in fade-in duration-200">
-      <div className="bg-white rounded-3xl w-full max-w-md p-6 border border-gray-200 shadow-2xl relative flex flex-col gap-4 animate-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4 animate-in fade-in duration-200">
+      <div className="bg-white rounded-2xl w-full max-w-md p-6 border border-gray-200 shadow-2xl relative flex flex-col gap-4 animate-in zoom-in-95 duration-200">
         {/* Header */}
         <div className="flex justify-between items-center">
           <h3 className="text-base font-bold text-gray-900 flex items-center gap-1.5">
-            <span className="material-symbols-outlined text-rose-500">barcode_scanner</span>
+            <span className="material-symbols-outlined text-gold">barcode_scanner</span>
             Scan Barcode
           </h3>
           <button
@@ -85,9 +85,9 @@ export default function BarcodeScanner({
           {/* Aiming Reticle overlay */}
           {cameraPermission && (
             <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-center">
-              <div className="w-[80%] h-[110px] border-2 border-rose-500 rounded-xl bg-rose-500/5 flex items-center justify-center relative">
+              <div className="w-[80%] h-[110px] border-2 border-gold rounded-xl bg-gold/5 flex items-center justify-center relative">
                 {/* Scanline element */}
-                <div className="absolute inset-x-3 h-0.5 bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.8)] animate-pulse" />
+                <div className="absolute inset-x-3 h-0.5 bg-gold shadow-[0_0_8px_rgba(244,63,94,0.8)] animate-pulse" />
               </div>
             </div>
           )}
@@ -102,7 +102,7 @@ export default function BarcodeScanner({
 
           {cameraPermission === null && (
             <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-400 bg-gray-900">
-              <span className="animate-spin border-2 border-rose-500 border-t-transparent w-6 h-6 rounded-full mb-2" />
+              <span className="animate-spin border-2 border-gold border-t-transparent w-6 h-6 rounded-full mb-2" />
               <p className="text-xs">Requesting camera access...</p>
             </div>
           )}

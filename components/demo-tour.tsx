@@ -73,7 +73,7 @@ export default function DemoTour() {
       className="fixed bottom-4 right-4 z-50 w-[min(22rem,calc(100vw-2rem))] rounded-2xl border border-stone-200 bg-white p-5 shadow-[0_12px_40px_rgba(28,25,23,0.18)]"
     >
       <div className="flex items-start justify-between gap-3">
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-rose-700">
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-gold">
           Step {index + 1} of {STEPS.length}
         </p>
         <button
@@ -86,7 +86,7 @@ export default function DemoTour() {
         </button>
       </div>
 
-      <h2 className="mt-2 text-base font-bold text-stone-900">{step.title}</h2>
+      <h2 className="mt-2 text-base font-serif font-normal text-[var(--ink)]">{step.title}</h2>
       <p className="mt-2 text-sm leading-relaxed text-stone-600">{step.body}</p>
 
       <div className="mt-4 flex items-center gap-3">
@@ -105,7 +105,7 @@ export default function DemoTour() {
             Next →
           </Link>
         )}
-        <button type="button" onClick={close} className="text-sm text-stone-500 underline hover:text-stone-800">
+        <button type="button" onClick={close} className="text-sm text-[var(--muted)] underline hover:text-stone-800">
           {isLast ? "No thanks" : "Explore on my own"}
         </button>
       </div>
@@ -114,7 +114,7 @@ export default function DemoTour() {
         {STEPS.map((s, i) => (
           <span
             key={s.href}
-            className={`h-1 flex-1 rounded-full ${i <= index ? "bg-rose-700" : "bg-stone-200"}`}
+            className={`h-1 flex-1 rounded-full ${i <= index ? "bg-gold" : "bg-stone-200"}`}
           />
         ))}
       </div>

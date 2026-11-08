@@ -198,10 +198,10 @@ export default async function AnalyticsPage({ searchParams }: Props) {
     <div className="animate-fade-in-up space-y-10">
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
         <div>
-          <h1 className="text-3xl lg:text-4xl font-extrabold text-stone-900 tracking-tight flex items-center gap-3">
-            Analytics <span className="text-rose-400 font-normal">✧</span>
+          <h1 className="text-3xl lg:text-4xl font-serif font-normal text-[var(--ink)] flex items-center gap-3">
+            Analytics <span className="text-gold font-normal">✧</span>
           </h1>
-          <p className="text-stone-500 mt-2 font-medium">{tenant.name} — business performance</p>
+          <p className="text-[var(--muted)] mt-2 font-medium">{tenant.name} — business performance</p>
         </div>
         <div>
           <RangeFilter current={String(rangeDays)} />
@@ -211,9 +211,9 @@ export default async function AnalyticsPage({ searchParams }: Props) {
       {kpis.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 lg:gap-6">
           {kpis.map((k, i) => (
-            <div key={k.label} className="bg-white/60 backdrop-blur-md rounded-3xl p-6 border border-stone-200/60 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] hover:border-rose-200 hover:shadow-[0_10px_30px_-10px_rgba(225,29,72,0.15)] hover:-translate-y-1 transition-all duration-300 group" style={{ animationDelay: `${i * 100}ms` }}>
-              <div className="text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">{k.label}</div>
-              <div className="text-4xl font-extrabold text-stone-900 tabular-nums tracking-tight mb-1">{k.value}</div>
+            <div key={k.label} className="bg-white rounded-2xl p-6 border border-[var(--line)] shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] hover:border-late/30 transition-all duration-300 group" style={{ animationDelay: `${i * 100}ms` }}>
+              <div className="text-xs font-bold text-[var(--muted)] uppercase tracking-wider mb-2">{k.label}</div>
+              <div className="text-4xl font-extrabold text-[var(--ink)] tabular-nums tracking-tight mb-1">{k.value}</div>
               <div className="text-sm font-medium text-stone-400">{k.sub}</div>
             </div>
           ))}
@@ -223,38 +223,38 @@ export default async function AnalyticsPage({ searchParams }: Props) {
       {hasRevenueData || hasFillData || staffSeries.length > 0 || inventorySeries.length > 0 ? (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {hasSales && hasRevenueData && (
-            <div className="bg-white/70 backdrop-blur-md rounded-[2rem] p-8 border border-stone-200/60 shadow-sm hover:shadow-md transition-shadow">
-              <h3 className="text-lg font-bold text-stone-900 mb-6 flex items-center gap-2"><span className="material-symbols-outlined text-rose-500">trending_up</span> Revenue Growth</h3>
+            <div className="bg-white rounded-2xl p-8 border border-[var(--line)] shadow-sm hover:shadow-md transition-shadow">
+              <h3 className="text-lg font-bold text-[var(--ink)] mb-6 flex items-center gap-2"><span className="material-symbols-outlined text-gold">trending_up</span> Revenue Growth</h3>
               <RevenueBars data={revenueSeries} />
             </div>
           )}
 
           {hasAppointments && hasFillData && (
-            <div className="bg-white/70 backdrop-blur-md rounded-[2rem] p-8 border border-stone-200/60 shadow-sm hover:shadow-md transition-shadow">
-              <h3 className="text-lg font-bold text-stone-900 mb-6 flex items-center gap-2"><span className="material-symbols-outlined text-rose-500">calendar_month</span> Appointment Fill Rate (Weekly)</h3>
+            <div className="bg-white rounded-2xl p-8 border border-[var(--line)] shadow-sm hover:shadow-md transition-shadow">
+              <h3 className="text-lg font-bold text-[var(--ink)] mb-6 flex items-center gap-2"><span className="material-symbols-outlined text-gold">calendar_month</span> Appointment Fill Rate (Weekly)</h3>
               <FillLine data={fillSeries} />
             </div>
           )}
 
           {staffSeries.length > 0 && (
-            <div className="bg-white/70 backdrop-blur-md rounded-[2rem] p-8 border border-stone-200/60 shadow-sm hover:shadow-md transition-shadow">
-              <h3 className="text-lg font-bold text-stone-900 mb-6 flex items-center gap-2"><span className="material-symbols-outlined text-rose-500">award_star</span> Stylist Performance</h3>
+            <div className="bg-white rounded-2xl p-8 border border-[var(--line)] shadow-sm hover:shadow-md transition-shadow">
+              <h3 className="text-lg font-bold text-[var(--ink)] mb-6 flex items-center gap-2"><span className="material-symbols-outlined text-gold">award_star</span> Stylist Performance</h3>
               <StaffBars data={staffSeries} valueLabel="Revenue" />
             </div>
           )}
 
           {inventorySeries.length > 0 && (
-            <div className="bg-white/70 backdrop-blur-md rounded-[2rem] p-8 border border-stone-200/60 shadow-sm hover:shadow-md transition-shadow">
-              <h3 className="text-lg font-bold text-stone-900 mb-6 flex items-center gap-2"><span className="material-symbols-outlined text-rose-500">pie_chart</span> Inventory Distribution</h3>
+            <div className="bg-white rounded-2xl p-8 border border-[var(--line)] shadow-sm hover:shadow-md transition-shadow">
+              <h3 className="text-lg font-bold text-[var(--ink)] mb-6 flex items-center gap-2"><span className="material-symbols-outlined text-gold">pie_chart</span> Inventory Distribution</h3>
               <DistributionPie data={inventorySeries} />
             </div>
           )}
         </div>
       ) : (
-        <div className="bg-white/60 backdrop-blur-xl rounded-[2rem] border border-stone-200/60 shadow-sm p-16 text-center">
-          <span className="flex items-center justify-center w-16 h-16 rounded-3xl bg-rose-50 text-rose-500 mx-auto mb-5 material-symbols-outlined text-[32px]">insights</span>
-          <h3 className="text-xl font-bold text-stone-900 mb-2">Not enough data yet</h3>
-          <p className="text-stone-500">Add brides, orders and appointments and your charts will fill in here.</p>
+        <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-16 text-center">
+          <span className="flex items-center justify-center w-16 h-16 rounded-2xl bg-gold-soft text-gold mx-auto mb-5 material-symbols-outlined text-[32px]">insights</span>
+          <h3 className="text-xl font-bold text-[var(--ink)] mb-2">Not enough data yet</h3>
+          <p className="text-[var(--muted)]">Add brides, orders and appointments and your charts will fill in here.</p>
         </div>
       )}
     </div>

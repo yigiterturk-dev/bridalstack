@@ -29,7 +29,7 @@ export default function NewProductForm({
   return (
     <div className="max-w-xl">
       <Link href="/products" className="text-sm text-gray-500 hover:text-gray-900 mb-4 inline-block">← Back to Products</Link>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">New Product</h1>
+      <h1 className="text-2xl font-serif font-normal text-gray-900 mb-6">New Product</h1>
 
       <form action={createProduct} className="bg-white rounded-2xl border border-gray-200 p-6 flex flex-col gap-4">
         <ImageUpload
@@ -42,7 +42,7 @@ export default function NewProductForm({
 
         <div>
           <label htmlFor="product-name" className="block text-sm font-medium text-gray-700 mb-1">Product Name *</label>
-          <input id="product-name" name="name" required className="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none text-sm" placeholder="e.g. Princess A-Line Gown" />
+          <input id="product-name" name="name" required className="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-gold/40 focus:border-transparent outline-none text-sm" placeholder="e.g. Princess A-Line Gown" />
         </div>
 
         <div className="grid grid-cols-2 gap-4">
@@ -80,14 +80,14 @@ export default function NewProductForm({
               name="barcode"
               value={barcode}
               onChange={(e) => setBarcode(e.target.value)}
-              className="w-full pl-4 pr-12 py-2.5 rounded-xl border border-gray-300 text-sm outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent"
+              className="w-full pl-4 pr-12 py-2.5 rounded-xl border border-gray-300 text-sm outline-none focus:ring-2 focus:ring-gold/40 focus:border-transparent"
               placeholder="Auto-generated if left blank"
             />
             <button
               type="button"
               onClick={() => setShowScanner(true)}
               aria-label="Scan barcode with camera"
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-rose-500 transition-colors flex items-center justify-center"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-late transition-colors flex items-center justify-center"
               title="Scan barcode with camera"
             >
               <span className="material-symbols-outlined text-lg">barcode_scanner</span>

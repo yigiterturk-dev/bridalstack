@@ -72,7 +72,7 @@ export default function ImportWizard() {
         <span className="material-symbols-outlined text-4xl text-green-500 mb-3 block">
           task_alt
         </span>
-        <h2 className="text-lg font-semibold text-gray-900 mb-1">Import complete</h2>
+        <h2 className="text-lg font-serif font-normal text-gray-900 mb-1">Import complete</h2>
         <p className="text-sm text-gray-500 mb-6">
           {done.inserted} {done.inserted === 1 ? "customer" : "customers"} added
           {done.skipped > 0 ? `, ${done.skipped} ${done.skipped === 1 ? "row" : "rows"} skipped` : ""}.
@@ -99,7 +99,7 @@ export default function ImportWizard() {
     <div className="space-y-4">
       <div className="bg-white rounded-2xl border border-gray-200 p-6">
         <label className="block">
-          <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer hover:border-rose-400 transition-colors">
+          <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer hover:border-gold transition-colors">
             <span className="material-symbols-outlined text-3xl text-gray-400 mb-2 block">
               upload_file
             </span>

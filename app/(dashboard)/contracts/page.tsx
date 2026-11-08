@@ -33,14 +33,14 @@ export default async function ContractsPage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Contracts & E-Sign</h1>
+          <h1 className="text-2xl font-serif font-normal text-gray-900">Contracts & E-Sign</h1>
           <p className="text-sm text-gray-500 mt-1">Send contracts, brides sign online</p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="bg-white rounded-2xl border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">New Contract</h2>
+          <h2 className="text-lg font-serif font-normal text-gray-900 mb-4">New Contract</h2>
           <form action={createContract} className="flex flex-col gap-3">
             <div>
               <label htmlFor="customer_id-select" className="block text-sm font-medium text-gray-700 mb-1">Customer *</label>

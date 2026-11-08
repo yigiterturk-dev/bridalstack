@@ -74,7 +74,7 @@ export default async function SettingsPage({ searchParams }: Props) {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
+        <h1 className="text-2xl font-serif font-normal text-gray-900">Settings</h1>
         <p className="text-sm text-gray-500 mt-1">Manage your shop and subscription</p>
       </div>
 
@@ -90,7 +90,7 @@ export default async function SettingsPage({ searchParams }: Props) {
         </div>
       )}
       {params?.success === "trial_started" && (
-        <div className="mb-6 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-800">
+        <div className="mb-6 rounded-2xl border border-gold/30 bg-gold-soft px-4 py-3 text-sm font-medium text-gold">
           Your {TRIAL_DAYS}-day free trial has started. The modules are unlocked right away — no card needed.
         </div>
       )}
@@ -113,7 +113,7 @@ export default async function SettingsPage({ searchParams }: Props) {
       <div className="grid gap-6">
         {/* Shop profile */}
         <div className="bg-white rounded-2xl border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-1">Shop Details</h2>
+          <h2 className="text-lg font-serif font-normal text-gray-900 mb-1">Shop Details</h2>
           <p className="text-sm text-gray-500 mb-5">
             These appear on your public booking page and in the client portal.
           </p>
@@ -249,7 +249,7 @@ export default async function SettingsPage({ searchParams }: Props) {
 
         {/* Public booking link */}
         <div className="bg-white rounded-2xl border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-1">Public Booking Link</h2>
+          <h2 className="text-lg font-serif font-normal text-gray-900 mb-1">Public Booking Link</h2>
           <p className="text-sm text-gray-500 mb-4">
             Share this with clients so they can book appointments themselves.
           </p>
@@ -268,7 +268,7 @@ export default async function SettingsPage({ searchParams }: Props) {
         {/* Team */}
         <div className="bg-white rounded-2xl border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-900">Team</h2>
+            <h2 className="text-lg font-serif font-normal text-gray-900">Team</h2>
             {canManageStaff && (
               <a href="/staff" className="text-sm font-medium text-gray-600 hover:text-gray-900">
                 Manage staff
@@ -299,7 +299,7 @@ export default async function SettingsPage({ searchParams }: Props) {
         {/* Billing */}
         <div className="bg-white rounded-2xl border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-900">Subscription</h2>
+            <h2 className="text-lg font-serif font-normal text-gray-900">Subscription</h2>
             <div className="text-sm font-medium text-gray-500">{formatPrice(currentPrice)}/mo</div>
           </div>
           <div className="flex gap-3">
@@ -311,7 +311,7 @@ export default async function SettingsPage({ searchParams }: Props) {
               Run more than one shop?{" "}
               <a
                 href="mailto:hello@bridalstack.com?subject=Multi-location%20BridalStack"
-                className="font-semibold text-gray-700 underline underline-offset-2 hover:text-rose-600 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
+                className="font-semibold text-gray-700 underline underline-offset-2 hover:text-gold rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40"
               >
                 Talk to us about multi-location
               </a>
@@ -323,7 +323,7 @@ export default async function SettingsPage({ searchParams }: Props) {
         {/* Active Packs */}
         <div className="bg-white rounded-2xl border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-900">Your Modules</h2>
+            <h2 className="text-lg font-serif font-normal text-gray-900">Your Modules</h2>
             <div className="text-sm font-medium text-gray-500">{formatPrice(currentPrice)}/mo</div>
           </div>
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
@@ -342,7 +342,7 @@ export default async function SettingsPage({ searchParams }: Props) {
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="font-semibold text-gray-900">{pack.name}</h3>
                     {onTrial ? (
-                      <span className="text-xs font-medium text-rose-700 bg-rose-100 px-2 py-0.5 rounded-full">
+                      <span className="text-xs font-medium text-gold bg-gold-soft px-2 py-0.5 rounded-full">
                         Trial · {tenant.trial_days_left}d left
                       </span>
                     ) : isActive ? (
@@ -390,7 +390,7 @@ export default async function SettingsPage({ searchParams }: Props) {
         {/* Sample data */}
         {canEdit && (
           <div className="bg-white rounded-2xl border border-gray-200 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-1">Sample data</h2>
+            <h2 className="text-lg font-serif font-normal text-gray-900 mb-1">Sample data</h2>
             <p className="text-sm text-gray-500 mb-4 max-w-2xl">
               Fill the workspace with an example boutique — brides, gowns, orders and
               fittings — so you can see how everything fits together before entering your
@@ -424,7 +424,7 @@ export default async function SettingsPage({ searchParams }: Props) {
         {/* Account */}
         <div className="bg-white rounded-2xl border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-900">Account</h2>
+            <h2 className="text-lg font-serif font-normal text-gray-900">Account</h2>
             <a
               href="/settings/export"
               className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-600 hover:text-gray-900"
@@ -442,7 +442,7 @@ export default async function SettingsPage({ searchParams }: Props) {
 
         {/* Danger zone */}
         <div className="bg-white rounded-2xl border border-red-200 p-6">
-          <h2 className="text-lg font-semibold text-red-700 mb-1">Delete account</h2>
+          <h2 className="text-lg font-serif font-normal text-red-700 mb-1">Delete account</h2>
           <p className="text-sm text-gray-500 mb-5 max-w-2xl">
             This permanently deletes your account and, if you own this workspace, every record in
             it. It cannot be undone. To confirm, type your booking address

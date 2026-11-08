@@ -80,8 +80,8 @@ async function CashContent({ tenantId, timeZone, date, error }: { tenantId: stri
   return (
     <div className="animate-fade-in-up">
       <div className="mb-10">
-        <h1 className="text-3xl lg:text-4xl font-extrabold text-stone-900 tracking-tight">Cash register</h1>
-        <p className="text-stone-500 mt-2 font-medium">
+        <h1 className="text-3xl lg:text-4xl font-serif font-normal text-[var(--ink)]">Cash register</h1>
+        <p className="text-[var(--muted)] mt-2 font-medium">
           {new Date(`${today}T00:00:00Z`).toLocaleDateString("en-US", {
             weekday: "long", month: "long", day: "numeric", timeZone: "UTC",
           })}
@@ -91,7 +91,7 @@ async function CashContent({ tenantId, timeZone, date, error }: { tenantId: stri
       </div>
 
       {error && (
-        <div className="mb-6 rounded-2xl border border-rose-200 bg-rose-50 px-5 py-3 text-sm font-medium text-rose-700">
+        <div className="mb-6 rounded-2xl border border-gold/30 bg-gold-soft px-5 py-3 text-sm font-medium text-gold">
           {ERRORS[error] ?? "Something went wrong."}
         </div>
       )}
@@ -103,9 +103,9 @@ async function CashContent({ tenantId, timeZone, date, error }: { tenantId: stri
         <Stat label="In the drawer" value={formatPrice(Math.round(cashOnly))} hint="cash only" />
       </div>
 
-      <div className="bg-white/70 backdrop-blur-xl rounded-[2rem] border border-stone-200/60 shadow-sm p-6 mb-6">
+      <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-6 mb-6">
         <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
-          <h2 className="text-lg font-bold text-stone-900">Till count</h2>
+          <h2 className="text-lg font-serif font-normal text-[var(--ink)]">Till count</h2>
           {session && (
             <span
               className={`text-[11px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full border ${
@@ -113,7 +113,7 @@ async function CashContent({ tenantId, timeZone, date, error }: { tenantId: stri
                   ? "bg-amber-50 text-amber-700 border-amber-100"
                   : state === "exact"
                     ? "bg-emerald-50 text-emerald-700 border-emerald-100"
-                    : "bg-rose-50 text-rose-700 border-rose-100"
+                    : "bg-gold-soft text-gold border-gold/30"
               }`}
             >
               {session.status === "open" ? "Open" : state === "exact" ? "Balanced" : state}
@@ -125,7 +125,7 @@ async function CashContent({ tenantId, timeZone, date, error }: { tenantId: stri
           <form action={openCashSession} className="flex flex-wrap items-end gap-3">
             <input type="hidden" name="business_date" value={today} />
             <div>
-              <label className="block text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1">
+              <label className="block text-xs font-semibold text-[var(--muted)] uppercase tracking-wide mb-1">
                 Cash in the drawer this morning
               </label>
               <input
@@ -134,12 +134,12 @@ async function CashContent({ tenantId, timeZone, date, error }: { tenantId: stri
                 step="0.01"
                 min="0"
                 placeholder={String(suggestedFloat)}
-                className="w-48 px-4 py-2.5 rounded-xl border border-stone-200 bg-white text-sm text-stone-900 outline-none focus:border-stone-400 transition-colors"
+                className="w-48 px-4 py-2.5 rounded-xl border border-stone-200 bg-white text-sm text-[var(--ink)] outline-none focus:border-stone-400 transition-colors"
               />
             </div>
             <button
               type="submit"
-              className="px-5 py-2.5 bg-stone-900 text-white rounded-xl text-sm font-semibold hover:bg-rose-600 transition-colors"
+              className="px-5 py-2.5 bg-stone-900 text-white rounded-xl text-sm font-semibold hover:bg-gold transition-colors"
             >
               Open the day
             </button>
@@ -173,7 +173,7 @@ async function CashContent({ tenantId, timeZone, date, error }: { tenantId: stri
               <form action={closeCashSession} className="flex flex-wrap items-end gap-3 pt-1">
                 <input type="hidden" name="id" value={session.id} />
                 <div>
-                  <label className="block text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1">
+                  <label className="block text-xs font-semibold text-[var(--muted)] uppercase tracking-wide mb-1">
                     Cash counted now
                   </label>
                   <input
@@ -182,7 +182,7 @@ async function CashContent({ tenantId, timeZone, date, error }: { tenantId: stri
                     step="0.01"
                     min="0"
                     required
-                    className="w-48 px-4 py-2.5 rounded-xl border border-stone-200 bg-white text-sm text-stone-900 outline-none focus:border-stone-400 transition-colors"
+                    className="w-48 px-4 py-2.5 rounded-xl border border-stone-200 bg-white text-sm text-[var(--ink)] outline-none focus:border-stone-400 transition-colors"
                   />
                 </div>
                 <label className="flex items-center gap-2 text-sm text-stone-600 pb-2.5">
@@ -191,7 +191,7 @@ async function CashContent({ tenantId, timeZone, date, error }: { tenantId: stri
                 </label>
                 <button
                   type="submit"
-                  className="px-5 py-2.5 bg-stone-900 text-white rounded-xl text-sm font-semibold hover:bg-rose-600 transition-colors"
+                  className="px-5 py-2.5 bg-stone-900 text-white rounded-xl text-sm font-semibold hover:bg-gold transition-colors"
                 >
                   Close the day
                 </button>
@@ -205,13 +205,13 @@ async function CashContent({ tenantId, timeZone, date, error }: { tenantId: stri
                 className={`rounded-2xl border px-5 py-3 text-sm font-medium ${
                   state === "exact"
                     ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                    : "border-rose-200 bg-rose-50 text-rose-700"
+                    : "border-gold/30 bg-gold-soft text-gold"
                 }`}
               >
                 {state === "exact"
                   ? "The drawer balanced to the penny."
                   : `The drawer was ${formatPrice(Math.abs(Math.round(diff ?? 0)))} ${state === "over" ? "over" : "short"}.`}
-                {session.notes && <span className="text-stone-500"> · {session.notes}</span>}
+                {session.notes && <span className="text-[var(--muted)]"> · {session.notes}</span>}
               </div>
             )}
           </div>
@@ -219,19 +219,19 @@ async function CashContent({ tenantId, timeZone, date, error }: { tenantId: stri
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <div className="bg-white/70 backdrop-blur-xl rounded-[2rem] border border-stone-200/60 shadow-sm p-6 h-fit">
-          <h2 className="text-lg font-bold text-stone-900 mb-4">New entry</h2>
+        <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-6 h-fit">
+          <h2 className="text-lg font-serif font-normal text-[var(--ink)] mb-4">New entry</h2>
           <MovementForm today={today} back="/cash" />
         </div>
 
         <div className="xl:col-span-2">
           {movements.length === 0 ? (
-            <div className="bg-white/60 backdrop-blur-xl rounded-[2rem] border border-stone-200/60 shadow-sm p-16 text-center">
-              <span className="flex items-center justify-center w-16 h-16 rounded-3xl bg-emerald-50 text-emerald-600 mx-auto mb-5 material-symbols-outlined text-[32px]">
+            <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-16 text-center">
+              <span className="flex items-center justify-center w-16 h-16 rounded-2xl bg-emerald-50 text-emerald-600 mx-auto mb-5 material-symbols-outlined text-[32px]">
                 account_balance
               </span>
-              <h3 className="text-xl font-bold text-stone-900 mb-2">Nothing today</h3>
-              <p className="text-stone-500 max-w-md mx-auto">
+              <h3 className="text-xl font-bold text-[var(--ink)] mb-2">Nothing today</h3>
+              <p className="text-[var(--muted)] max-w-md mx-auto">
                 Every deposit, balance and expense you record here rolls straight into the ledger.
                 Installment payments land here on their own.
               </p>
@@ -244,17 +244,17 @@ async function CashContent({ tenantId, timeZone, date, error }: { tenantId: stri
                     key={m.method}
                     className="text-xs font-semibold px-3 py-1.5 rounded-full bg-white border border-stone-200 text-stone-600"
                   >
-                    {m.label}: <span className="tabular-nums text-stone-900">{formatPrice(Math.round(m.net))}</span>
+                    {m.label}: <span className="tabular-nums text-[var(--ink)]">{formatPrice(Math.round(m.net))}</span>
                   </span>
                 ))}
               </div>
 
               <div className="flex flex-col gap-2">
                 {movements.map((m) => (
-                  <div key={m.id} className="bg-white/70 backdrop-blur-xl rounded-2xl border border-stone-200/60 shadow-sm p-4 flex items-center gap-4">
+                  <div key={m.id} className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-4 flex items-center gap-4">
                     <div
                       className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                        m.direction === "out" ? "bg-rose-50 text-rose-600" : "bg-emerald-50 text-emerald-600"
+                        m.direction === "out" ? "bg-gold-soft text-gold" : "bg-emerald-50 text-emerald-600"
                       }`}
                     >
                       <span className="material-symbols-outlined text-[20px]">
@@ -263,7 +263,7 @@ async function CashContent({ tenantId, timeZone, date, error }: { tenantId: stri
                     </div>
 
                     <div className="flex-1 min-w-0">
-                      <div className="font-semibold text-stone-900">
+                      <div className="font-semibold text-[var(--ink)]">
                         {categoryLabel(m.direction, m.category)}
                         {(m.installment_id || m.check_id) && (
                           <span className="ml-2 text-[11px] font-bold uppercase tracking-wide text-stone-400">auto</span>
@@ -277,7 +277,7 @@ async function CashContent({ tenantId, timeZone, date, error }: { tenantId: stri
 
                     <div
                       className={`text-lg font-bold tabular-nums flex-shrink-0 ${
-                        m.direction === "out" ? "text-rose-600" : "text-stone-900"
+                        m.direction === "out" ? "text-gold" : "text-[var(--ink)]"
                       }`}
                     >
                       {m.direction === "out" ? "−" : "+"}
@@ -292,7 +292,7 @@ async function CashContent({ tenantId, timeZone, date, error }: { tenantId: stri
                           message="Delete this cash movement? This cannot be undone."
                           ariaLabel="Delete cash movement"
                           title="Delete cash movement"
-                          className="text-xs text-stone-300 hover:text-rose-600 px-1.5 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 focus-visible:ring-offset-2"
+                          className="text-xs text-stone-300 hover:text-gold px-1.5 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40 focus-visible:ring-offset-2"
                         >
                           <span aria-hidden="true">✕</span>
                         </ConfirmSubmitButton>
@@ -310,9 +310,9 @@ async function CashContent({ tenantId, timeZone, date, error }: { tenantId: stri
 }
 
 function Stat({ label, value, tone, hint }: { label: string; value: string; tone?: "emerald" | "rose"; hint?: string }) {
-  const color = tone === "emerald" ? "text-emerald-600" : tone === "rose" ? "text-rose-600" : "text-stone-900";
+  const color = tone === "emerald" ? "text-emerald-600" : tone === "rose" ? "text-gold" : "text-[var(--ink)]";
   return (
-    <div className="bg-white/70 backdrop-blur-xl rounded-2xl border border-stone-200/60 shadow-sm px-5 py-4">
+    <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm px-5 py-4">
       <div className="text-[11px] font-bold uppercase tracking-wide text-stone-400">{label}</div>
       <div className={`text-2xl font-extrabold tabular-nums mt-1 ${color}`}>{value}</div>
       {hint && <div className="text-[11px] text-stone-400 mt-0.5">{hint}</div>}

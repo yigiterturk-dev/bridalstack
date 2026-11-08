@@ -66,8 +66,8 @@ async function SuppliersContent({ tenantId, timeZone }: { tenantId: string; time
   return (
     <div className="animate-fade-in-up">
       <div className="mb-10">
-        <h1 className="text-3xl lg:text-4xl font-extrabold text-stone-900 tracking-tight">Suppliers</h1>
-        <p className="text-stone-500 mt-2 font-medium">
+        <h1 className="text-3xl lg:text-4xl font-serif font-normal text-[var(--ink)]">Suppliers</h1>
+        <p className="text-[var(--muted)] mt-2 font-medium">
           {suppliers.length === 0
             ? "Who you buy your gowns from, and how long they take to deliver"
             : `${suppliers.length} ${suppliers.length === 1 ? "supplier" : "suppliers"}${
@@ -77,8 +77,8 @@ async function SuppliersContent({ tenantId, timeZone }: { tenantId: string; time
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <div className="bg-white/70 backdrop-blur-xl rounded-[2rem] border border-stone-200/60 shadow-sm p-6 h-fit">
-          <h2 className="text-lg font-bold text-stone-900 mb-4">Add supplier</h2>
+        <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-6 h-fit">
+          <h2 className="text-lg font-serif font-normal text-[var(--ink)] mb-4">Add supplier</h2>
           <form action={createSupplier} className="flex flex-col gap-3">
             <Field label="Name *">
               <input name="name" required maxLength={120} className={INPUT} placeholder="e.g. Maggie Sottero" />
@@ -107,7 +107,7 @@ async function SuppliersContent({ tenantId, timeZone }: { tenantId: string; time
             </Field>
             <button
               type="submit"
-              className="mt-1 py-2.5 bg-stone-900 text-white rounded-xl text-sm font-semibold hover:bg-rose-600 transition-colors"
+              className="mt-1 py-2.5 bg-stone-900 text-white rounded-xl text-sm font-semibold hover:bg-gold transition-colors"
             >
               Add supplier
             </button>
@@ -116,12 +116,12 @@ async function SuppliersContent({ tenantId, timeZone }: { tenantId: string; time
 
         <div className="xl:col-span-2">
           {suppliers.length === 0 ? (
-            <div className="bg-white/60 backdrop-blur-xl rounded-[2rem] border border-stone-200/60 shadow-sm p-16 text-center">
-              <span className="flex items-center justify-center w-16 h-16 rounded-3xl bg-violet-50 text-violet-500 mx-auto mb-5 material-symbols-outlined text-[32px]">
+            <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-16 text-center">
+              <span className="flex items-center justify-center w-16 h-16 rounded-2xl bg-violet-50 text-violet-500 mx-auto mb-5 material-symbols-outlined text-[32px]">
                 local_shipping
               </span>
-              <h3 className="text-xl font-bold text-stone-900 mb-2">No suppliers yet</h3>
-              <p className="text-stone-500 max-w-md mx-auto">
+              <h3 className="text-xl font-bold text-[var(--ink)] mb-2">No suppliers yet</h3>
+              <p className="text-[var(--muted)] max-w-md mx-auto">
                 Add the designers and wholesalers you order from. Lead times here become the delivery
                 dates you promise your brides.
               </p>
@@ -133,7 +133,7 @@ async function SuppliersContent({ tenantId, timeZone }: { tenantId: string; time
                 return (
                   <div
                     key={s.id}
-                    className={`bg-white/70 backdrop-blur-xl rounded-2xl border border-stone-200/60 shadow-sm p-5 ${
+                    className={`bg-white rounded-2xl border border-[var(--line)] shadow-sm p-5 ${
                       s.is_active ? "" : "opacity-60"
                     }`}
                   >
@@ -144,9 +144,9 @@ async function SuppliersContent({ tenantId, timeZone }: { tenantId: string; time
 
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <h3 className="font-bold text-stone-900">{s.name}</h3>
+                          <h3 className="font-bold text-[var(--ink)]">{s.name}</h3>
                           {!s.is_active && (
-                            <span className="text-[11px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full bg-stone-100 text-stone-500">
+                            <span className="text-[11px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full bg-stone-100 text-[var(--muted)]">
                               Inactive
                             </span>
                           )}
@@ -157,7 +157,7 @@ async function SuppliersContent({ tenantId, timeZone }: { tenantId: string; time
                           )}
                         </div>
 
-                        <div className="flex items-center gap-3 mt-1 text-xs text-stone-500 flex-wrap">
+                        <div className="flex items-center gap-3 mt-1 text-xs text-[var(--muted)] flex-wrap">
                           {s.contact_name && <span>{s.contact_name}</span>}
                           {s.email && <span className="truncate">{s.email}</span>}
                           {s.phone && <span>{s.phone}</span>}
@@ -186,16 +186,16 @@ async function SuppliersContent({ tenantId, timeZone }: { tenantId: string; time
                           }, 0);
                           const late = orders.filter((o) => isLate(o, o.lines, today));
                           return (
-                            <div className="mt-2.5 rounded-2xl border border-stone-200/70 bg-stone-50/60 px-4 py-3">
+                            <div className="mt-2.5 rounded-2xl border border-[var(--line)] bg-stone-50/60 px-4 py-3">
                               <div className="flex items-center justify-between gap-2 flex-wrap mb-1.5">
-                                <span className="text-xs font-semibold text-stone-500 uppercase tracking-wide">
+                                <span className="text-xs font-semibold text-[var(--muted)] uppercase tracking-wide">
                                   On order
                                 </span>
-                                <span className="text-xs text-stone-500">
+                                <span className="text-xs text-[var(--muted)]">
                                   {units} {units === 1 ? "gown" : "gowns"} ·{" "}
                                   <span className="font-semibold text-stone-800">{formatPrice(Math.round(value))}</span>
                                   {late.length > 0 && (
-                                    <span className="text-rose-600 font-semibold"> · {late.length} late</span>
+                                    <span className="text-late font-semibold"> · {late.length} late</span>
                                   )}
                                 </span>
                               </div>
@@ -208,7 +208,7 @@ async function SuppliersContent({ tenantId, timeZone }: { tenantId: string; time
                                       href={`/purchase-orders/${o.id}`}
                                       className={`text-[11px] font-semibold px-2 py-1 rounded-lg border transition-colors ${
                                         isLate(o, o.lines, today)
-                                          ? "border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100"
+                                          ? "border-gold/30 bg-gold-soft text-gold hover:bg-gold-soft"
                                           : "border-stone-200 bg-white text-stone-600 hover:bg-stone-50"
                                       }`}
                                       title={o.expected_on ? `Expected ${o.expected_on}` : "No expected date"}
@@ -237,7 +237,7 @@ async function SuppliersContent({ tenantId, timeZone }: { tenantId: string; time
                           <button
                             type="submit"
                             className={`text-xs font-semibold px-2.5 py-1 rounded-lg ${
-                              s.is_active ? "bg-emerald-50 text-emerald-700" : "bg-stone-100 text-stone-500"
+                              s.is_active ? "bg-emerald-50 text-emerald-700" : "bg-stone-100 text-[var(--muted)]"
                             }`}
                           >
                             {s.is_active ? "Active" : "Off"}
@@ -248,7 +248,7 @@ async function SuppliersContent({ tenantId, timeZone }: { tenantId: string; time
                           <button
                             type="submit"
                             title={stat.count > 0 ? "Has gowns — will be deactivated" : "Delete"}
-                            className="text-xs text-stone-300 hover:text-rose-600 px-1.5 py-1"
+                            className="text-xs text-stone-300 hover:text-gold px-1.5 py-1"
                           >
                             ✕
                           </button>
@@ -267,12 +267,12 @@ async function SuppliersContent({ tenantId, timeZone }: { tenantId: string; time
 }
 
 const INPUT =
-  "w-full px-4 py-2.5 rounded-xl border border-stone-200 bg-white text-sm text-stone-900 outline-none focus:border-stone-400 transition-colors";
+  "w-full px-4 py-2.5 rounded-xl border border-stone-200 bg-white text-sm text-[var(--ink)] outline-none focus:border-stone-400 transition-colors";
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <label className="block text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1">{label}</label>
+      <label className="block text-xs font-semibold text-[var(--muted)] uppercase tracking-wide mb-1">{label}</label>
       {children}
     </div>
   );

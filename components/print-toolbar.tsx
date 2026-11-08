@@ -12,7 +12,7 @@ export default function PrintToolbar({
 }) {
   return (
     <div className="no-print max-w-[820px] mx-auto mb-6 flex items-center justify-between gap-4">
-      <Link href={backHref} className="text-sm text-stone-500 hover:text-stone-900 transition-colors">
+      <Link href={backHref} className="text-sm text-[var(--muted)] hover:text-[var(--ink)] transition-colors">
         ← {backLabel}
       </Link>
       <button

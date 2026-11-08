@@ -19,7 +19,7 @@ export default async function ImportCustomersPage() {
       <Link href="/customers" className="text-sm text-gray-500 hover:text-gray-900 mb-4 inline-block">
         ← Back to customers
       </Link>
-      <h1 className="text-2xl font-bold text-gray-900 mb-1">Bulk customer import</h1>
+      <h1 className="text-2xl font-serif font-normal text-gray-900 mb-1">Bulk customer import</h1>
       <p className="text-sm text-gray-500 mb-6">
         Upload a CSV file. Columns: <strong>name, phone, email, notes</strong>. A header row is detected automatically.
       </p>

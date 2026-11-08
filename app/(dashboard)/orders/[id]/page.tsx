@@ -126,7 +126,7 @@ export default async function OrderDetailPage({ params, searchParams }: Props) {
 
       <div className="flex items-start justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 font-mono">{order.ref_no}</h1>
+          <h1 className="text-2xl font-serif font-normal text-gray-900 font-mono">{order.ref_no}</h1>
           <p className="text-sm text-gray-500 mt-1">
             {customer?.name ?? "—"} · <span className="capitalize">{order.order_type}</span> · {order.order_date ? new Date(order.order_date).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) : "—"}
           </p>
@@ -147,7 +147,7 @@ export default async function OrderDetailPage({ params, searchParams }: Props) {
         {/* Info */}
         <div className="lg:col-span-2 flex flex-col gap-6">
           <div className="bg-white rounded-2xl border border-gray-200 p-6">
-            <h2 className="font-semibold text-gray-900 mb-4">Order Details</h2>
+            <h2 className="font-serif font-normal text-gray-900 mb-4">Order Details</h2>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               {[
                 { label: "Total", value: formatPrice(Number(order.discounted_total)), bold: true },
@@ -166,7 +166,7 @@ export default async function OrderDetailPage({ params, searchParams }: Props) {
           {/* Items */}
           <div className="bg-white rounded-2xl border border-gray-200 p-6">
             <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
-              <h2 className="font-semibold text-gray-900">Items</h2>
+              <h2 className="font-serif font-normal text-gray-900">Items</h2>
               <span className="text-xs text-gray-500">
                 {derived
                   ? `${lineTotals.lines} ${lineTotals.lines === 1 ? "item" : "items"} · ${lineTotals.units} pieces · total is calculated from these`
@@ -290,7 +290,7 @@ export default async function OrderDetailPage({ params, searchParams }: Props) {
                   </p>
                   <SubmitButton
                     pendingLabel="Adding…"
-                    className="px-4 py-2 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-rose-600 transition-colors disabled:opacity-60 disabled:cursor-wait"
+                    className="px-4 py-2 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gold transition-colors disabled:opacity-60 disabled:cursor-wait"
                   >
                     Add item
                   </SubmitButton>
@@ -301,13 +301,13 @@ export default async function OrderDetailPage({ params, searchParams }: Props) {
 
           {/* Customer */}
           <div className="bg-white rounded-2xl border border-gray-200 p-6">
-            <h2 className="font-semibold text-gray-900 mb-3">Customer</h2>
+            <h2 className="font-serif font-normal text-gray-900 mb-3">Customer</h2>
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-rose-100 flex items-center justify-center text-rose-600 font-bold text-lg">
+              <div className="w-12 h-12 rounded-full bg-gold-soft flex items-center justify-center text-gold font-bold text-lg">
                 {customer?.name?.charAt(0) ?? "?"}
               </div>
               <div>
-                <Link href={`/customers/${order.customer_id}`} className="font-medium text-gray-900 hover:text-rose-600">{customer?.name ?? "—"}</Link>
+                <Link href={`/customers/${order.customer_id}`} className="font-medium text-gray-900 hover:text-gold">{customer?.name ?? "—"}</Link>
                 <p className="text-sm text-gray-500">{[customer?.phone, customer?.email].filter(Boolean).join(" · ") || "No contact info"}</p>
               </div>
             </div>
@@ -315,7 +315,7 @@ export default async function OrderDetailPage({ params, searchParams }: Props) {
 
           {order.notes && (
             <div className="bg-white rounded-2xl border border-gray-200 p-6">
-              <h2 className="font-semibold text-gray-900 mb-2">Notes</h2>
+              <h2 className="font-serif font-normal text-gray-900 mb-2">Notes</h2>
               <p className="text-sm text-gray-600 leading-relaxed">{order.notes}</p>
             </div>
           )}
@@ -324,7 +324,7 @@ export default async function OrderDetailPage({ params, searchParams }: Props) {
         {/* Actions */}
         <div className="flex flex-col gap-4">
           <div className="bg-white rounded-2xl border border-gray-200 p-6">
-            <h2 className="font-semibold text-gray-900 mb-4">Update Status</h2>
+            <h2 className="font-serif font-normal text-gray-900 mb-4">Update Status</h2>
             <div className="flex flex-col gap-2">
               {STATUSES.map((s) => (
                 <form key={s} action={updateOrderStatus}>
@@ -369,7 +369,7 @@ export default async function OrderDetailPage({ params, searchParams }: Props) {
       {/* Payment plan */}
       <div className="mt-6 bg-white rounded-2xl border border-gray-200 p-6">
         <div className="flex flex-wrap items-center justify-between gap-3 mb-1">
-          <h2 className="font-semibold text-gray-900">Payment Plan</h2>
+          <h2 className="font-serif font-normal text-gray-900">Payment Plan</h2>
           {hasPlan && (
             <div className="text-sm text-gray-500">
               {formatPrice(paidTotal)} collected of {formatPrice(planTotal)}

@@ -35,7 +35,7 @@ export default async function TrunkShowsPage({ searchParams }: Props) {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Trunk Shows</h1>
+        <h1 className="text-2xl font-serif font-normal text-gray-900">Trunk Shows</h1>
         <p className="text-sm text-gray-500 mt-1">Manage vendor sample events and gown tracking</p>
       </div>
       {params?.error && ERRORS[params.error] && (
@@ -46,7 +46,7 @@ export default async function TrunkShowsPage({ searchParams }: Props) {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="bg-white rounded-2xl border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">New Trunk Show</h2>
+          <h2 className="text-lg font-serif font-normal text-gray-900 mb-4">New Trunk Show</h2>
           <form action={createTrunkShow} className="flex flex-col gap-3">
             <div>
               <label htmlFor="trunk-show-name" className="block text-sm font-medium text-gray-700 mb-1">Event Name *</label>

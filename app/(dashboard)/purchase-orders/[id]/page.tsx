@@ -43,7 +43,7 @@ const STATUS_STYLE: Record<string, string> = {
   ordered: "bg-amber-50 text-amber-700 border-amber-100",
   partial: "bg-sky-50 text-sky-700 border-sky-100",
   received: "bg-emerald-50 text-emerald-700 border-emerald-100",
-  cancelled: "bg-stone-100 text-stone-500 border-stone-200",
+  cancelled: "bg-stone-100 text-[var(--muted)] border-stone-200",
 };
 
 type Props = {
@@ -102,26 +102,26 @@ async function PurchaseOrderDetail({
 
   return (
     <div className="animate-fade-in-up">
-      <Link href="/purchase-orders" className="text-sm text-stone-500 hover:text-stone-900 transition-colors">
+      <Link href="/purchase-orders" className="text-sm text-[var(--muted)] hover:text-[var(--ink)] transition-colors">
         ← Purchase orders
       </Link>
 
       <div className="mt-4 mb-8 flex items-start justify-between gap-4 flex-wrap">
         <div>
           <div className="flex items-center gap-2 flex-wrap">
-            <h1 className="text-3xl lg:text-4xl font-extrabold text-stone-900 tracking-tight">
+            <h1 className="text-3xl lg:text-4xl font-serif font-normal text-[var(--ink)]">
               {po.supplier?.name ?? "Supplier"}
             </h1>
             <span className={`text-[11px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full border ${STATUS_STYLE[po.status] ?? STATUS_STYLE.cancelled}`}>
               {PO_STATUS_LABELS[po.status as PoStatus] ?? po.status}
             </span>
             {overdue && (
-              <span className="text-[11px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full border bg-rose-50 text-rose-700 border-rose-100">
+              <span className="text-[11px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full border bg-gold-soft text-gold border-gold/30">
                 late
               </span>
             )}
           </div>
-          <p className="text-stone-500 mt-2 font-medium">
+          <p className="text-[var(--muted)] mt-2 font-medium">
             {po.ref_no}
             {po.expected_on && <span className="text-stone-400"> · expected {po.expected_on}</span>}
             {po.supplier?.payment_terms && <span className="text-stone-400"> · {po.supplier.payment_terms}</span>}
@@ -134,7 +134,7 @@ async function PurchaseOrderDetail({
               <input type="hidden" name="po_id" value={po.id} />
               <button
                 type="submit"
-                className="px-4 py-2 bg-stone-900 text-white rounded-xl text-sm font-semibold hover:bg-rose-600 transition-colors"
+                className="px-4 py-2 bg-stone-900 text-white rounded-xl text-sm font-semibold hover:bg-gold transition-colors"
               >
                 Send to supplier
               </button>
@@ -156,7 +156,7 @@ async function PurchaseOrderDetail({
               <input type="hidden" name="po_id" value={po.id} />
               <button
                 type="submit"
-                className="px-4 py-2 border border-stone-200 text-stone-500 rounded-xl text-sm font-semibold hover:bg-stone-50 transition-colors"
+                className="px-4 py-2 border border-stone-200 text-[var(--muted)] rounded-xl text-sm font-semibold hover:bg-stone-50 transition-colors"
               >
                 Cancel
               </button>
@@ -166,7 +166,7 @@ async function PurchaseOrderDetail({
       </div>
 
       {error && (
-        <div className="mb-6 rounded-2xl border border-rose-200 bg-rose-50 px-5 py-3 text-sm font-medium text-rose-700">
+        <div className="mb-6 rounded-2xl border border-gold/30 bg-gold-soft px-5 py-3 text-sm font-medium text-gold">
           {ERRORS[error] ?? "Something went wrong."}
         </div>
       )}
@@ -183,8 +183,8 @@ async function PurchaseOrderDetail({
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         {editable && (
-          <div className="bg-white/70 backdrop-blur-xl rounded-[2rem] border border-stone-200/60 shadow-sm p-6 h-fit">
-            <h2 className="text-lg font-bold text-stone-900 mb-4">Add a gown</h2>
+          <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-6 h-fit">
+            <h2 className="text-lg font-serif font-normal text-[var(--ink)] mb-4">Add a gown</h2>
             <form action={addLine} className="flex flex-col gap-3">
               <input type="hidden" name="po_id" value={po.id} />
               <Field label="Gown">
@@ -213,7 +213,7 @@ async function PurchaseOrderDetail({
               </p>
               <button
                 type="submit"
-                className="mt-1 py-2.5 bg-stone-900 text-white rounded-xl text-sm font-semibold hover:bg-rose-600 transition-colors"
+                className="mt-1 py-2.5 bg-stone-900 text-white rounded-xl text-sm font-semibold hover:bg-gold transition-colors"
               >
                 Add to order
               </button>
@@ -223,22 +223,22 @@ async function PurchaseOrderDetail({
 
         <div className={editable ? "xl:col-span-2" : "xl:col-span-3"}>
           {po.lines.length === 0 ? (
-            <div className="bg-white/60 backdrop-blur-xl rounded-[2rem] border border-stone-200/60 shadow-sm p-16 text-center">
-              <span className="flex items-center justify-center w-16 h-16 rounded-3xl bg-violet-50 text-violet-500 mx-auto mb-5 material-symbols-outlined text-[32px]">
+            <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-16 text-center">
+              <span className="flex items-center justify-center w-16 h-16 rounded-2xl bg-violet-50 text-violet-500 mx-auto mb-5 material-symbols-outlined text-[32px]">
                 checkroom
               </span>
-              <h3 className="text-xl font-bold text-stone-900 mb-2">Nothing on this order yet</h3>
-              <p className="text-stone-500 max-w-md mx-auto">
+              <h3 className="text-xl font-bold text-[var(--ink)] mb-2">Nothing on this order yet</h3>
+              <p className="text-[var(--muted)] max-w-md mx-auto">
                 Add the gowns you are buying, then send the order. It cannot go out empty.
               </p>
             </div>
           ) : (
-            <form action={receiveLines} className="bg-white/70 backdrop-blur-xl rounded-[2rem] border border-stone-200/60 shadow-sm overflow-hidden">
+            <form action={receiveLines} className="bg-white rounded-2xl border border-[var(--line)] shadow-sm overflow-hidden">
               <input type="hidden" name="po_id" value={po.id} />
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-stone-200/60 text-left">
+                    <tr className="border-b border-[var(--line)] text-left">
                       <Th>Gown</Th>
                       <Th className="text-right">Ordered</Th>
                       <Th className="text-right">Received</Th>
@@ -253,7 +253,7 @@ async function PurchaseOrderDetail({
                       return (
                         <tr key={line.id} className="border-b border-stone-100 last:border-0">
                           <td className="px-5 py-3">
-                            <div className="font-semibold text-stone-900">{line.product?.name ?? "Gown"}</div>
+                            <div className="font-semibold text-[var(--ink)]">{line.product?.name ?? "Gown"}</div>
                             <div className="text-xs text-stone-400">
                               {line.product?.sku ?? "—"} · {line.product?.stock_quantity ?? 0} on the rail
                             </div>
@@ -265,7 +265,7 @@ async function PurchaseOrderDetail({
                           <td className="px-5 py-3 text-right text-stone-600">
                             {formatPrice(Math.round(line.unit_cost))}
                           </td>
-                          <td className="px-5 py-3 text-right font-semibold text-stone-900">
+                          <td className="px-5 py-3 text-right font-semibold text-[var(--ink)]">
                             {formatPrice(Math.round(line.ordered_qty * line.unit_cost))}
                           </td>
                           {(editable || receivable) && (
@@ -277,7 +277,7 @@ async function PurchaseOrderDetail({
                                   min={line.received_qty}
                                   max={line.ordered_qty}
                                   placeholder={String(line.received_qty)}
-                                  className="w-20 px-3 py-1.5 rounded-lg border border-stone-200 bg-white text-sm text-right text-stone-900 outline-none focus:border-stone-400 transition-colors"
+                                  className="w-20 px-3 py-1.5 rounded-lg border border-stone-200 bg-white text-sm text-right text-[var(--ink)] outline-none focus:border-stone-400 transition-colors"
                                 />
                               )}
                               {editable && (
@@ -286,7 +286,7 @@ async function PurchaseOrderDetail({
                                   formAction={removeLine}
                                   name="line_id"
                                   value={line.id}
-                                  className="text-xs font-semibold text-stone-400 hover:text-rose-600 transition-colors"
+                                  className="text-xs font-semibold text-stone-400 hover:text-gold transition-colors"
                                 >
                                   Remove
                                 </button>
@@ -301,8 +301,8 @@ async function PurchaseOrderDetail({
               </div>
 
               {receivable && (
-                <div className="flex items-center justify-between gap-4 px-5 py-4 border-t border-stone-200/60 bg-stone-50/50 flex-wrap">
-                  <p className="text-xs text-stone-500 max-w-md leading-relaxed">
+                <div className="flex items-center justify-between gap-4 px-5 py-4 border-t border-[var(--line)] bg-stone-50/50 flex-wrap">
+                  <p className="text-xs text-[var(--muted)] max-w-md leading-relaxed">
                     Type the running total you have received, not what arrived today. The rail only
                     moves by the difference, so submitting twice never doubles your stock. The order
                     closes on its own once every gown is in, and only then does the cost hit the drawer.
@@ -311,7 +311,7 @@ async function PurchaseOrderDetail({
                   </p>
                   <button
                     type="submit"
-                    className="px-5 py-2.5 bg-stone-900 text-white rounded-xl text-sm font-semibold hover:bg-rose-600 transition-colors"
+                    className="px-5 py-2.5 bg-stone-900 text-white rounded-xl text-sm font-semibold hover:bg-gold transition-colors"
                   >
                     Receive stock
                   </button>
@@ -321,7 +321,7 @@ async function PurchaseOrderDetail({
           )}
 
           {po.notes && (
-            <p className="mt-4 text-sm text-stone-500 bg-white/60 rounded-2xl border border-stone-200/60 px-5 py-3">
+            <p className="mt-4 text-sm text-[var(--muted)] bg-white/60 rounded-2xl border border-[var(--line)] px-5 py-3">
               {po.notes}
             </p>
           )}
@@ -332,12 +332,12 @@ async function PurchaseOrderDetail({
 }
 
 const INPUT =
-  "w-full px-4 py-2.5 rounded-xl border border-stone-200 bg-white text-sm text-stone-900 outline-none focus:border-stone-400 transition-colors";
+  "w-full px-4 py-2.5 rounded-xl border border-stone-200 bg-white text-sm text-[var(--ink)] outline-none focus:border-stone-400 transition-colors";
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <label className="block text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1">{label}</label>
+      <label className="block text-xs font-semibold text-[var(--muted)] uppercase tracking-wide mb-1">{label}</label>
       {children}
     </div>
   );
@@ -345,7 +345,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 
 function Th({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return (
-    <th className={`px-5 py-3 text-xs font-semibold text-stone-500 uppercase tracking-wide ${className}`}>
+    <th className={`px-5 py-3 text-xs font-semibold text-[var(--muted)] uppercase tracking-wide ${className}`}>
       {children}
     </th>
   );
@@ -353,9 +353,9 @@ function Th({ children, className = "" }: { children: React.ReactNode; className
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="bg-white/70 backdrop-blur-xl rounded-2xl border border-stone-200/60 shadow-sm px-5 py-4">
-      <div className="text-xs font-semibold text-stone-500 uppercase tracking-wide">{label}</div>
-      <div className="text-xl font-extrabold text-stone-900 mt-1">{value}</div>
+    <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm px-5 py-4">
+      <div className="text-xs font-semibold text-[var(--muted)] uppercase tracking-wide">{label}</div>
+      <div className="text-xl font-extrabold text-[var(--ink)] mt-1">{value}</div>
     </div>
   );
 }

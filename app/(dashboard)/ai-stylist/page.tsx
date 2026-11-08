@@ -7,7 +7,7 @@ import StylistChat from "./stylist-chat";
 export const dynamic = "force-dynamic";
 
 const TONE_STYLE: Record<string, { chip: string; dot: string; label: string }> = {
-  urgent: { chip: "bg-rose-50 text-rose-700 border-rose-100", dot: "bg-rose-500", label: "Do today" },
+  urgent: { chip: "bg-gold-soft text-gold border-gold/30", dot: "bg-gold", label: "Do today" },
   opportunity: { chip: "bg-emerald-50 text-emerald-700 border-emerald-100", dot: "bg-emerald-500", label: "Earns money" },
   watch: { chip: "bg-stone-100 text-stone-600 border-stone-200", dot: "bg-stone-400", label: "Keep an eye on" },
 };
@@ -22,7 +22,7 @@ export default async function AIStylistPage() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">AI Stylist ✨</h1>
+        <h1 className="text-2xl font-serif font-normal text-gray-900">AI Stylist ✨</h1>
         <p className="text-sm text-gray-500 mt-1">
           What needs your attention today, and answers about your inventory and brides
         </p>
@@ -30,8 +30,8 @@ export default async function AIStylistPage() {
 
       <div className="bg-white rounded-2xl border border-gray-200 p-6 mb-6">
         <div className="flex items-center gap-2 mb-4">
-          <span className="material-symbols-outlined text-rose-500">bolt</span>
-          <h2 className="font-semibold text-gray-900">Today at {tenant.name}</h2>
+          <span className="material-symbols-outlined text-gold">bolt</span>
+          <h2 className="font-serif font-normal text-gray-900">Today at {tenant.name}</h2>
         </div>
 
         {briefing.length === 0 ? (

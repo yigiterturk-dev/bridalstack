@@ -42,7 +42,7 @@ export default async function StaffPage({ searchParams }: PageProps) {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Team &amp; Roles</h1>
+        <h1 className="text-2xl font-serif font-normal text-gray-900">Team &amp; Roles</h1>
         <p className="text-sm text-gray-500 mt-1">
           Manage who can sign in and what they can do
         </p>
@@ -70,7 +70,7 @@ export default async function StaffPage({ searchParams }: PageProps) {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {canManage && (
           <div className="bg-white rounded-2xl border border-gray-200 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Invite a team member</h2>
+            <h2 className="text-lg font-serif font-normal text-gray-900 mb-4">Invite a team member</h2>
             <form action={addMember} className="flex flex-col gap-3">
               <div>
                 <label htmlFor="staff-email" className="block text-sm font-medium text-gray-700 mb-1">Email</label>
@@ -159,7 +159,7 @@ export default async function StaffPage({ searchParams }: PageProps) {
                         <span
                           className={`text-xs px-2.5 py-0.5 rounded-full font-medium ${
                             role === "owner"
-                              ? "bg-rose-100 text-rose-700"
+                              ? "bg-gold-soft text-gold"
                               : role === "admin"
                                 ? "bg-blue-100 text-blue-700"
                                 : "bg-gray-100 text-gray-700"
@@ -198,7 +198,7 @@ export default async function StaffPage({ searchParams }: PageProps) {
       {canManage && invitations.length > 0 && (
         <div className="mt-6 bg-white rounded-2xl border border-gray-200 overflow-x-auto">
           <div className="px-6 py-4 border-b border-gray-100">
-            <h2 className="text-lg font-semibold text-gray-900">Pending invitations</h2>
+            <h2 className="text-lg font-serif font-normal text-gray-900">Pending invitations</h2>
             <p className="text-xs text-gray-500 mt-0.5">
               Nobody has accepted these yet. Generate a link if the email did not arrive.
             </p>

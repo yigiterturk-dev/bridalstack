@@ -32,7 +32,7 @@ const STATUS_STYLE: Record<string, string> = {
   portfolio: "bg-stone-100 text-stone-600 border-stone-200",
   deposited: "bg-sky-50 text-sky-700 border-sky-100",
   cleared: "bg-emerald-50 text-emerald-700 border-emerald-100",
-  bounced: "bg-rose-50 text-rose-700 border-rose-100",
+  bounced: "bg-gold-soft text-gold border-gold/30",
   cancelled: "bg-stone-100 text-stone-400 border-stone-200",
 };
 
@@ -81,8 +81,8 @@ async function ChecksContent({ tenantId, timeZone, error }: { tenantId: string; 
   return (
     <div className="animate-fade-in-up">
       <div className="mb-8">
-        <h1 className="text-3xl lg:text-4xl font-extrabold text-stone-900 tracking-tight">Checks</h1>
-        <p className="text-stone-500 mt-2 font-medium">
+        <h1 className="text-3xl lg:text-4xl font-serif font-normal text-[var(--ink)]">Checks</h1>
+        <p className="text-[var(--muted)] mt-2 font-medium">
           {outstanding.length === 0
             ? "No checks waiting to clear"
             : `${outstanding.length} outstanding · ${formatPrice(Math.round(summary.incoming))} coming in`}
@@ -90,7 +90,7 @@ async function ChecksContent({ tenantId, timeZone, error }: { tenantId: string; 
       </div>
 
       {error && (
-        <div className="mb-6 rounded-2xl border border-rose-200 bg-rose-50 px-5 py-3 text-sm font-medium text-rose-700">
+        <div className="mb-6 rounded-2xl border border-gold/30 bg-gold-soft px-5 py-3 text-sm font-medium text-gold">
           {ERRORS[error] ?? "Something went wrong."}
         </div>
       )}
@@ -103,8 +103,8 @@ async function ChecksContent({ tenantId, timeZone, error }: { tenantId: string; 
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <div className="bg-white/70 backdrop-blur-xl rounded-[2rem] border border-stone-200/60 shadow-sm p-6 h-fit">
-          <h2 className="text-lg font-bold text-stone-900 mb-4">Log a check</h2>
+        <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-6 h-fit">
+          <h2 className="text-lg font-serif font-normal text-[var(--ink)] mb-4">Log a check</h2>
           <form action={createCheck} className="flex flex-col gap-3">
             <Field label="Direction">
               <SelectField
@@ -154,7 +154,7 @@ async function ChecksContent({ tenantId, timeZone, error }: { tenantId: string; 
 
             <button
               type="submit"
-              className="mt-1 py-2.5 bg-stone-900 text-white rounded-xl text-sm font-semibold hover:bg-rose-600 transition-colors"
+              className="mt-1 py-2.5 bg-stone-900 text-white rounded-xl text-sm font-semibold hover:bg-gold transition-colors"
             >
               Add check
             </button>
@@ -163,12 +163,12 @@ async function ChecksContent({ tenantId, timeZone, error }: { tenantId: string; 
 
         <div className="xl:col-span-2">
           {checks.length === 0 ? (
-            <div className="bg-white/60 backdrop-blur-xl rounded-[2rem] border border-stone-200/60 shadow-sm p-16 text-center">
-              <span className="flex items-center justify-center w-16 h-16 rounded-3xl bg-emerald-50 text-emerald-600 mx-auto mb-5 material-symbols-outlined text-[32px]">
+            <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-16 text-center">
+              <span className="flex items-center justify-center w-16 h-16 rounded-2xl bg-emerald-50 text-emerald-600 mx-auto mb-5 material-symbols-outlined text-[32px]">
                 request_quote
               </span>
-              <h3 className="text-xl font-bold text-stone-900 mb-2">No checks logged</h3>
-              <p className="text-stone-500 max-w-md mx-auto">
+              <h3 className="text-xl font-bold text-[var(--ink)] mb-2">No checks logged</h3>
+              <p className="text-[var(--muted)] max-w-md mx-auto">
                 A check only becomes money in the ledger when you mark it cleared — and if it
                 bounces, that entry comes straight back out.
               </p>
@@ -201,16 +201,16 @@ function Section({
 
   return (
     <div>
-      <h2 className="text-sm font-bold text-stone-500 uppercase tracking-wider mb-4">{title}</h2>
+      <h2 className="text-sm font-serif font-normal text-[var(--muted)] uppercase tracking-wider mb-4">{title}</h2>
       <div className="flex flex-col gap-2">
         {checks.map((c) => {
           const late = isOutstandingCheck(c.status) && c.due_date < today;
           const next = checkTransitions(c.status);
           return (
-            <div key={c.id} className="bg-white/70 backdrop-blur-xl rounded-2xl border border-stone-200/60 shadow-sm p-4 flex items-center gap-4 flex-wrap">
+            <div key={c.id} className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-4 flex items-center gap-4 flex-wrap">
               <div
                 className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                  c.direction === "issued" ? "bg-rose-50 text-rose-600" : "bg-emerald-50 text-emerald-600"
+                  c.direction === "issued" ? "bg-gold-soft text-gold" : "bg-emerald-50 text-emerald-600"
                 }`}
               >
                 <span className="material-symbols-outlined text-[20px]">request_quote</span>
@@ -218,12 +218,12 @@ function Section({
 
               <div className="flex-1 min-w-[180px]">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-bold text-stone-900">{c.counterparty}</span>
+                  <span className="font-bold text-[var(--ink)]">{c.counterparty}</span>
                   <span className={`text-[11px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full border ${STATUS_STYLE[c.status]}`}>
                     {CHECK_STATUS_LABELS[c.status] ?? c.status}
                   </span>
                   {late && (
-                    <span className="text-[11px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-100">
+                    <span className="text-[11px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full bg-gold-soft text-gold border border-gold/30">
                       past due
                     </span>
                   )}
@@ -236,7 +236,7 @@ function Section({
                 </div>
               </div>
 
-              <div className={`text-lg font-bold tabular-nums ${c.direction === "issued" ? "text-rose-600" : "text-stone-900"}`}>
+              <div className={`text-lg font-bold tabular-nums ${c.direction === "issued" ? "text-gold" : "text-[var(--ink)]"}`}>
                 {c.direction === "issued" ? "−" : "+"}
                 {formatPrice(Math.round(c.amount))}
               </div>
@@ -250,7 +250,7 @@ function Section({
                       type="submit"
                       className={`text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors ${
                         status === "cleared"
-                          ? "bg-stone-900 text-white hover:bg-rose-600"
+                          ? "bg-stone-900 text-white hover:bg-gold"
                           : "border border-stone-200 text-stone-600 hover:bg-stone-50"
                       }`}
                     >
@@ -265,7 +265,7 @@ function Section({
                       message={`Delete check from ${c.counterparty}? This cannot be undone.`}
                       ariaLabel={`Delete check from ${c.counterparty}`}
                       title="Delete check"
-                      className="text-xs text-stone-300 hover:text-rose-600 px-1.5 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 focus-visible:ring-offset-2"
+                      className="text-xs text-stone-300 hover:text-gold px-1.5 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40 focus-visible:ring-offset-2"
                     >
                       <span aria-hidden="true">✕</span>
                     </ConfirmSubmitButton>
@@ -281,21 +281,21 @@ function Section({
 }
 
 const INPUT =
-  "w-full px-4 py-2.5 rounded-xl border border-stone-200 bg-white text-sm text-stone-900 outline-none focus:border-stone-400 transition-colors";
+  "w-full px-4 py-2.5 rounded-xl border border-stone-200 bg-white text-sm text-[var(--ink)] outline-none focus:border-stone-400 transition-colors";
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <label className="block text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1">{label}</label>
+      <label className="block text-xs font-semibold text-[var(--muted)] uppercase tracking-wide mb-1">{label}</label>
       {children}
     </div>
   );
 }
 
 function Stat({ label, value, tone }: { label: string; value: string; tone?: "emerald" | "rose" }) {
-  const color = tone === "emerald" ? "text-emerald-600" : tone === "rose" ? "text-rose-600" : "text-stone-900";
+  const color = tone === "emerald" ? "text-emerald-600" : tone === "rose" ? "text-gold" : "text-[var(--ink)]";
   return (
-    <div className="bg-white/70 backdrop-blur-xl rounded-2xl border border-stone-200/60 shadow-sm px-5 py-4">
+    <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm px-5 py-4">
       <div className="text-[11px] font-bold uppercase tracking-wide text-stone-400">{label}</div>
       <div className={`text-2xl font-extrabold tabular-nums mt-1 ${color}`}>{value}</div>
     </div>

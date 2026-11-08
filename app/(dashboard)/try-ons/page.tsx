@@ -64,7 +64,7 @@ async function TryOnsContent({ tenantId }: { tenantId: string }) {
     <div>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Try-On Tracking</h1>
+          <h1 className="text-2xl font-serif font-normal text-gray-900">Try-On Tracking</h1>
           <p className="text-sm text-gray-500 mt-1">Record which gowns each bride tried and their reaction</p>
         </div>
       </div>
@@ -72,7 +72,7 @@ async function TryOnsContent({ tenantId }: { tenantId: string }) {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* New Try-On Form */}
         <div className="bg-white rounded-2xl border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Log a Try-On</h2>
+          <h2 className="text-lg font-serif font-normal text-gray-900 mb-4">Log a Try-On</h2>
           <form action={addTryOn} className="flex flex-col gap-3">
             <div>
               <label htmlFor="customer_id-select" className="block text-sm font-medium text-gray-700 mb-1">Bride *</label>
@@ -154,7 +154,7 @@ async function TryOnsContent({ tenantId }: { tenantId: string }) {
                 const prod = (Array.isArray(t.products) ? t.products[0] : t.products) as { name: string; category: string | null } | null;
                 return (
                   <div key={t.id} className="bg-white rounded-2xl border border-gray-200 p-5 flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-rose-50 flex items-center justify-center text-2xl flex-shrink-0">
+                    <div className="w-12 h-12 rounded-xl bg-gold-soft flex items-center justify-center text-2xl flex-shrink-0">
                       {t.reaction ? REACTION_EMOJI[t.reaction] : "👗"}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -181,7 +181,7 @@ async function TryOnsContent({ tenantId }: { tenantId: string }) {
                                 alt="Fitting photo"
                                 width={400}
                                 height={300}
-                                className="w-14 h-14 rounded-lg object-cover border border-gray-200 hover:border-rose-300 transition-colors"
+                                className="w-14 h-14 rounded-lg object-cover border border-gray-200 hover:border-gold/30 transition-colors"
                               />
                             </a>
                           ))}

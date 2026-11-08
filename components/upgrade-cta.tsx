@@ -45,7 +45,7 @@ export default function UpgradeCta({ daysLeft, expired }: Props) {
           onClick={() => {
             void trackFunnelEvent("upgrade_cta_clicked", { expired, daysLeft });
           }}
-          className="inline-flex items-center gap-1.5 px-4 py-2 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 focus-visible:ring-offset-2"
+          className="inline-flex items-center gap-1.5 px-4 py-2 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40 focus-visible:ring-offset-2"
         >
           <span aria-hidden="true" className="material-symbols-outlined text-base">upgrade</span>
           Upgrade plan

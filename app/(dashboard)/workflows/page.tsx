@@ -34,13 +34,13 @@ export default async function WorkflowsPage() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Automations</h1>
+        <h1 className="text-2xl font-serif font-normal text-gray-900">Automations</h1>
         <p className="text-sm text-gray-500 mt-1">When something happens → do something automatically</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="bg-white rounded-2xl border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">New Workflow</h2>
+          <h2 className="text-lg font-serif font-normal text-gray-900 mb-4">New Workflow</h2>
           <form action={createWorkflow} className="flex flex-col gap-3">
             <div>
               <label htmlFor="workflow-name" className="block text-sm font-medium text-gray-700 mb-1">Name</label>
@@ -111,7 +111,7 @@ export default async function WorkflowsPage() {
                           <ConfirmSubmitButton
                             message={`Delete workflow “${w.name}”? This cannot be undone.`}
                             ariaLabel={`Delete workflow ${w.name}`}
-                            className="text-xs text-red-500 hover:text-red-700 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 focus-visible:ring-offset-2"
+                            className="text-xs text-red-500 hover:text-red-700 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40 focus-visible:ring-offset-2"
                           >
                             Delete
                           </ConfirmSubmitButton>

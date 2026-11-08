@@ -30,7 +30,7 @@ export default async function NewOrderPage() {
   return (
     <div className="max-w-3xl">
       <Link href="/orders" className="text-sm text-gray-500 hover:text-gray-900 mb-4 inline-block">← Back to Orders</Link>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">New Order</h1>
+      <h1 className="text-2xl font-serif font-normal text-gray-900 mb-6">New Order</h1>
 
       <form action={createOrder} className="bg-white rounded-2xl border border-gray-200 p-6 flex flex-col gap-4">
         <div>

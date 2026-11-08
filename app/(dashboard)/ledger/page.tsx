@@ -74,8 +74,8 @@ async function LedgerContent({ tenantId, timeZone, period }: { tenantId: string;
     <div className="animate-fade-in-up">
       <div className="mb-8 flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="text-3xl lg:text-4xl font-extrabold text-stone-900 tracking-tight">Ledger</h1>
-          <p className="text-stone-500 mt-2 font-medium">
+          <h1 className="text-3xl lg:text-4xl font-serif font-normal text-[var(--ink)]">Ledger</h1>
+          <p className="text-[var(--muted)] mt-2 font-medium">
             {totals.count === 0
               ? `Nothing recorded in ${formatPeriod(active)}`
               : `${formatPeriod(active)} · ${totals.count} entries`}
@@ -95,9 +95,9 @@ async function LedgerContent({ tenantId, timeZone, period }: { tenantId: string;
       </div>
 
       {till.counted > 0 && (
-        <div className="bg-white/70 backdrop-blur-xl rounded-[2rem] border border-stone-200/60 shadow-sm p-6 mb-8">
+        <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-6 mb-8">
           <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
-            <h2 className="text-sm font-bold text-stone-500 uppercase tracking-wider">Till counts</h2>
+            <h2 className="text-sm font-serif font-normal text-[var(--muted)] uppercase tracking-wider">Till counts</h2>
             <span className="text-xs text-stone-400">
               {till.counted} of {till.days} {till.days === 1 ? "day" : "days"} counted
             </span>
@@ -133,12 +133,12 @@ async function LedgerContent({ tenantId, timeZone, period }: { tenantId: string;
       )}
 
       {totals.count === 0 ? (
-        <div className="bg-white/60 backdrop-blur-xl rounded-[2rem] border border-stone-200/60 shadow-sm p-16 text-center">
-          <span className="flex items-center justify-center w-16 h-16 rounded-3xl bg-emerald-50 text-emerald-600 mx-auto mb-5 material-symbols-outlined text-[32px]">
+        <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-16 text-center">
+          <span className="flex items-center justify-center w-16 h-16 rounded-2xl bg-emerald-50 text-emerald-600 mx-auto mb-5 material-symbols-outlined text-[32px]">
             account_balance_wallet
           </span>
-          <h3 className="text-xl font-bold text-stone-900 mb-2">This month is empty</h3>
-          <p className="text-stone-500 max-w-md mx-auto">
+          <h3 className="text-xl font-bold text-[var(--ink)] mb-2">This month is empty</h3>
+          <p className="text-[var(--muted)] max-w-md mx-auto">
             The ledger fills itself from the cash register, collected installments and cleared
             checks. Nothing here is typed twice.
           </p>
@@ -146,8 +146,8 @@ async function LedgerContent({ tenantId, timeZone, period }: { tenantId: string;
       ) : (
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
           <div className="xl:col-span-2">
-            <h2 className="text-sm font-bold text-stone-500 uppercase tracking-wider mb-4">Day by day</h2>
-            <div className="bg-white/70 backdrop-blur-xl rounded-[2rem] border border-stone-200/60 shadow-sm overflow-hidden">
+            <h2 className="text-sm font-serif font-normal text-[var(--muted)] uppercase tracking-wider mb-4">Day by day</h2>
+            <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
@@ -161,7 +161,7 @@ async function LedgerContent({ tenantId, timeZone, period }: { tenantId: string;
                   <tbody>
                     {days.map((d) => (
                       <tr key={d.day} className="border-b border-stone-50 last:border-0">
-                        <td className="px-6 py-3 font-semibold text-stone-900">
+                        <td className="px-6 py-3 font-semibold text-[var(--ink)]">
                           {new Date(`${d.day}T00:00:00Z`).toLocaleDateString("en-US", {
                             weekday: "short", month: "short", day: "numeric", timeZone: "UTC",
                           })}
@@ -169,10 +169,10 @@ async function LedgerContent({ tenantId, timeZone, period }: { tenantId: string;
                         <td className="px-4 py-3 text-right tabular-nums text-emerald-600">
                           {d.inflow > 0 ? formatPrice(Math.round(d.inflow)) : <span className="text-stone-300">—</span>}
                         </td>
-                        <td className="px-4 py-3 text-right tabular-nums text-rose-600">
+                        <td className="px-4 py-3 text-right tabular-nums text-gold">
                           {d.outflow > 0 ? formatPrice(Math.round(d.outflow)) : <span className="text-stone-300">—</span>}
                         </td>
-                        <td className={`px-6 py-3 text-right tabular-nums font-bold ${d.net < 0 ? "text-rose-600" : "text-stone-900"}`}>
+                        <td className={`px-6 py-3 text-right tabular-nums font-bold ${d.net < 0 ? "text-gold" : "text-[var(--ink)]"}`}>
                           {formatPrice(Math.round(d.net))}
                         </td>
                       </tr>
@@ -188,12 +188,12 @@ async function LedgerContent({ tenantId, timeZone, period }: { tenantId: string;
             <Breakdown title="Where it went" rows={expense} tone="rose" />
 
             <div>
-              <h2 className="text-sm font-bold text-stone-500 uppercase tracking-wider mb-4">By method</h2>
-              <div className="bg-white/70 backdrop-blur-xl rounded-[2rem] border border-stone-200/60 shadow-sm p-6 flex flex-col gap-3">
+              <h2 className="text-sm font-serif font-normal text-[var(--muted)] uppercase tracking-wider mb-4">By method</h2>
+              <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-6 flex flex-col gap-3">
                 {methods.map((m) => (
                   <div key={m.method} className="flex items-center justify-between">
                     <span className="text-sm text-stone-600">{m.label}</span>
-                    <span className={`text-sm font-bold tabular-nums ${m.net < 0 ? "text-rose-600" : "text-stone-900"}`}>
+                    <span className={`text-sm font-bold tabular-nums ${m.net < 0 ? "text-gold" : "text-[var(--ink)]"}`}>
                       {formatPrice(Math.round(m.net))}
                     </span>
                   </div>
@@ -221,17 +221,17 @@ function Breakdown({
 
   return (
     <div>
-      <h2 className="text-sm font-bold text-stone-500 uppercase tracking-wider mb-4">{title}</h2>
-      <div className="bg-white/70 backdrop-blur-xl rounded-[2rem] border border-stone-200/60 shadow-sm p-6 flex flex-col gap-4">
+      <h2 className="text-sm font-serif font-normal text-[var(--muted)] uppercase tracking-wider mb-4">{title}</h2>
+      <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-6 flex flex-col gap-4">
         {rows.map((r) => (
           <div key={r.category}>
             <div className="flex items-center justify-between mb-1.5">
               <span className="text-sm text-stone-700">{r.label}</span>
-              <span className="text-sm font-bold tabular-nums text-stone-900">{formatPrice(Math.round(r.total))}</span>
+              <span className="text-sm font-bold tabular-nums text-[var(--ink)]">{formatPrice(Math.round(r.total))}</span>
             </div>
             <div className="h-1.5 rounded-full bg-stone-100 overflow-hidden">
               <div
-                className={`h-full rounded-full ${tone === "emerald" ? "bg-emerald-500" : "bg-rose-500"}`}
+                className={`h-full rounded-full ${tone === "emerald" ? "bg-emerald-500" : "bg-gold"}`}
                 style={{ width: `${Math.max(4, (r.total / max) * 100)}%` }}
               />
             </div>
@@ -243,9 +243,9 @@ function Breakdown({
 }
 
 function Stat({ label, value, tone }: { label: string; value: string; tone?: "emerald" | "rose" }) {
-  const color = tone === "emerald" ? "text-emerald-600" : tone === "rose" ? "text-rose-600" : "text-stone-900";
+  const color = tone === "emerald" ? "text-emerald-600" : tone === "rose" ? "text-gold" : "text-[var(--ink)]";
   return (
-    <div className="bg-white/70 backdrop-blur-xl rounded-2xl border border-stone-200/60 shadow-sm px-5 py-4">
+    <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm px-5 py-4">
       <div className="text-[11px] font-bold uppercase tracking-wide text-stone-400">{label}</div>
       <div className={`text-2xl font-extrabold tabular-nums mt-1 ${color}`}>{value}</div>
     </div>

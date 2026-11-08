@@ -136,9 +136,9 @@ export default function SelectField({
         aria-expanded={open}
         aria-controls={`${selectId}-listbox`}
         aria-activedescendant={open && visible[highlightedIndex] ? `${selectId}-option-${highlightedIndex}` : undefined}
-        className="w-full flex items-center justify-between gap-2 px-4 py-2.5 rounded-xl border border-stone-200 bg-white text-sm text-left outline-none hover:border-stone-300 focus:border-stone-400 focus-visible:ring-2 focus-visible:ring-rose-400 focus-visible:ring-offset-2 transition-colors"
+        className="w-full flex items-center justify-between gap-2 px-4 py-2.5 rounded-xl border border-stone-200 bg-white text-sm text-left outline-none hover:border-stone-300 focus:border-stone-400 focus-visible:ring-2 focus-visible:ring-gold/40 focus-visible:ring-offset-2 transition-colors"
       >
-        <span className={`truncate ${selected ? "text-stone-900" : "text-stone-400"}`}>
+        <span className={`truncate ${selected ? "text-[var(--ink)]" : "text-stone-400"}`}>
           {selected ? selected.label : placeholder}
         </span>
         <span aria-hidden="true" className={`material-symbols-outlined text-[18px] text-stone-400 transition-transform ${open ? "rotate-180" : ""}`}>
@@ -161,7 +161,7 @@ export default function SelectField({
                 placeholder="Search…"
                 aria-label={`${placeholder} search`}
                 aria-activedescendant={visible[highlightedIndex] ? `${selectId}-option-${highlightedIndex}` : undefined}
-                className="w-full px-3 py-2 rounded-lg border border-stone-200 text-sm outline-none focus:border-stone-400 focus-visible:ring-2 focus-visible:ring-rose-400"
+                className="w-full px-3 py-2 rounded-lg border border-stone-200 text-sm outline-none focus:border-stone-400 focus-visible:ring-2 focus-visible:ring-gold/40"
               />
             </div>
           )}
@@ -180,17 +180,17 @@ export default function SelectField({
                     role="option"
                     aria-selected={isSelected}
                     onClick={() => choose(o.value)}
-                    className={`w-full flex items-center justify-between gap-3 px-4 py-2.5 text-left text-sm hover:bg-stone-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-rose-400 ${
+                    className={`w-full flex items-center justify-between gap-3 px-4 py-2.5 text-left text-sm hover:bg-stone-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gold/40 ${
                       index === highlightedIndex ? "bg-stone-50" : ""
                     } ${
-                      isSelected ? "text-stone-900 font-semibold" : "text-stone-700"
+                      isSelected ? "text-[var(--ink)] font-semibold" : "text-stone-700"
                     }`}
                   >
                     <span className="min-w-0">
                       <span className="block truncate">{o.label}</span>
                       {o.hint && <span className="block text-xs text-stone-400 truncate">{o.hint}</span>}
                     </span>
-                    {isSelected && <span aria-hidden="true" className="material-symbols-outlined text-[18px] text-stone-900">check</span>}
+                    {isSelected && <span aria-hidden="true" className="material-symbols-outlined text-[18px] text-[var(--ink)]">check</span>}
                   </button>
                 );
               })

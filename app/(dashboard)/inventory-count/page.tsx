@@ -42,39 +42,39 @@ async function CountsContent({ tenantId, error }: { tenantId: string; error?: st
   return (
     <div className="animate-fade-in-up">
       <div className="mb-10">
-        <h1 className="text-3xl lg:text-4xl font-extrabold text-stone-900 tracking-tight">Stock count</h1>
-        <p className="text-stone-500 mt-2 font-medium">
+        <h1 className="text-3xl lg:text-4xl font-serif font-normal text-[var(--ink)]">Stock count</h1>
+        <p className="text-[var(--muted)] mt-2 font-medium">
           Walk the rail, enter what is actually there, and let the system correct your stock.
         </p>
       </div>
 
       {error && (
-        <div className="mb-6 rounded-2xl border border-rose-200 bg-rose-50 px-5 py-3 text-sm font-medium text-rose-700">
+        <div className="mb-6 rounded-2xl border border-gold/30 bg-gold-soft px-5 py-3 text-sm font-medium text-gold">
           {ERRORS[error] ?? "Something went wrong."}
         </div>
       )}
 
       {open ? (
-        <div className="mb-8 bg-white/70 backdrop-blur-xl rounded-[2rem] border border-amber-200 shadow-sm p-6 flex items-center justify-between gap-4 flex-wrap">
+        <div className="mb-8 bg-white rounded-2xl border border-amber-200 shadow-sm p-6 flex items-center justify-between gap-4 flex-wrap">
           <div>
             <div className="text-xs font-bold uppercase tracking-wide text-amber-600 mb-1">Count in progress</div>
-            <h2 className="text-lg font-bold text-stone-900">{open.reference}</h2>
-            <p className="text-sm text-stone-500 mt-0.5">
+            <h2 className="text-lg font-serif font-normal text-[var(--ink)]">{open.reference}</h2>
+            <p className="text-sm text-[var(--muted)] mt-0.5">
               {summarizeCount(open.items).counted} of {open.items.length} gowns counted
             </p>
           </div>
           <Link
             href={`/inventory-count/${open.id}`}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-stone-900 text-white text-sm font-semibold hover:bg-rose-600 transition-colors"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-stone-900 text-white text-sm font-medium hover:bg-gold transition-colors"
           >
             Continue counting
             <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
           </Link>
         </div>
       ) : (
-        <div className="mb-8 bg-white/70 backdrop-blur-xl rounded-[2rem] border border-stone-200/60 shadow-sm p-6">
-          <h2 className="text-lg font-bold text-stone-900 mb-1">Start a new count</h2>
-          <p className="text-sm text-stone-500 mb-4">
+        <div className="mb-8 bg-white rounded-2xl border border-[var(--line)] shadow-sm p-6">
+          <h2 className="text-lg font-serif font-normal text-[var(--ink)] mb-1">Start a new count</h2>
+          <p className="text-sm text-[var(--muted)] mb-4">
             Today&apos;s stock levels are frozen as the expected figures the moment you start.
           </p>
           <form action={startCount} className="flex flex-col sm:flex-row gap-3">
@@ -86,7 +86,7 @@ async function CountsContent({ tenantId, error }: { tenantId: string; error?: st
             />
             <button
               type="submit"
-              className="px-6 py-2.5 rounded-xl bg-stone-900 text-white text-sm font-semibold hover:bg-rose-600 transition-colors"
+              className="px-6 py-2.5 rounded-xl bg-stone-900 text-white text-sm font-semibold hover:bg-gold transition-colors"
             >
               Start count
             </button>
@@ -94,15 +94,15 @@ async function CountsContent({ tenantId, error }: { tenantId: string; error?: st
         </div>
       )}
 
-      <h2 className="text-sm font-bold text-stone-500 uppercase tracking-wider mb-4">History</h2>
+      <h2 className="text-sm font-serif font-normal text-[var(--muted)] uppercase tracking-wider mb-4">History</h2>
 
       {counts.length === 0 ? (
-        <div className="bg-white/60 backdrop-blur-xl rounded-[2rem] border border-stone-200/60 shadow-sm p-16 text-center">
-          <span className="flex items-center justify-center w-16 h-16 rounded-3xl bg-violet-50 text-violet-500 mx-auto mb-5 material-symbols-outlined text-[32px]">
+        <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-16 text-center">
+          <span className="flex items-center justify-center w-16 h-16 rounded-2xl bg-violet-50 text-violet-500 mx-auto mb-5 material-symbols-outlined text-[32px]">
             inventory
           </span>
-          <h3 className="text-xl font-bold text-stone-900 mb-2">No counts yet</h3>
-          <p className="text-stone-500 max-w-md mx-auto">
+          <h3 className="text-xl font-bold text-[var(--ink)] mb-2">No counts yet</h3>
+          <p className="text-[var(--muted)] max-w-md mx-auto">
             A count tells you what quietly walked out of the shop. Most boutiques run one every quarter.
           </p>
         </div>
@@ -114,17 +114,17 @@ async function CountsContent({ tenantId, error }: { tenantId: string; error?: st
               <Link
                 key={c.id}
                 href={`/inventory-count/${c.id}`}
-                className="bg-white/70 backdrop-blur-xl rounded-2xl border border-stone-200/60 shadow-sm p-5 flex items-center gap-4 hover:border-stone-300 transition-colors"
+                className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-5 flex items-center gap-4 hover:border-stone-300 transition-colors"
               >
                 <div className="w-11 h-11 rounded-xl bg-violet-50 flex items-center justify-center flex-shrink-0">
                   <span className="material-symbols-outlined text-violet-500 text-[20px]">inventory</span>
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="font-bold text-stone-900">{c.reference}</h3>
+                    <h3 className="font-bold text-[var(--ink)]">{c.reference}</h3>
                     <StatusChip status={c.status} />
                   </div>
-                  <p className="text-sm text-stone-500 mt-0.5">
+                  <p className="text-sm text-[var(--muted)] mt-0.5">
                     {c.started_at.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })} ·{" "}
                     {s.counted}/{s.total} counted
                     {s.accuracy !== null && ` · ${s.accuracy}% matched`}
@@ -133,7 +133,7 @@ async function CountsContent({ tenantId, error }: { tenantId: string; error?: st
                 <div className="text-right flex-shrink-0">
                   <div
                     className={`text-lg font-bold tabular-nums ${
-                      s.netUnits < 0 ? "text-rose-600" : s.netUnits > 0 ? "text-amber-600" : "text-stone-400"
+                      s.netUnits < 0 ? "text-gold" : s.netUnits > 0 ? "text-amber-600" : "text-stone-400"
                     }`}
                   >
                     {s.netUnits > 0 ? `+${s.netUnits}` : s.netUnits}
@@ -155,7 +155,7 @@ export function StatusChip({ status }: { status: string }) {
       ? "bg-amber-50 text-amber-700 border-amber-100"
       : status === "closed"
       ? "bg-emerald-50 text-emerald-700 border-emerald-100"
-      : "bg-stone-100 text-stone-500 border-stone-200";
+      : "bg-stone-100 text-[var(--muted)] border-stone-200";
   return (
     <span className={`text-[11px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full border ${style}`}>
       {status}

@@ -75,8 +75,8 @@ export default async function OrderPrintPage({ params }: Props) {
           <div>
             <div className="text-[11px] font-bold uppercase tracking-wider text-stone-400 mb-2">Billed to</div>
             <div className="font-semibold">{order.customer?.name ?? "—"}</div>
-            {order.customer?.phone && <div className="text-sm text-stone-500">{order.customer.phone}</div>}
-            {order.customer?.email && <div className="text-sm text-stone-500">{order.customer.email}</div>}
+            {order.customer?.phone && <div className="text-sm text-[var(--muted)]">{order.customer.phone}</div>}
+            {order.customer?.email && <div className="text-sm text-[var(--muted)]">{order.customer.email}</div>}
           </div>
           <div className="text-right">
             <div className="text-[11px] font-bold uppercase tracking-wider text-stone-400 mb-2">Details</div>
@@ -122,8 +122,8 @@ export default async function OrderPrintPage({ params }: Props) {
                       {item.description}
                       <span className="text-stone-400"> · {kindLabel(item.kind)}</span>
                     </td>
-                    <td className="py-2.5 text-right tabular-nums text-stone-500">{item.quantity}</td>
-                    <td className="py-2.5 text-right tabular-nums text-stone-500">{formatPrice(item.unit_price)}</td>
+                    <td className="py-2.5 text-right tabular-nums text-[var(--muted)]">{item.quantity}</td>
+                    <td className="py-2.5 text-right tabular-nums text-[var(--muted)]">{formatPrice(item.unit_price)}</td>
                     <td className="py-2.5 text-right tabular-nums font-medium">{formatPrice(lineNet(item))}</td>
                   </tr>
                 ))}
@@ -136,7 +136,7 @@ export default async function OrderPrintPage({ params }: Props) {
           <tbody>
             {lines.map((l) => (
               <tr key={l.label} className="border-b border-stone-100">
-                <td className="py-2.5 text-stone-500">{l.label}</td>
+                <td className="py-2.5 text-[var(--muted)]">{l.label}</td>
                 <td className="py-2.5 text-right tabular-nums font-medium">{l.value}</td>
               </tr>
             ))}
@@ -162,16 +162,16 @@ export default async function OrderPrintPage({ params }: Props) {
               <tbody>
                 {rows.map((r) => (
                   <tr key={r.installment_no} className="border-b border-stone-100">
-                    <td className="py-2 text-stone-500">{r.installment_no}/{r.total_count}</td>
+                    <td className="py-2 text-[var(--muted)]">{r.installment_no}/{r.total_count}</td>
                     <td className="py-2">{dateLong(new Date(`${r.due_date}T00:00:00`))}</td>
                     <td className="py-2 text-right tabular-nums">{formatPrice(r.amount)}</td>
                     <td className="py-2 text-right capitalize">
                       {r.liveStatus === "paid" ? (
                         <span className="text-emerald-700 font-medium">Paid</span>
                       ) : r.liveStatus === "overdue" ? (
-                        <span className="text-rose-700 font-medium">Overdue</span>
+                        <span className="text-late font-medium">Overdue</span>
                       ) : (
-                        <span className="text-stone-500">{r.liveStatus}</span>
+                        <span className="text-[var(--muted)]">{r.liveStatus}</span>
                       )}
                     </td>
                   </tr>

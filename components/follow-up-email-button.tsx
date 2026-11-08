@@ -61,12 +61,12 @@ export default function FollowUpEmailButton({
         type="button"
         onClick={send}
         disabled={pending}
-        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-stone-900 text-white text-xs font-semibold hover:bg-rose-600 transition-colors disabled:opacity-50"
+        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-stone-900 text-white text-xs font-semibold hover:bg-gold transition-colors disabled:opacity-50"
       >
         <span className="material-symbols-outlined text-[16px]">send</span>
         {pending ? "Sending…" : "Send reminder"}
       </button>
-      {error && <span className="text-[11px] text-rose-600 max-w-[180px] text-right">{error}</span>}
+      {error && <span className="text-[11px] text-late max-w-[180px] text-right">{error}</span>}
     </div>
   );
 }

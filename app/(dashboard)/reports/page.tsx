@@ -39,10 +39,10 @@ async function ReportsContent({ tenantId, rangeParam }: { tenantId: string; rang
     <div className="animate-fade-in-up space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
         <div>
-          <h1 className="text-3xl lg:text-4xl font-extrabold text-stone-900 tracking-tight flex items-center gap-3">
-            Reports <span className="text-rose-400 font-normal">✧</span>
+          <h1 className="text-3xl lg:text-4xl font-serif font-normal text-[var(--ink)] flex items-center gap-3">
+            Reports <span className="text-gold font-normal">✧</span>
           </h1>
-          <p className="text-stone-500 mt-2 font-medium">
+          <p className="text-[var(--muted)] mt-2 font-medium">
             Line-by-line detail for the last {range.days} days, ready to export.
           </p>
         </div>
@@ -70,9 +70,9 @@ async function ReportsContent({ tenantId, rangeParam }: { tenantId: string; rang
           { label: "Collected", value: money(data.totals.collected), sub: "deposits and installments" },
           { label: "Average order", value: money(data.totals.averageOrder), sub: `${money(data.totals.outstanding)} still owed` },
         ].map((k) => (
-          <div key={k.label} className="bg-white/60 backdrop-blur-md rounded-2xl p-5 border border-stone-200/60">
+          <div key={k.label} className="bg-white rounded-2xl p-5 border border-[var(--line)]">
             <div className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-2">{k.label}</div>
-            <div className="text-2xl font-extrabold text-stone-900 tabular-nums">{k.value}</div>
+            <div className="text-2xl font-extrabold text-[var(--ink)] tabular-nums">{k.value}</div>
             <div className="text-xs text-stone-400 mt-1">{k.sub}</div>
           </div>
         ))}
@@ -151,16 +151,16 @@ function Section({
   empty: boolean; emptyText: string; children: React.ReactNode;
 }) {
   return (
-    <div className="bg-white/60 backdrop-blur-xl rounded-[2rem] border border-stone-200/60 shadow-sm overflow-hidden">
+    <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm overflow-hidden">
       <div className="flex items-center justify-between gap-4 px-6 py-5 border-b border-stone-100">
         <div>
-          <h2 className="font-bold text-stone-900">{title}</h2>
+          <h2 className="font-serif font-normal text-[var(--ink)]">{title}</h2>
           <p className="text-xs text-stone-400 mt-0.5">{subtitle}</p>
         </div>
         {exportHref && !empty && (
           <a
             href={exportHref}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-stone-200 text-sm font-medium text-stone-600 hover:border-stone-400 hover:text-stone-900 transition-colors"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-stone-200 text-sm font-medium text-stone-600 hover:border-stone-400 hover:text-[var(--ink)] transition-colors"
           >
             <span className="material-symbols-outlined text-[18px]">download</span>
             CSV
@@ -185,14 +185,14 @@ function Table({
             {head.map((h, i) => (
               <th
                 key={h}
-                className={`px-6 py-3 text-xs font-bold text-stone-500 uppercase tracking-wider ${align[i] === "right" ? "text-right" : ""}`}
+                className={`px-6 py-3 text-xs font-bold text-[var(--muted)] uppercase tracking-wider ${align[i] === "right" ? "text-right" : ""}`}
               >
                 {h}
               </th>
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-stone-100/60">
+        <tbody className="divide-y divide-[var(--line)]">
           {rows.map((row, ri) => (
             <tr key={ri} className="hover:bg-white/70 transition-colors">
               {row.map((cell, ci) => (

@@ -100,7 +100,7 @@ export function UpgradeButton({
         </p>
         <a
           href="mailto:hello@bridalstack.com?subject=BridalStack%20paid%20plans"
-          className="text-xs font-semibold text-gray-700 underline underline-offset-2 hover:text-rose-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 focus-visible:ring-offset-2 rounded"
+          className="text-xs font-semibold text-gray-700 underline underline-offset-2 hover:text-gold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40 focus-visible:ring-offset-2 rounded"
         >
           Talk to us about paid plans
         </a>
@@ -161,15 +161,15 @@ export function UpgradeButton({
       </div>
 
       {/* Hepsi dahil: tek tıkla tüm satılabilir modüller. */}
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-rose-100 bg-rose-50 px-4 py-3">
-        <div className="text-xs text-rose-900">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-gold/30 bg-gold-soft px-4 py-3">
+        <div className="text-xs text-gold">
           <strong className="font-semibold">All modules</strong> — {formatPrice(allMonthly)}/mo ·{" "}
           {formatPrice(allAnnual)}/yr (save {formatPrice(allMonthly * 12 - allAnnual)})
         </div>
         <button
           type="button"
           onClick={allSelected ? clearPaidModules : selectAllModules}
-          className="rounded-lg bg-rose-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-rose-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2"
+          className="rounded-lg bg-gold px-3 py-1.5 text-xs font-semibold text-white hover:bg-gold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40 focus-visible:ring-offset-2"
         >
           {allSelected ? "Clear paid modules" : "Select all modules"}
         </button>

@@ -42,7 +42,7 @@ export default async function LocationsPage({
   return (
     <div className="max-w-3xl">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Locations</h1>
+        <h1 className="text-2xl font-serif font-normal text-gray-900">Locations</h1>
         <p className="text-sm text-gray-500 mt-1">
           Each location is its own workspace: its own customers, stock, orders and team.
           Billing is per location, so every shop carries its own subscription.
@@ -50,7 +50,7 @@ export default async function LocationsPage({
       </div>
 
       {error && (
-        <div role="alert" className="mb-6 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-900">
+        <div role="alert" className="mb-6 rounded-xl border border-gold/30 bg-gold-soft px-4 py-3 text-sm text-gold">
           {error}
         </div>
       )}
@@ -63,14 +63,14 @@ export default async function LocationsPage({
             <div
               key={m.tenant_id}
               className={`flex flex-wrap items-center justify-between gap-4 rounded-2xl border p-5 ${
-                current ? "border-rose-200 bg-rose-50/40" : "border-gray-200 bg-white"
+                current ? "border-gold/30 bg-gold-soft" : "border-gray-200 bg-white"
               }`}
             >
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
                   <span className="font-semibold text-gray-900 truncate">{m.tenant.name}</span>
                   {current && (
-                    <span className="rounded-full bg-rose-100 px-2 py-0.5 text-[11px] font-semibold text-rose-700">
+                    <span className="rounded-full bg-gold-soft px-2 py-0.5 text-[11px] font-semibold text-gold">
                       Current
                     </span>
                   )}
@@ -104,7 +104,7 @@ export default async function LocationsPage({
 
       {!demo && (
         <div className="mt-8 rounded-2xl border border-gray-200 bg-white p-6">
-          <h2 className="text-lg font-semibold text-gray-900">Add a location</h2>
+          <h2 className="text-lg font-serif font-normal text-gray-900">Add a location</h2>
           <p className="mt-1 text-sm text-gray-500">
             A new location starts on the free plan with a 30-day trial of every paid module.
             You can switch back to your current shop at any time.
@@ -120,11 +120,11 @@ export default async function LocationsPage({
               minLength={2}
               maxLength={80}
               placeholder="e.g. Bridal Stack — Austin"
-              className="flex-1 rounded-xl border border-gray-300 px-4 py-2.5 text-sm outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-50"
+              className="flex-1 rounded-xl border border-gray-300 px-4 py-2.5 text-sm outline-none focus:border-gold/30 focus:ring-4 focus:ring-gold/40"
             />
             <button
               type="submit"
-              className="rounded-xl bg-rose-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-rose-800"
+              className="rounded-xl bg-gold px-5 py-2.5 text-sm font-semibold text-white hover:bg-gold"
             >
               Add location
             </button>

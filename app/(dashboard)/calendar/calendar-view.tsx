@@ -53,7 +53,7 @@ export default function CalendarView({
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-semibold text-gray-900">{MONTHS[month - 1]} {year}</h1>
+        <h1 className="text-2xl font-serif font-normal text-gray-900">{MONTHS[month - 1]} {year}</h1>
         <div className="flex gap-2 items-center">
           <div className="flex rounded-xl border border-gray-200 overflow-hidden mr-1">
             <button className="px-3 h-9 text-sm font-semibold bg-gray-900 text-white">Month</button>

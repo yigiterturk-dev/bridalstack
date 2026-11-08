@@ -35,7 +35,7 @@ const STATUS_STYLE: Record<string, string> = {
   reserved: "bg-amber-50 text-amber-700 border-amber-100",
   out: "bg-sky-50 text-sky-700 border-sky-100",
   returned: "bg-emerald-50 text-emerald-700 border-emerald-100",
-  cancelled: "bg-stone-100 text-stone-500 border-stone-200",
+  cancelled: "bg-stone-100 text-[var(--muted)] border-stone-200",
 };
 
 const ACTION_LABEL: Record<string, string> = {
@@ -105,8 +105,8 @@ async function RentalsContent({ tenantId, timeZone, error }: { tenantId: string;
   return (
     <div className="animate-fade-in-up">
       <div className="mb-10">
-        <h1 className="text-3xl lg:text-4xl font-extrabold text-stone-900 tracking-tight">Rentals</h1>
-        <p className="text-stone-500 mt-2 font-medium">
+        <h1 className="text-3xl lg:text-4xl font-serif font-normal text-[var(--ink)]">Rentals</h1>
+        <p className="text-[var(--muted)] mt-2 font-medium">
           {out.length === 0
             ? "Gowns out on loan — booked, handed over, and checked back in"
             : `${out.length} out${overdue.length > 0 ? ` · ${overdue.length} overdue · ${formatPrice(Math.round(feesDue))} in late fees` : ""}`}
@@ -114,14 +114,14 @@ async function RentalsContent({ tenantId, timeZone, error }: { tenantId: string;
       </div>
 
       {error && (
-        <div className="mb-6 rounded-2xl border border-rose-200 bg-rose-50 px-5 py-3 text-sm font-medium text-rose-700">
+        <div className="mb-6 rounded-2xl border border-gold/30 bg-gold-soft px-5 py-3 text-sm font-medium text-gold">
           {ERRORS[error] ?? "Something went wrong."}
         </div>
       )}
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <div className="bg-white/70 backdrop-blur-xl rounded-[2rem] border border-stone-200/60 shadow-sm p-6 h-fit">
-          <h2 className="text-lg font-bold text-stone-900 mb-4">Book a rental</h2>
+        <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-6 h-fit">
+          <h2 className="text-lg font-serif font-normal text-[var(--ink)] mb-4">Book a rental</h2>
           <form action={createRental} className="flex flex-col gap-3">
             <Field label="Bride" htmlFor="customer_id-select">
               <SelectField
@@ -180,7 +180,7 @@ async function RentalsContent({ tenantId, timeZone, error }: { tenantId: string;
 
             <SubmitButton
               pendingLabel="Booking rental…"
-              className="mt-1 py-2.5 bg-stone-900 text-white rounded-xl text-sm font-semibold hover:bg-rose-600 transition-colors disabled:opacity-60 disabled:cursor-wait"
+              className="mt-1 py-2.5 bg-stone-900 text-white rounded-xl text-sm font-semibold hover:bg-gold transition-colors disabled:opacity-60 disabled:cursor-wait"
             >
               Book rental
             </SubmitButton>
@@ -189,12 +189,12 @@ async function RentalsContent({ tenantId, timeZone, error }: { tenantId: string;
 
         <div className="xl:col-span-2">
           {rentals.length === 0 ? (
-            <div className="bg-white/60 backdrop-blur-xl rounded-[2rem] border border-stone-200/60 shadow-sm p-16 text-center">
-              <span className="flex items-center justify-center w-16 h-16 rounded-3xl bg-violet-50 text-violet-500 mx-auto mb-5 material-symbols-outlined text-[32px]">
+            <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-16 text-center">
+              <span className="flex items-center justify-center w-16 h-16 rounded-2xl bg-violet-50 text-violet-500 mx-auto mb-5 material-symbols-outlined text-[32px]">
                 event_available
               </span>
-              <h3 className="text-xl font-bold text-stone-900 mb-2">No rentals booked</h3>
-              <p className="text-stone-500 max-w-md mx-auto">
+              <h3 className="text-xl font-bold text-[var(--ink)] mb-2">No rentals booked</h3>
+              <p className="text-[var(--muted)] max-w-md mx-auto">
                 Book a gown for a date range and the calendar is held — the same gown can never be
                 promised to two brides for the same weekend.
               </p>
@@ -208,8 +208,8 @@ async function RentalsContent({ tenantId, timeZone, error }: { tenantId: string;
                 return (
                   <div
                     key={r.id}
-                    className={`bg-white/70 backdrop-blur-xl rounded-2xl border shadow-sm p-5 ${
-                      isOverdue(r, today) ? "border-rose-200" : "border-stone-200/60"
+                    className={`bg-white rounded-2xl border shadow-sm p-5 ${
+                      isOverdue(r, today) ? "border-late/30" : "border-[var(--line)]"
                     }`}
                   >
                     <div className="flex items-start gap-4">
@@ -223,12 +223,12 @@ async function RentalsContent({ tenantId, timeZone, error }: { tenantId: string;
 
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <h3 className="font-bold text-stone-900">{r.product?.name ?? "Gown"}</h3>
+                          <h3 className="font-bold text-[var(--ink)]">{r.product?.name ?? "Gown"}</h3>
                           <span className={`text-[11px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full border ${STATUS_STYLE[r.status] ?? STATUS_STYLE.cancelled}`}>
                             {RENTAL_STATUS_LABELS[r.status as RentalStatus] ?? r.status}
                           </span>
                           {isOverdue(r, today) && (
-                            <span className="text-[11px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full border bg-rose-50 text-rose-700 border-rose-100">
+                            <span className="text-[11px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full border bg-gold-soft text-gold border-gold/30">
                               {late} {late === 1 ? "day" : "days"} late
                             </span>
                           )}
@@ -255,12 +255,12 @@ async function RentalsContent({ tenantId, timeZone, error }: { tenantId: string;
                         {fee > 0 && (
                           <form action={collectLateFee} className="mt-2.5 flex items-center gap-2">
                             <input type="hidden" name="id" value={r.id} />
-                            <span className="text-xs font-semibold text-rose-700">
+                            <span className="text-xs font-semibold text-gold">
                               {formatPrice(Math.round(fee))} late fee due
                             </span>
                             <button
                               type="submit"
-                              className="text-xs font-semibold px-2.5 py-1 rounded-lg border border-rose-200 text-rose-700 hover:bg-rose-50 transition-colors"
+                              className="text-xs font-semibold px-2.5 py-1 rounded-lg border border-gold/30 text-gold hover:bg-gold-soft transition-colors"
                             >
                               Collect to cash
                             </button>
@@ -275,7 +275,7 @@ async function RentalsContent({ tenantId, timeZone, error }: { tenantId: string;
                               <input type="hidden" name="id" value={r.id} />
                               <input type="hidden" name="status" value={status} />
                               {status === "returned" && (
-                                <label className="flex items-center gap-1.5 text-[11px] text-stone-500 mb-1.5">
+                                <label className="flex items-center gap-1.5 text-[11px] text-[var(--muted)] mb-1.5">
                                   <input type="checkbox" name="needs_cleaning" defaultChecked className="w-3.5 h-3.5 rounded border-stone-300" />
                                   Send to cleaning
                                 </label>
@@ -284,8 +284,8 @@ async function RentalsContent({ tenantId, timeZone, error }: { tenantId: string;
                                 type="submit"
                                 className={`w-full text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors ${
                                   status === "cancelled"
-                                    ? "border border-stone-200 text-stone-500 hover:bg-stone-50"
-                                    : "bg-stone-900 text-white hover:bg-rose-600"
+                                    ? "border border-stone-200 text-[var(--muted)] hover:bg-stone-50"
+                                    : "bg-stone-900 text-white hover:bg-gold"
                                 }`}
                               >
                                 {ACTION_LABEL[status] ?? status}
@@ -307,12 +307,12 @@ async function RentalsContent({ tenantId, timeZone, error }: { tenantId: string;
 }
 
 const INPUT =
-  "w-full px-4 py-2.5 rounded-xl border border-stone-200 bg-white text-sm text-stone-900 outline-none focus:border-stone-400 transition-colors";
+  "w-full px-4 py-2.5 rounded-xl border border-stone-200 bg-white text-sm text-[var(--ink)] outline-none focus:border-stone-400 transition-colors";
 
 function Field({ label, htmlFor, children }: { label: string; htmlFor: string; children: React.ReactNode }) {
   return (
     <div>
-      <label htmlFor={htmlFor} className="block text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1">{label}</label>
+      <label htmlFor={htmlFor} className="block text-xs font-semibold text-[var(--muted)] uppercase tracking-wide mb-1">{label}</label>
       {children}
     </div>
   );

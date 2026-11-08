@@ -19,7 +19,7 @@ export default function ModuleGuard({ moduleId, enabledModules, children }: Prop
       <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mb-6">
         <span className="material-symbols-outlined text-3xl text-gray-400">{mod.icon}</span>
       </div>
-      <h2 className="text-2xl font-bold text-gray-900 mb-2">{mod.name}</h2>
+      <h2 className="text-2xl font-serif font-normal text-gray-900 mb-2">{mod.name}</h2>
       <p className="text-gray-500 mb-6 max-w-md">{mod.description}</p>
       <div className="bg-amber-50 border border-amber-200 rounded-xl px-6 py-4 mb-6">
         <p className="text-amber-800 text-sm font-medium">

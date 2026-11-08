@@ -22,7 +22,7 @@ const BUCKET_STYLE: Record<AgingBucket, string> = {
   current: "text-stone-600",
   d1_30: "text-amber-600",
   d31_60: "text-orange-600",
-  d61_plus: "text-rose-600",
+  d61_plus: "text-gold",
 };
 
 export default async function InvoicesPage({ searchParams }: Props) {
@@ -73,10 +73,10 @@ async function InvoicesContent({ tenantId, bucket }: { tenantId: string; bucket?
   return (
     <div className="animate-fade-in-up">
       <div className="mb-8">
-        <h1 className="text-3xl lg:text-4xl font-extrabold text-stone-900 tracking-tight flex items-center gap-3">
-          Invoices <span className="text-rose-400 font-normal">✧</span>
+        <h1 className="text-3xl lg:text-4xl font-serif font-normal text-[var(--ink)] flex items-center gap-3">
+          Invoices <span className="text-gold font-normal">✧</span>
         </h1>
-        <p className="text-stone-500 mt-2 font-medium">
+        <p className="text-[var(--muted)] mt-2 font-medium">
           {all.length === 0
             ? "Nothing outstanding — every order is paid in full"
             : `${formatPrice(Math.round(outstanding))} outstanding across ${all.length} ${all.length === 1 ? "order" : "orders"}`}
@@ -91,10 +91,10 @@ async function InvoicesContent({ tenantId, bucket }: { tenantId: string; bucket?
               <Link
                 key={b}
                 href={isActive ? "/invoices" : `/invoices?bucket=${b}`}
-                className={`bg-white/60 backdrop-blur-md rounded-2xl p-5 border transition-all duration-300 ${
+                className={`bg-white rounded-2xl p-5 border transition-all duration-300 ${
                   isActive
                     ? "border-stone-900 shadow-sm"
-                    : "border-stone-200/60 hover:border-stone-300"
+                    : "border-[var(--line)] hover:border-stone-300"
                 }`}
               >
                 <div className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-2">
@@ -113,27 +113,27 @@ async function InvoicesContent({ tenantId, bucket }: { tenantId: string; bucket?
       )}
 
       {rows.length > 0 ? (
-        <div className="bg-white/60 backdrop-blur-xl rounded-[2rem] border border-stone-200/60 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-stone-50/50 border-b border-stone-100/80">
-                  <th className="px-6 py-4 text-xs font-bold text-stone-500 uppercase tracking-wider">Reference</th>
-                  <th className="px-6 py-4 text-xs font-bold text-stone-500 uppercase tracking-wider">Customer</th>
-                  <th className="px-6 py-4 text-xs font-bold text-stone-500 uppercase tracking-wider">Next due</th>
-                  <th className="px-6 py-4 text-xs font-bold text-stone-500 uppercase tracking-wider text-right">Total</th>
-                  <th className="px-6 py-4 text-xs font-bold text-stone-500 uppercase tracking-wider text-right">Collected</th>
-                  <th className="px-6 py-4 text-xs font-bold text-stone-500 uppercase tracking-wider text-right">Outstanding</th>
-                  <th className="px-6 py-4 text-xs font-bold text-stone-500 uppercase tracking-wider text-right">Invoice</th>
+                <tr className="bg-stone-50/50 border-b border-[var(--line)]">
+                  <th className="px-6 py-4 text-xs font-bold text-[var(--muted)] uppercase tracking-wider">Reference</th>
+                  <th className="px-6 py-4 text-xs font-bold text-[var(--muted)] uppercase tracking-wider">Customer</th>
+                  <th className="px-6 py-4 text-xs font-bold text-[var(--muted)] uppercase tracking-wider">Next due</th>
+                  <th className="px-6 py-4 text-xs font-bold text-[var(--muted)] uppercase tracking-wider text-right">Total</th>
+                  <th className="px-6 py-4 text-xs font-bold text-[var(--muted)] uppercase tracking-wider text-right">Collected</th>
+                  <th className="px-6 py-4 text-xs font-bold text-[var(--muted)] uppercase tracking-wider text-right">Outstanding</th>
+                  <th className="px-6 py-4 text-xs font-bold text-[var(--muted)] uppercase tracking-wider text-right">Invoice</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-stone-100/50">
+              <tbody className="divide-y divide-[var(--line)]">
                 {rows.map((r) => {
                   const c = customerById.get(r.customer_id);
                   return (
-                    <tr key={r.orderId} className="hover:bg-white/80 transition-colors group">
+                    <tr key={r.orderId} className="hover:bg-stone-50 transition-colors group">
                       <td className="px-6 py-5">
-                        <Link href={`/orders/${r.orderId}`} className="font-mono text-sm font-bold text-stone-900 group-hover:text-rose-600 transition-colors">
+                        <Link href={`/orders/${r.orderId}`} className="font-mono text-sm font-bold text-[var(--ink)] group-hover:text-gold transition-colors">
                           {r.ref_no}
                         </Link>
                         {r.installmentCount > 0 && (
@@ -162,13 +162,13 @@ async function InvoicesContent({ tenantId, bucket }: { tenantId: string; bucket?
                           <span className="text-sm text-stone-400">No plan</span>
                         )}
                       </td>
-                      <td className="px-6 py-5 text-right text-sm text-stone-500 tabular-nums">{formatPrice(r.total)}</td>
+                      <td className="px-6 py-5 text-right text-sm text-[var(--muted)] tabular-nums">{formatPrice(r.total)}</td>
                       <td className="px-6 py-5 text-right text-sm text-emerald-600 tabular-nums">{formatPrice(r.collected)}</td>
-                      <td className="px-6 py-5 text-right text-sm font-bold text-stone-900 tabular-nums">{formatPrice(r.outstanding)}</td>
+                      <td className="px-6 py-5 text-right text-sm font-bold text-[var(--ink)] tabular-nums">{formatPrice(r.outstanding)}</td>
                       <td className="px-6 py-5 text-right">
                         <Link
                           href={`/print/order/${r.orderId}`}
-                          className="inline-flex items-center gap-1 text-xs font-medium text-stone-500 hover:text-stone-900 transition-colors"
+                          className="inline-flex items-center gap-1 text-xs font-medium text-[var(--muted)] hover:text-[var(--ink)] transition-colors"
                         >
                           <span className="material-symbols-outlined text-[16px]">print</span>
                           Print
@@ -182,16 +182,16 @@ async function InvoicesContent({ tenantId, bucket }: { tenantId: string; bucket?
           </div>
         </div>
       ) : (
-        <div className="bg-white/60 backdrop-blur-xl rounded-[2rem] border border-stone-200/60 shadow-sm p-16 text-center">
-          <span className="flex items-center justify-center w-16 h-16 rounded-3xl bg-emerald-50 text-emerald-500 mx-auto mb-5 material-symbols-outlined text-[32px]">
+        <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-16 text-center">
+          <span className="flex items-center justify-center w-16 h-16 rounded-2xl bg-emerald-50 text-emerald-500 mx-auto mb-5 material-symbols-outlined text-[32px]">
             task_alt
           </span>
-          <h3 className="text-xl font-bold text-stone-900 mb-2">
+          <h3 className="text-xl font-bold text-[var(--ink)] mb-2">
             {active ? "Nothing in this range" : "Everything is paid"}
           </h3>
-          <p className="text-stone-500">
+          <p className="text-[var(--muted)]">
             {active ? (
-              <Link href="/invoices" className="font-semibold text-stone-700 hover:text-rose-600">
+              <Link href="/invoices" className="font-semibold text-stone-700 hover:text-gold">
                 Show all outstanding invoices
               </Link>
             ) : (

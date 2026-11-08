@@ -87,18 +87,18 @@ async function FollowUpsContent({ tenantId }: { tenantId: string }) {
     return (
       <div className="animate-fade-in-up">
         <Header count={0} value={0} />
-        <div className="bg-white/60 backdrop-blur-xl rounded-[2rem] border border-stone-200/60 shadow-sm p-16 text-center">
-          <span className="flex items-center justify-center w-16 h-16 rounded-3xl bg-rose-50 text-rose-500 mx-auto mb-5 material-symbols-outlined text-[32px]">
+        <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-16 text-center">
+          <span className="flex items-center justify-center w-16 h-16 rounded-2xl bg-gold-soft text-gold mx-auto mb-5 material-symbols-outlined text-[32px]">
             favorite
           </span>
-          <h3 className="text-xl font-bold text-stone-900 mb-2">No try-ons recorded yet</h3>
-          <p className="text-stone-500 mb-8 max-w-md mx-auto">
+          <h3 className="text-xl font-bold text-[var(--ink)] mb-2">No try-ons recorded yet</h3>
+          <p className="text-[var(--muted)] mb-8 max-w-md mx-auto">
             Every time a bride tries a gown, log how she reacted. This page then tells you exactly
             who to call back, and which gowns get loved but never sell.
           </p>
           <Link
             href="/try-ons"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-stone-900 text-white font-semibold text-sm hover:bg-rose-600 transition-all duration-300"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-stone-900 text-white font-medium text-sm hover:bg-gold transition-all duration-300"
           >
             <span className="material-symbols-outlined text-[20px]">add</span>
             Log a try-on
@@ -115,15 +115,15 @@ async function FollowUpsContent({ tenantId }: { tenantId: string }) {
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         {/* Brides to call back */}
         <div className="xl:col-span-2">
-          <h2 className="text-sm font-bold text-stone-500 uppercase tracking-wider mb-4">
+          <h2 className="text-sm font-serif font-normal text-[var(--muted)] uppercase tracking-wider mb-4">
             Brides to call back
           </h2>
 
           {followUps.length === 0 ? (
-            <div className="bg-white/60 backdrop-blur-xl rounded-[2rem] border border-stone-200/60 shadow-sm p-12 text-center">
+            <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-12 text-center">
               <span className="material-symbols-outlined text-4xl text-emerald-400 mb-3 block">task_alt</span>
-              <h3 className="text-lg font-bold text-stone-900 mb-1">Nothing outstanding</h3>
-              <p className="text-stone-500">
+              <h3 className="text-lg font-bold text-[var(--ink)] mb-1">Nothing outstanding</h3>
+              <p className="text-[var(--muted)]">
                 Every bride who loved a gown has since placed an order. Nice work.
               </p>
             </div>
@@ -136,12 +136,12 @@ async function FollowUpsContent({ tenantId }: { tenantId: string }) {
                 return (
                   <div
                     key={f.customer_id}
-                    className="bg-white/70 backdrop-blur-xl rounded-2xl border border-stone-200/60 shadow-sm p-5 flex items-start gap-4"
+                    className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-5 flex items-start gap-4"
                   >
                     {p?.image_url ? (
                       <Image unoptimized src={p.image_url} alt={p.name} width={56} height={56} className="w-14 h-14 rounded-xl object-cover border border-stone-200 flex-shrink-0" />
                     ) : (
-                      <div className="w-14 h-14 rounded-xl bg-rose-50 flex items-center justify-center text-2xl flex-shrink-0">
+                      <div className="w-14 h-14 rounded-xl bg-gold-soft flex items-center justify-center text-2xl flex-shrink-0">
                         {f.bestReaction ? REACTION_EMOJI[f.bestReaction] : "👗"}
                       </div>
                     )}
@@ -150,12 +150,12 @@ async function FollowUpsContent({ tenantId }: { tenantId: string }) {
                       <div className="flex items-center gap-2 flex-wrap">
                         <Link
                           href={`/customers/${c.id}`}
-                          className="font-bold text-stone-900 hover:text-rose-600 transition-colors"
+                          className="font-bold text-[var(--ink)] hover:text-gold transition-colors"
                         >
                           {c.name}
                         </Link>
                         {f.bestReaction && (
-                          <span className="text-xs font-bold uppercase tracking-wide px-2 py-0.5 rounded-full bg-rose-50 text-rose-600 border border-rose-100">
+                          <span className="text-xs font-bold uppercase tracking-wide px-2 py-0.5 rounded-full bg-gold-soft text-gold border border-gold/30">
                             {REACTION_EMOJI[f.bestReaction]} {f.bestReaction}
                           </span>
                         )}
@@ -201,11 +201,11 @@ async function FollowUpsContent({ tenantId }: { tenantId: string }) {
 
         {/* Gown performance */}
         <div>
-          <h2 className="text-sm font-bold text-stone-500 uppercase tracking-wider mb-4">
+          <h2 className="text-sm font-serif font-normal text-[var(--muted)] uppercase tracking-wider mb-4">
             Loved but not selling
           </h2>
-          <div className="bg-white/70 backdrop-blur-xl rounded-[2rem] border border-stone-200/60 shadow-sm p-6">
-            <p className="text-sm text-stone-500 mb-5">
+          <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-6">
+            <p className="text-sm text-[var(--muted)] mb-5">
               High interest with low conversion usually means price, sizing, or availability.
             </p>
             <div className="flex flex-col gap-4">
@@ -222,7 +222,7 @@ async function FollowUpsContent({ tenantId }: { tenantId: string }) {
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm font-semibold text-stone-900 truncate">{p.name}</div>
+                      <div className="text-sm font-semibold text-[var(--ink)] truncate">{p.name}</div>
                       <div className="text-xs text-stone-400">
                         {g.tryOnCount} {g.tryOnCount === 1 ? "try-on" : "try-ons"}
                         {g.lovedCount > 0 && ` · ${g.lovedCount} loved`}
@@ -236,7 +236,7 @@ async function FollowUpsContent({ tenantId }: { tenantId: string }) {
                               ? "text-emerald-600"
                               : g.conversionRate >= 25
                               ? "text-amber-600"
-                              : "text-rose-600"
+                              : "text-gold"
                           }`}
                         >
                           {g.conversionRate}%
@@ -262,10 +262,10 @@ async function FollowUpsContent({ tenantId }: { tenantId: string }) {
 function Header({ count, value }: { count: number; value: number }) {
   return (
     <div className="mb-10">
-      <h1 className="text-3xl lg:text-4xl font-extrabold text-stone-900 tracking-tight flex items-center gap-3">
-        Follow-ups <span className="text-rose-400 font-normal">✧</span>
+      <h1 className="text-3xl lg:text-4xl font-serif font-normal text-[var(--ink)] flex items-center gap-3">
+        Follow-ups <span className="text-gold font-normal">✧</span>
       </h1>
-      <p className="text-stone-500 mt-2 font-medium">
+      <p className="text-[var(--muted)] mt-2 font-medium">
         {count === 0
           ? "Brides who loved a gown but have not ordered yet"
           : `${count} ${count === 1 ? "bride" : "brides"} loved a gown and have not ordered · ${formatPrice(Math.round(value))} in play`}

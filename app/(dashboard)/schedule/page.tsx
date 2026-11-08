@@ -128,14 +128,14 @@ export default function SchedulePage() {
       {/* Title */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-gray-900">Staff Schedules</h1>
+          <h1 className="text-2xl font-serif font-normal text-gray-900">Staff Schedules</h1>
           <p className="text-sm text-gray-500 mt-1">Configure staff availability, breaks, and off days.</p>
         </div>
         {members.length > 0 && (
           <button
             onClick={saveSchedule}
             disabled={saving}
-            className="px-5 py-2.5 bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white text-sm font-semibold rounded-xl transition-all shadow-sm flex justify-center items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2"
+            className="px-5 py-2.5 bg-gold hover:bg-gold disabled:opacity-50 text-white text-sm font-semibold rounded-xl transition-all shadow-sm flex justify-center items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40 focus-visible:ring-offset-2"
           >
             {saving ? "Saving..." : "Save Schedule"}
           </button>
@@ -176,9 +176,9 @@ export default function SchedulePage() {
                 aria-pressed={selectedMemberId === m.id}
                 className={`w-full text-left px-4 py-3 rounded-xl text-sm font-semibold transition-all border ${
                   selectedMemberId === m.id
-                    ? "bg-rose-50 border-rose-200 text-rose-700"
+                    ? "bg-gold-soft border-gold/30 text-gold"
                     : "bg-white border-transparent text-gray-700 hover:bg-gray-50"
-                } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2`}
+                } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40 focus-visible:ring-offset-2`}
               >
                 <div>{m.display_name || "Staff Member"}</div>
                 {m.title && <div className="text-xs text-gray-400 font-normal mt-0.5">{m.title}</div>}
@@ -211,7 +211,7 @@ export default function SchedulePage() {
                         onChange={(e) => handleScheduleChange(day.value, "is_off", !e.target.checked)}
                         className="sr-only peer"
                       />
-                      <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-rose-600"></div>
+                      <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-late"></div>
                       <span className="ml-2 text-xs font-semibold text-gray-500 w-8 select-none">
                         {sched.is_off ? "Off" : "Active"}
                       </span>
@@ -228,7 +228,7 @@ export default function SchedulePage() {
                           aria-label={`${day.label} opening time`}
                           value={sched.start_time.slice(0, 5)}
                           onChange={(e) => handleScheduleChange(day.value, "start_time", e.target.value)}
-                          className="px-2.5 py-1.5 border border-gray-200 rounded-lg text-sm bg-gray-50 outline-none focus:border-rose-500 focus:bg-white transition-all font-mono focus-visible:ring-2 focus-visible:ring-rose-500"
+                          className="px-2.5 py-1.5 border border-gray-200 rounded-lg text-sm bg-gray-50 outline-none focus:border-gold focus:bg-white transition-all font-mono focus-visible:ring-2 focus-visible:ring-gold/40"
                         />
                         <span className="text-xs text-gray-400">–</span>
                         <input
@@ -236,7 +236,7 @@ export default function SchedulePage() {
                           aria-label={`${day.label} closing time`}
                           value={sched.end_time.slice(0, 5)}
                           onChange={(e) => handleScheduleChange(day.value, "end_time", e.target.value)}
-                          className="px-2.5 py-1.5 border border-gray-200 rounded-lg text-sm bg-gray-50 outline-none focus:border-rose-500 focus:bg-white transition-all font-mono focus-visible:ring-2 focus-visible:ring-rose-500"
+                          className="px-2.5 py-1.5 border border-gray-200 rounded-lg text-sm bg-gray-50 outline-none focus:border-gold focus:bg-white transition-all font-mono focus-visible:ring-2 focus-visible:ring-gold/40"
                         />
                       </div>
 
@@ -247,7 +247,7 @@ export default function SchedulePage() {
                           aria-label={`${day.label} break start`}
                           value={sched.break_start ? sched.break_start.slice(0, 5) : ""}
                           onChange={(e) => handleScheduleChange(day.value, "break_start", e.target.value || null)}
-                          className="px-2.5 py-1.5 border border-gray-200 rounded-lg text-sm bg-gray-50 outline-none focus:border-rose-500 focus:bg-white transition-all font-mono focus-visible:ring-2 focus-visible:ring-rose-500"
+                          className="px-2.5 py-1.5 border border-gray-200 rounded-lg text-sm bg-gray-50 outline-none focus:border-gold focus:bg-white transition-all font-mono focus-visible:ring-2 focus-visible:ring-gold/40"
                         />
                         <span className="text-xs text-gray-400">–</span>
                         <input
@@ -255,7 +255,7 @@ export default function SchedulePage() {
                           aria-label={`${day.label} break end`}
                           value={sched.break_end ? sched.break_end.slice(0, 5) : ""}
                           onChange={(e) => handleScheduleChange(day.value, "break_end", e.target.value || null)}
-                          className="px-2.5 py-1.5 border border-gray-200 rounded-lg text-sm bg-gray-50 outline-none focus:border-rose-500 focus:bg-white transition-all font-mono focus-visible:ring-2 focus-visible:ring-rose-500"
+                          className="px-2.5 py-1.5 border border-gray-200 rounded-lg text-sm bg-gray-50 outline-none focus:border-gold focus:bg-white transition-all font-mono focus-visible:ring-2 focus-visible:ring-gold/40"
                         />
                       </div>
                     </div>

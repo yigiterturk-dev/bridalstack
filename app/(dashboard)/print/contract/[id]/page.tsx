@@ -37,16 +37,16 @@ export default async function ContractPrintPage({ params }: Props) {
         documentTitle="Agreement"
         reference={contract.order?.ref_no ?? null}
       >
-        <h1 className="text-2xl font-bold tracking-tight mb-6">{contract.title}</h1>
+        <h1 className="text-2xl font-serif font-normal mb-6">{contract.title}</h1>
 
         <div className="grid grid-cols-2 gap-8 mb-8 text-sm">
           <div>
             <div className="text-[11px] font-bold uppercase tracking-wider text-stone-400 mb-2">Between</div>
             <div className="font-semibold">{tenant.name}</div>
-            <div className="text-stone-500">and</div>
+            <div className="text-[var(--muted)]">and</div>
             <div className="font-semibold">{contract.customer.name}</div>
-            {contract.customer.phone && <div className="text-stone-500">{contract.customer.phone}</div>}
-            {contract.customer.email && <div className="text-stone-500">{contract.customer.email}</div>}
+            {contract.customer.phone && <div className="text-[var(--muted)]">{contract.customer.phone}</div>}
+            {contract.customer.email && <div className="text-[var(--muted)]">{contract.customer.email}</div>}
           </div>
           <div className="text-right">
             <div className="text-[11px] font-bold uppercase tracking-wider text-stone-400 mb-2">Terms</div>
@@ -86,7 +86,7 @@ export default async function ContractPrintPage({ params }: Props) {
                   {contract.customer.name}
                 </div>
               </div>
-              <div className="text-right text-sm text-stone-500">
+              <div className="text-right text-sm text-[var(--muted)]">
                 <div className="text-[11px] font-bold uppercase tracking-wider text-stone-400 mb-3">
                   Signed on
                 </div>
@@ -103,11 +103,11 @@ export default async function ContractPrintPage({ params }: Props) {
             <div className="grid grid-cols-2 gap-8">
               <div>
                 <div className="h-14 border-b border-stone-300" />
-                <div className="text-sm text-stone-500 mt-2">{contract.customer.name}</div>
+                <div className="text-sm text-[var(--muted)] mt-2">{contract.customer.name}</div>
               </div>
               <div>
                 <div className="h-14 border-b border-stone-300" />
-                <div className="text-sm text-stone-500 mt-2">Date</div>
+                <div className="text-sm text-[var(--muted)] mt-2">Date</div>
               </div>
             </div>
           )}

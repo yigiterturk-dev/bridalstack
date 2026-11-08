@@ -35,7 +35,7 @@ const STATUS_STYLE: Record<string, string> = {
   in_progress: "bg-sky-50 text-sky-700 border-sky-100",
   ready: "bg-violet-50 text-violet-700 border-violet-100",
   delivered: "bg-emerald-50 text-emerald-700 border-emerald-100",
-  cancelled: "bg-stone-100 text-stone-500 border-stone-200",
+  cancelled: "bg-stone-100 text-[var(--muted)] border-stone-200",
 };
 
 const ACTION_LABEL: Record<string, string> = {
@@ -103,8 +103,8 @@ async function AlterationsContent({ tenantId, timeZone, error, customer }: { ten
   return (
     <div className="animate-fade-in-up">
       <div className="mb-10">
-        <h1 className="text-3xl lg:text-4xl font-extrabold text-stone-900 tracking-tight">Alterations</h1>
-        <p className="text-stone-500 mt-2 font-medium">
+        <h1 className="text-3xl lg:text-4xl font-serif font-normal text-[var(--ink)]">Alterations</h1>
+        <p className="text-[var(--muted)] mt-2 font-medium">
           {open.length === 0
             ? "Fittings and tailoring — from the pin to the handover"
             : `${open.length} on the table${late.length > 0 ? ` · ${late.length} past the promised date` : ""} · ${formatPrice(Math.round(owed))} to collect`}
@@ -112,14 +112,14 @@ async function AlterationsContent({ tenantId, timeZone, error, customer }: { ten
       </div>
 
       {error && (
-        <div className="mb-6 rounded-2xl border border-rose-200 bg-rose-50 px-5 py-3 text-sm font-medium text-rose-700">
+        <div className="mb-6 rounded-2xl border border-gold/30 bg-gold-soft px-5 py-3 text-sm font-medium text-gold">
           {ERRORS[error] ?? "Something went wrong."}
         </div>
       )}
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <div className="bg-white/70 backdrop-blur-xl rounded-[2rem] border border-stone-200/60 shadow-sm p-6 h-fit">
-          <h2 className="text-lg font-bold text-stone-900 mb-4">Log an alteration</h2>
+        <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-6 h-fit">
+          <h2 className="text-lg font-serif font-normal text-[var(--ink)] mb-4">Log an alteration</h2>
           <form action={createAlteration} className="flex flex-col gap-3">
             <Field label="Bride" htmlFor="customer_id-select">
               <SelectField
@@ -183,7 +183,7 @@ async function AlterationsContent({ tenantId, timeZone, error, customer }: { ten
 
             <SubmitButton
               pendingLabel="Saving alteration…"
-              className="mt-1 py-2.5 bg-stone-900 text-white rounded-xl text-sm font-semibold hover:bg-rose-600 transition-colors disabled:opacity-60 disabled:cursor-wait"
+              className="mt-1 py-2.5 bg-stone-900 text-white rounded-xl text-sm font-semibold hover:bg-gold transition-colors disabled:opacity-60 disabled:cursor-wait"
             >
               Log alteration
             </SubmitButton>
@@ -192,12 +192,12 @@ async function AlterationsContent({ tenantId, timeZone, error, customer }: { ten
 
         <div className="xl:col-span-2">
           {jobs.length === 0 ? (
-            <div className="bg-white/60 backdrop-blur-xl rounded-[2rem] border border-stone-200/60 shadow-sm p-16 text-center">
-              <span className="flex items-center justify-center w-16 h-16 rounded-3xl bg-violet-50 text-violet-500 mx-auto mb-5 material-symbols-outlined text-[32px]">
+            <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-16 text-center">
+              <span className="flex items-center justify-center w-16 h-16 rounded-2xl bg-violet-50 text-violet-500 mx-auto mb-5 material-symbols-outlined text-[32px]">
                 content_cut
               </span>
-              <h3 className="text-xl font-bold text-stone-900 mb-2">No alterations logged</h3>
-              <p className="text-stone-500 max-w-md mx-auto">
+              <h3 className="text-xl font-bold text-[var(--ink)] mb-2">No alterations logged</h3>
+              <p className="text-[var(--muted)] max-w-md mx-auto">
                 Every hem, bustle and bead. Give each one a promised date and the ones running late
                 climb to the top of this list on their own.
               </p>
@@ -209,8 +209,8 @@ async function AlterationsContent({ tenantId, timeZone, error, customer }: { ten
                 return (
                   <div
                     key={j.id}
-                    className={`bg-white/70 backdrop-blur-xl rounded-2xl border shadow-sm p-5 ${
-                      isOverdue(j, today) ? "border-rose-200" : "border-stone-200/60"
+                    className={`bg-white rounded-2xl border shadow-sm p-5 ${
+                      isOverdue(j, today) ? "border-late/30" : "border-[var(--line)]"
                     }`}
                   >
                     <div className="flex items-start gap-4">
@@ -224,12 +224,12 @@ async function AlterationsContent({ tenantId, timeZone, error, customer }: { ten
 
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <h3 className="font-bold text-stone-900">{j.customer?.name ?? "Bride"}</h3>
+                          <h3 className="font-bold text-[var(--ink)]">{j.customer?.name ?? "Bride"}</h3>
                           <span className={`text-[11px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full border ${STATUS_STYLE[j.status] ?? STATUS_STYLE.cancelled}`}>
                             {ALTERATION_STATUS_LABELS[j.status as AlterationStatus] ?? j.status}
                           </span>
                           {isOverdue(j, today) && (
-                            <span className="text-[11px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full border bg-rose-50 text-rose-700 border-rose-100">
+                            <span className="text-[11px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full border bg-gold-soft text-gold border-gold/30">
                               past promised
                             </span>
                           )}
@@ -263,8 +263,8 @@ async function AlterationsContent({ tenantId, timeZone, error, customer }: { ten
                                 type="submit"
                                 className={`w-full text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors ${
                                   status === "cancelled"
-                                    ? "border border-stone-200 text-stone-500 hover:bg-stone-50"
-                                    : "bg-stone-900 text-white hover:bg-rose-600"
+                                    ? "border border-stone-200 text-[var(--muted)] hover:bg-stone-50"
+                                    : "bg-stone-900 text-white hover:bg-gold"
                                 }`}
                               >
                                 {ACTION_LABEL[status] ?? status}
@@ -286,12 +286,12 @@ async function AlterationsContent({ tenantId, timeZone, error, customer }: { ten
 }
 
 const INPUT =
-  "w-full px-4 py-2.5 rounded-xl border border-stone-200 bg-white text-sm text-stone-900 outline-none focus:border-stone-400 transition-colors";
+  "w-full px-4 py-2.5 rounded-xl border border-stone-200 bg-white text-sm text-[var(--ink)] outline-none focus:border-stone-400 transition-colors";
 
 function Field({ label, htmlFor, children }: { label: string; htmlFor: string; children: React.ReactNode }) {
   return (
     <div>
-      <label htmlFor={htmlFor} className="block text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1">{label}</label>
+      <label htmlFor={htmlFor} className="block text-xs font-semibold text-[var(--muted)] uppercase tracking-wide mb-1">{label}</label>
       {children}
     </div>
   );

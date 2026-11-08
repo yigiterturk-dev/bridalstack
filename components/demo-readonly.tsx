@@ -62,7 +62,7 @@ export default function DemoReadOnly() {
         className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 id="demo-readonly-title" className="text-lg font-bold text-stone-900">
+        <h2 id="demo-readonly-title" className="text-lg font-bold text-[var(--ink)]">
           That works — just not in the demo
         </h2>
         <p id="demo-readonly-description" className="mt-2 text-sm leading-relaxed text-stone-600">
@@ -72,14 +72,14 @@ export default function DemoReadOnly() {
         <div className="mt-5 flex flex-col gap-2">
           <Link
             href="/signup"
-            className="rounded-lg bg-stone-900 px-4 py-2.5 text-center text-sm font-semibold text-white hover:bg-stone-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 focus-visible:ring-offset-2"
+            className="rounded-lg bg-stone-900 px-4 py-2.5 text-center text-sm font-semibold text-white hover:bg-stone-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40 focus-visible:ring-offset-2"
           >
             Create my shop — free
           </Link>
           <button
             type="button"
             onClick={() => setBlocked(null)}
-            className="rounded-lg px-4 py-2 text-sm text-stone-500 hover:bg-stone-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2"
+            className="rounded-lg px-4 py-2 text-sm text-[var(--muted)] hover:bg-stone-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2"
           >
             Keep looking around
           </button>

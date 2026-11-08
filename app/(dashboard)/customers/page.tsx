@@ -21,7 +21,7 @@ const STATUS_LABELS: Record<string, string> = {
 function statusStyle(status: string) {
   switch (status) {
     case "hot_lead":
-      return "bg-rose-50 text-rose-600 border border-rose-100";
+      return "bg-gold-soft text-gold border border-gold/30";
     case "appointment_set":
     case "fitting_done":
       return "bg-amber-50 text-amber-600 border border-amber-100";
@@ -73,19 +73,19 @@ async function CustomersContent({ tenantId, query }: { tenantId: string; query: 
     <div className="animate-fade-in-up">
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-10">
         <div>
-          <h1 className="text-3xl lg:text-4xl font-extrabold text-stone-900 tracking-tight flex items-center gap-3">
-            Brides <span className="text-rose-400 font-normal">✧</span>
+          <h1 className="text-3xl lg:text-4xl font-serif font-normal text-[var(--ink)] flex items-center gap-3">
+            Brides <span className="text-gold font-normal">✧</span>
           </h1>
-          <p className="text-stone-500 mt-2 font-medium">
+          <p className="text-[var(--muted)] mt-2 font-medium">
             {count === 0 ? "No brides yet" : `Managing ${count} stunning ${count === 1 ? "bride" : "brides"}`}
           </p>
         </div>
         <div className="flex gap-3">
-          <Link href="/customers/import" className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white text-stone-700 font-semibold text-sm border border-stone-200 hover:border-rose-200 hover:shadow-sm hover:text-rose-600 transition-all duration-300">
+          <Link href="/customers/import" className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white text-stone-700 font-medium text-sm border border-stone-200 hover:border-gold/30 hover:shadow-sm hover:text-gold transition-all duration-300">
             <span className="material-symbols-outlined text-[20px]">upload_file</span>
             Import
           </Link>
-          <Link href="/customers/new" className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-stone-900 text-white font-semibold text-sm hover:bg-rose-600 hover:shadow-[0_8px_20px_-6px_rgba(225,29,72,0.4)] transition-all duration-300">
+          <Link href="/customers/new" className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-stone-900 text-white font-medium text-sm hover:bg-gold transition-all duration-300">
             <span className="material-symbols-outlined text-[20px]">add</span>
             New Bride
           </Link>
@@ -97,27 +97,27 @@ async function CustomersContent({ tenantId, query }: { tenantId: string; query: 
       </div>
 
       {list.length > 0 ? (
-        <div className="bg-white/60 backdrop-blur-xl rounded-[2rem] border border-stone-200/60 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-stone-50/50 border-b border-stone-100/80">
-                  <th className="px-8 py-5 text-xs font-bold text-stone-500 uppercase tracking-wider">Bride</th>
-                  <th className="px-8 py-5 text-xs font-bold text-stone-500 uppercase tracking-wider">Contact</th>
-                  <th className="px-8 py-5 text-xs font-bold text-stone-500 uppercase tracking-wider">Status</th>
-                  <th className="px-8 py-5 text-xs font-bold text-stone-500 uppercase tracking-wider">Added</th>
-                  <th className="px-8 py-5 text-xs font-bold text-stone-500 uppercase tracking-wider text-right">Actions</th>
+                <tr className="bg-stone-50/50 border-b border-[var(--line)]">
+                  <th className="px-8 py-5 text-xs font-bold text-[var(--muted)] uppercase tracking-wider">Bride</th>
+                  <th className="px-8 py-5 text-xs font-bold text-[var(--muted)] uppercase tracking-wider">Contact</th>
+                  <th className="px-8 py-5 text-xs font-bold text-[var(--muted)] uppercase tracking-wider">Status</th>
+                  <th className="px-8 py-5 text-xs font-bold text-[var(--muted)] uppercase tracking-wider">Added</th>
+                  <th className="px-8 py-5 text-xs font-bold text-[var(--muted)] uppercase tracking-wider text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-stone-100/50">
+              <tbody className="divide-y divide-[var(--line)]">
                 {list.map((c) => (
-                  <tr key={c.id} className="hover:bg-white/80 transition-colors group">
+                  <tr key={c.id} className="hover:bg-stone-50 transition-colors group">
                     <td className="px-8 py-6">
                       <Link href={`/customers/${c.id}`} className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-full bg-rose-50 flex items-center justify-center text-rose-500 font-bold text-sm">
+                        <div className="w-10 h-10 rounded-full bg-gold-soft flex items-center justify-center text-gold font-bold text-sm">
                           {c.name.charAt(0).toUpperCase()}
                         </div>
-                        <span className="font-bold text-stone-900 group-hover:text-rose-600 transition-colors">{c.name}</span>
+                        <span className="font-bold text-[var(--ink)] group-hover:text-gold transition-colors">{c.name}</span>
                       </Link>
                     </td>
                     <td className="px-8 py-6">
@@ -131,7 +131,7 @@ async function CustomersContent({ tenantId, query }: { tenantId: string; query: 
                         {STATUS_LABELS[c.status] ?? c.status.replace(/_/g, " ")}
                       </span>
                     </td>
-                    <td className="px-8 py-6 text-sm font-medium text-stone-500">
+                    <td className="px-8 py-6 text-sm font-medium text-[var(--muted)]">
                       {c.created_at.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                     </td>
                     <td className="px-8 py-6 text-right">
@@ -144,12 +144,12 @@ async function CustomersContent({ tenantId, query }: { tenantId: string; query: 
           </div>
         </div>
       ) : (
-        <div className="bg-white/60 backdrop-blur-xl rounded-[2rem] border border-stone-200/60 shadow-sm p-16 text-center">
-          <span className="flex items-center justify-center w-16 h-16 rounded-3xl bg-rose-50 text-rose-500 mx-auto mb-5 material-symbols-outlined text-[32px]">favorite</span>
-          <h3 className="text-xl font-bold text-stone-900 mb-2">{query ? "No results found" : "No brides yet"}</h3>
-          <p className="text-stone-500 mb-8">{query ? "Try a different search term." : "Start your journey by adding your very first bride."}</p>
+        <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-16 text-center">
+          <span className="flex items-center justify-center w-16 h-16 rounded-2xl bg-gold-soft text-gold mx-auto mb-5 material-symbols-outlined text-[32px]">favorite</span>
+          <h3 className="text-xl font-bold text-[var(--ink)] mb-2">{query ? "No results found" : "No brides yet"}</h3>
+          <p className="text-[var(--muted)] mb-8">{query ? "Try a different search term." : "Start your journey by adding your very first bride."}</p>
           {!query && (
-            <Link href="/customers/new" className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-stone-900 text-white font-semibold text-sm hover:bg-rose-600 hover:shadow-[0_8px_20px_-6px_rgba(225,29,72,0.4)] transition-all duration-300">
+            <Link href="/customers/new" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-stone-900 text-white font-medium text-sm hover:bg-gold transition-all duration-300">
               <span className="material-symbols-outlined text-[20px]">add</span>
               Add Bride
             </Link>

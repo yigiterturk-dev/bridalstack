@@ -47,17 +47,17 @@ async function Sheet({ tenantId, countId, notice }: { tenantId: string; countId:
 
   return (
     <div className="animate-fade-in-up">
-      <Link href="/inventory-count" className="text-sm text-stone-500 hover:text-stone-900 inline-flex items-center gap-1 mb-4">
+      <Link href="/inventory-count" className="text-sm text-[var(--muted)] hover:text-[var(--ink)] inline-flex items-center gap-1 mb-4">
         <span className="material-symbols-outlined text-[18px]">arrow_back</span> All counts
       </Link>
 
       <div className="mb-8 flex items-start justify-between gap-4 flex-wrap">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-extrabold text-stone-900 tracking-tight">{count.reference}</h1>
+            <h1 className="text-3xl font-serif font-normal text-[var(--ink)]">{count.reference}</h1>
             <StatusChip status={count.status} />
           </div>
-          <p className="text-stone-500 mt-2 font-medium">
+          <p className="text-[var(--muted)] mt-2 font-medium">
             Started {count.started_at.toLocaleDateString("en-US", { month: "long", day: "numeric" })}
             {count.closed_at &&
               ` · closed ${count.closed_at.toLocaleDateString("en-US", { month: "long", day: "numeric" })}`}
@@ -107,7 +107,7 @@ async function Sheet({ tenantId, countId, notice }: { tenantId: string; countId:
       <form action={saveCounts}>
         <input type="hidden" name="count_id" value={count.id} />
 
-        <div className="bg-white/70 backdrop-blur-xl rounded-[2rem] border border-stone-200/60 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -133,14 +133,14 @@ async function Sheet({ tenantId, countId, notice }: { tenantId: string; countId:
                             </div>
                           )}
                           <div className="min-w-0">
-                            <div className="font-semibold text-stone-900 truncate">{item.product.name}</div>
+                            <div className="font-semibold text-[var(--ink)] truncate">{item.product.name}</div>
                             <div className="text-xs text-stone-400">
                               {item.product.sku ?? item.product.category ?? "—"}
                             </div>
                           </div>
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-right tabular-nums text-stone-500">{item.expected_qty}</td>
+                      <td className="px-4 py-3 text-right tabular-nums text-[var(--muted)]">{item.expected_qty}</td>
                       <td className="px-4 py-3 text-right">
                         {isOpen ? (
                           <input
@@ -153,7 +153,7 @@ async function Sheet({ tenantId, countId, notice }: { tenantId: string; countId:
                             className="w-20 px-3 py-1.5 rounded-lg border border-stone-200 text-right tabular-nums text-sm outline-none focus:border-stone-400"
                           />
                         ) : (
-                          <span className="tabular-nums text-stone-900">{item.counted_qty ?? "—"}</span>
+                          <span className="tabular-nums text-[var(--ink)]">{item.counted_qty ?? "—"}</span>
                         )}
                       </td>
                       <td className="px-6 py-3 text-right">
@@ -162,7 +162,7 @@ async function Sheet({ tenantId, countId, notice }: { tenantId: string; countId:
                         ) : (
                           <span
                             className={`font-bold tabular-nums ${
-                              diff < 0 ? "text-rose-600" : diff > 0 ? "text-amber-600" : "text-emerald-600"
+                              diff < 0 ? "text-gold" : diff > 0 ? "text-amber-600" : "text-emerald-600"
                             }`}
                           >
                             {diff > 0 ? `+${diff}` : diff}
@@ -179,12 +179,12 @@ async function Sheet({ tenantId, countId, notice }: { tenantId: string; countId:
 
         {isOpen && (
           <div className="mt-5 flex items-center justify-between gap-4 flex-wrap">
-            <p className="text-sm text-stone-500">
+            <p className="text-sm text-[var(--muted)]">
               Leave a box empty for anything you have not counted — it stays untouched when you close.
             </p>
             <button
               type="submit"
-              className="px-6 py-2.5 rounded-xl bg-stone-900 text-white text-sm font-semibold hover:bg-rose-600 transition-colors"
+              className="px-6 py-2.5 rounded-xl bg-stone-900 text-white text-sm font-semibold hover:bg-gold transition-colors"
             >
               Save counts
             </button>
@@ -197,9 +197,9 @@ async function Sheet({ tenantId, countId, notice }: { tenantId: string; countId:
 
 function Stat({ label, value, tone }: { label: string; value: string; tone?: "rose" }) {
   return (
-    <div className="bg-white/70 backdrop-blur-xl rounded-2xl border border-stone-200/60 shadow-sm px-5 py-4">
+    <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm px-5 py-4">
       <div className="text-[11px] font-bold uppercase tracking-wide text-stone-400">{label}</div>
-      <div className={`text-2xl font-extrabold tabular-nums mt-1 ${tone === "rose" ? "text-rose-600" : "text-stone-900"}`}>
+      <div className={`text-2xl font-extrabold tabular-nums mt-1 ${tone === "rose" ? "text-gold" : "text-[var(--ink)]"}`}>
         {value}
       </div>
     </div>

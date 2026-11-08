@@ -65,27 +65,27 @@ async function RulesContent({ tenantId, error }: { tenantId: string; error?: str
 
   return (
     <div className="animate-fade-in-up">
-      <Link href="/commissions" className="text-sm text-stone-500 hover:text-stone-900 inline-flex items-center gap-1 mb-4">
+      <Link href="/commissions" className="text-sm text-[var(--muted)] hover:text-[var(--ink)] inline-flex items-center gap-1 mb-4">
         <span className="material-symbols-outlined text-[18px]">arrow_back</span> Commissions
       </Link>
 
       <div className="mb-10">
-        <h1 className="text-3xl lg:text-4xl font-extrabold text-stone-900 tracking-tight">Commission rules</h1>
-        <p className="text-stone-500 mt-2 font-medium">
+        <h1 className="text-3xl lg:text-4xl font-serif font-normal text-[var(--ink)]">Commission rules</h1>
+        <p className="text-[var(--muted)] mt-2 font-medium">
           When two rules fit one order, the higher priority wins — and a rule written for one
           stylist beats the shop-wide rule at the same priority.
         </p>
       </div>
 
       {error && (
-        <div className="mb-6 rounded-2xl border border-rose-200 bg-rose-50 px-5 py-3 text-sm font-medium text-rose-700">
+        <div className="mb-6 rounded-2xl border border-gold/30 bg-gold-soft px-5 py-3 text-sm font-medium text-gold">
           {ERRORS[error] ?? "Something went wrong."}
         </div>
       )}
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <div className="bg-white/70 backdrop-blur-xl rounded-[2rem] border border-stone-200/60 shadow-sm p-6 h-fit">
-          <h2 className="text-lg font-bold text-stone-900 mb-4">New rule</h2>
+        <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-6 h-fit">
+          <h2 className="text-lg font-serif font-normal text-[var(--ink)] mb-4">New rule</h2>
           <form action={createRule} className="flex flex-col gap-3">
             <Field label="Name *">
               <input name="name" required maxLength={80} className={INPUT} placeholder="e.g. Standard 5%" />
@@ -158,7 +158,7 @@ async function RulesContent({ tenantId, error }: { tenantId: string; error?: str
 
             <button
               type="submit"
-              className="mt-1 py-2.5 bg-stone-900 text-white rounded-xl text-sm font-semibold hover:bg-rose-600 transition-colors"
+              className="mt-1 py-2.5 bg-stone-900 text-white rounded-xl text-sm font-semibold hover:bg-gold transition-colors"
             >
               Add rule
             </button>
@@ -167,12 +167,12 @@ async function RulesContent({ tenantId, error }: { tenantId: string; error?: str
 
         <div className="xl:col-span-2">
           {rules.length === 0 ? (
-            <div className="bg-white/60 backdrop-blur-xl rounded-[2rem] border border-stone-200/60 shadow-sm p-16 text-center">
-              <span className="flex items-center justify-center w-16 h-16 rounded-3xl bg-amber-50 text-amber-500 mx-auto mb-5 material-symbols-outlined text-[32px]">
+            <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-16 text-center">
+              <span className="flex items-center justify-center w-16 h-16 rounded-2xl bg-amber-50 text-amber-500 mx-auto mb-5 material-symbols-outlined text-[32px]">
                 rule
               </span>
-              <h3 className="text-xl font-bold text-stone-900 mb-2">No rules yet</h3>
-              <p className="text-stone-500 max-w-md mx-auto">
+              <h3 className="text-xl font-bold text-[var(--ink)] mb-2">No rules yet</h3>
+              <p className="text-[var(--muted)] max-w-md mx-auto">
                 Most boutiques start with one shop-wide percentage, then add a better rate for the
                 stylist who closes the big gowns.
               </p>
@@ -182,7 +182,7 @@ async function RulesContent({ tenantId, error }: { tenantId: string; error?: str
               {rules.map((r) => (
                 <div
                   key={r.id}
-                  className={`bg-white/70 backdrop-blur-xl rounded-2xl border border-stone-200/60 shadow-sm p-5 flex items-center gap-4 ${
+                  className={`bg-white rounded-2xl border border-[var(--line)] shadow-sm p-5 flex items-center gap-4 ${
                     r.is_active ? "" : "opacity-60"
                   }`}
                 >
@@ -192,7 +192,7 @@ async function RulesContent({ tenantId, error }: { tenantId: string; error?: str
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="font-bold text-stone-900">{r.name}</h3>
+                      <h3 className="font-bold text-[var(--ink)]">{r.name}</h3>
                       <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-stone-100 text-stone-600">
                         {r.scope === "staff" ? r.staff_name : "Everyone"}
                       </span>
@@ -208,9 +208,9 @@ async function RulesContent({ tenantId, error }: { tenantId: string; error?: str
                       )}
                     </div>
                     <p className="text-sm text-stone-600 mt-1">
-                      {r.rate_percent > 0 && <strong className="text-stone-900">{r.rate_percent}%</strong>}
+                      {r.rate_percent > 0 && <strong className="text-[var(--ink)]">{r.rate_percent}%</strong>}
                       {r.rate_percent > 0 && r.flat_amount > 0 && " + "}
-                      {r.flat_amount > 0 && <strong className="text-stone-900">{formatPrice(r.flat_amount)}</strong>}
+                      {r.flat_amount > 0 && <strong className="text-[var(--ink)]">{formatPrice(r.flat_amount)}</strong>}
                       {r.min_order_total > 0 && (
                         <span className="text-stone-400"> · orders over {formatPrice(r.min_order_total)}</span>
                       )}
@@ -224,7 +224,7 @@ async function RulesContent({ tenantId, error }: { tenantId: string; error?: str
                       <button
                         type="submit"
                         className={`text-xs font-semibold px-2.5 py-1 rounded-lg ${
-                          r.is_active ? "bg-emerald-50 text-emerald-700" : "bg-stone-100 text-stone-500"
+                          r.is_active ? "bg-emerald-50 text-emerald-700" : "bg-stone-100 text-[var(--muted)]"
                         }`}
                       >
                         {r.is_active ? "Active" : "Off"}
@@ -236,7 +236,7 @@ async function RulesContent({ tenantId, error }: { tenantId: string; error?: str
                         message={`Delete commission rule “${r.name}”? This cannot be undone.`}
                         ariaLabel={`Delete commission rule ${r.name}`}
                         title="Delete commission rule"
-                        className="text-xs text-stone-300 hover:text-rose-600 px-1.5 py-1 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 focus-visible:ring-offset-2"
+                        className="text-xs text-stone-300 hover:text-gold px-1.5 py-1 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40 focus-visible:ring-offset-2"
                       >
                         <span aria-hidden="true">✕</span>
                       </ConfirmSubmitButton>
@@ -253,12 +253,12 @@ async function RulesContent({ tenantId, error }: { tenantId: string; error?: str
 }
 
 const INPUT =
-  "w-full px-4 py-2.5 rounded-xl border border-stone-200 bg-white text-sm text-stone-900 outline-none focus:border-stone-400 transition-colors";
+  "w-full px-4 py-2.5 rounded-xl border border-stone-200 bg-white text-sm text-[var(--ink)] outline-none focus:border-stone-400 transition-colors";
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <label className="block text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1">{label}</label>
+      <label className="block text-xs font-semibold text-[var(--muted)] uppercase tracking-wide mb-1">{label}</label>
       {children}
     </div>
   );

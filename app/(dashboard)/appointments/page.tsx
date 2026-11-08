@@ -16,7 +16,7 @@ function statusStyle(status: string) {
     case "completed":
       return "bg-emerald-50 text-emerald-600 border-emerald-100";
     case "cancelled":
-      return "bg-rose-50 text-rose-600 border-rose-100";
+      return "bg-gold-soft text-gold border-gold/30";
     default:
       return "bg-stone-50 text-stone-600 border-stone-200";
   }
@@ -59,10 +59,10 @@ async function AppointmentsContent({ tenantId, timeZone, customer }: { tenantId:
     <div className="animate-fade-in-up">
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-10">
         <div>
-          <h1 className="text-3xl lg:text-4xl font-extrabold text-stone-900 tracking-tight flex items-center gap-3">
-            Appointments <span className="text-rose-400 font-normal">✧</span>
+          <h1 className="text-3xl lg:text-4xl font-serif font-normal text-[var(--ink)] flex items-center gap-3">
+            Appointments <span className="text-gold font-normal">✧</span>
           </h1>
-          <p className="text-stone-500 mt-2 font-medium">
+          <p className="text-[var(--muted)] mt-2 font-medium">
             {list.length === 0
               ? "No appointments scheduled yet"
               : `You have ${list.length} ${list.length === 1 ? "appointment" : "appointments"} scheduled`}
@@ -72,19 +72,19 @@ async function AppointmentsContent({ tenantId, timeZone, customer }: { tenantId:
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* New Appointment Form */}
-        <div className="bg-white/60 backdrop-blur-xl rounded-[2rem] border border-stone-200/60 shadow-sm p-8 h-fit">
+        <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-8 h-fit">
           <div className="flex items-center gap-3 mb-6">
             <span className="flex items-center justify-center w-10 h-10 rounded-xl bg-stone-900 text-white material-symbols-outlined text-[20px]">add</span>
-            <h2 className="text-xl font-bold text-stone-900">New Booking</h2>
+            <h2 className="text-xl font-serif font-normal text-[var(--ink)]">New Booking</h2>
           </div>
           {customers.length === 0 ? (
-            <p className="text-sm text-stone-500">
+            <p className="text-sm text-[var(--muted)]">
               Add a bride first, then you can schedule appointments for her.
             </p>
           ) : (
             <form action={createAppointment} className="flex flex-col gap-5">
               <div>
-                <label htmlFor="customer_id-select" className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">Customer *</label>
+                <label htmlFor="customer_id-select" className="block text-xs font-bold text-[var(--muted)] uppercase tracking-wider mb-2">Customer *</label>
                 <SelectField
                   name="customer_id"
                   required
@@ -94,24 +94,24 @@ async function AppointmentsContent({ tenantId, timeZone, customer }: { tenantId:
                 />
               </div>
               <div>
-                <label htmlFor="appointment-title" className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">Title</label>
-                <input id="appointment-title" name="title" className="w-full px-4 py-3.5 rounded-2xl border border-stone-200 bg-white/50 text-stone-700 text-sm outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-50 transition-all" placeholder="e.g. First Fitting" />
+                <label htmlFor="appointment-title" className="block text-xs font-bold text-[var(--muted)] uppercase tracking-wider mb-2">Title</label>
+                <input id="appointment-title" name="title" className="w-full px-4 py-3.5 rounded-2xl border border-stone-200 bg-white/50 text-stone-700 text-sm outline-none focus:border-gold/30 focus:ring-4 focus:ring-gold/40 transition-all" placeholder="e.g. First Fitting" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="appointment-date" className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">Date *</label>
-                  <input id="appointment-date" name="date" type="date" required defaultValue={today} className="w-full px-4 py-3.5 rounded-2xl border border-stone-200 bg-white/50 text-stone-700 text-sm outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-50 transition-all" />
+                  <label htmlFor="appointment-date" className="block text-xs font-bold text-[var(--muted)] uppercase tracking-wider mb-2">Date *</label>
+                  <input id="appointment-date" name="date" type="date" required defaultValue={today} className="w-full px-4 py-3.5 rounded-2xl border border-stone-200 bg-white/50 text-stone-700 text-sm outline-none focus:border-gold/30 focus:ring-4 focus:ring-gold/40 transition-all" />
                 </div>
                 <div>
-                  <label htmlFor="appointment-time" className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">Time</label>
-                  <input id="appointment-time" name="time" type="time" defaultValue="10:00" className="w-full px-4 py-3.5 rounded-2xl border border-stone-200 bg-white/50 text-stone-700 text-sm outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-50 transition-all" />
+                  <label htmlFor="appointment-time" className="block text-xs font-bold text-[var(--muted)] uppercase tracking-wider mb-2">Time</label>
+                  <input id="appointment-time" name="time" type="time" defaultValue="10:00" className="w-full px-4 py-3.5 rounded-2xl border border-stone-200 bg-white/50 text-stone-700 text-sm outline-none focus:border-gold/30 focus:ring-4 focus:ring-gold/40 transition-all" />
                 </div>
               </div>
               <div>
-                <label htmlFor="appointment-notes" className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">Notes</label>
-                <textarea id="appointment-notes" name="description" rows={2} className="w-full px-4 py-3.5 rounded-2xl border border-stone-200 bg-white/50 text-stone-700 text-sm outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-50 transition-all resize-y" placeholder="Optional notes for stylist..." />
+                <label htmlFor="appointment-notes" className="block text-xs font-bold text-[var(--muted)] uppercase tracking-wider mb-2">Notes</label>
+                <textarea id="appointment-notes" name="description" rows={2} className="w-full px-4 py-3.5 rounded-2xl border border-stone-200 bg-white/50 text-stone-700 text-sm outline-none focus:border-gold/30 focus:ring-4 focus:ring-gold/40 transition-all resize-y" placeholder="Optional notes for stylist..." />
               </div>
-              <SubmitButton pendingLabel="Scheduling…" className="mt-2 w-full py-3.5 bg-stone-900 text-white rounded-2xl text-sm font-bold hover:bg-rose-600 hover:shadow-[0_8px_20px_-6px_rgba(225,29,72,0.4)] transition-all duration-300 disabled:opacity-60 disabled:cursor-wait">
+              <SubmitButton pendingLabel="Scheduling…" className="mt-2 w-full py-3.5 bg-stone-900 text-white rounded-2xl text-sm font-bold hover:bg-gold transition-all duration-300 disabled:opacity-60 disabled:cursor-wait">
                 Schedule Appointment
               </SubmitButton>
             </form>
@@ -119,28 +119,28 @@ async function AppointmentsContent({ tenantId, timeZone, customer }: { tenantId:
         </div>
 
         {/* Appointment List */}
-        <div className="lg:col-span-2 bg-white/60 backdrop-blur-xl rounded-[2rem] border border-stone-200/60 shadow-sm overflow-hidden">
+        <div className="lg:col-span-2 bg-white rounded-2xl border border-[var(--line)] shadow-sm overflow-hidden">
           {list.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-stone-50/50 border-b border-stone-100/80">
-                    <th className="px-8 py-5 text-xs font-bold text-stone-500 uppercase tracking-wider">Bride</th>
-                    <th className="px-8 py-5 text-xs font-bold text-stone-500 uppercase tracking-wider">Appointment</th>
-                    <th className="px-8 py-5 text-xs font-bold text-stone-500 uppercase tracking-wider">Date &amp; Time</th>
-                    <th className="px-8 py-5 text-xs font-bold text-stone-500 uppercase tracking-wider">Status</th>
-                    <th className="px-8 py-5 text-xs font-bold text-stone-500 uppercase tracking-wider text-right">Actions</th>
+                  <tr className="bg-stone-50/50 border-b border-[var(--line)]">
+                    <th className="px-8 py-5 text-xs font-bold text-[var(--muted)] uppercase tracking-wider">Bride</th>
+                    <th className="px-8 py-5 text-xs font-bold text-[var(--muted)] uppercase tracking-wider">Appointment</th>
+                    <th className="px-8 py-5 text-xs font-bold text-[var(--muted)] uppercase tracking-wider">Date &amp; Time</th>
+                    <th className="px-8 py-5 text-xs font-bold text-[var(--muted)] uppercase tracking-wider">Status</th>
+                    <th className="px-8 py-5 text-xs font-bold text-[var(--muted)] uppercase tracking-wider text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-stone-100/50">
+                <tbody className="divide-y divide-[var(--line)]">
                   {list.map((a) => {
                     const dt = a.appointment_date;
                     const isPast = dt < now && a.status === "pending";
                     return (
-                      <tr key={a.id} className={`hover:bg-white/80 transition-colors group ${isPast ? "bg-rose-50/30" : ""}`}>
+                      <tr key={a.id} className={`hover:bg-stone-50 transition-colors group ${isPast ? "bg-late-soft" : ""}`}>
                         <td className="px-8 py-6">
                           <div className="flex flex-col">
-                            <span className="font-bold text-stone-900 group-hover:text-rose-600 transition-colors">{a.customer?.name ?? "—"}</span>
+                            <span className="font-bold text-[var(--ink)] group-hover:text-gold transition-colors">{a.customer?.name ?? "—"}</span>
                             <span className="text-xs text-stone-400 mt-0.5">{a.customer?.phone ?? ""}</span>
                           </div>
                         </td>
@@ -148,7 +148,7 @@ async function AppointmentsContent({ tenantId, timeZone, customer }: { tenantId:
                         <td className="px-8 py-6">
                           <div className="flex flex-col">
                             <span className="text-sm font-bold text-stone-800">{dt.toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
-                            <span className="text-xs text-stone-500">{dt.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}</span>
+                            <span className="text-xs text-[var(--muted)]">{dt.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}</span>
                           </div>
                         </td>
                         <td className="px-8 py-6">
@@ -184,9 +184,9 @@ async function AppointmentsContent({ tenantId, timeZone, customer }: { tenantId:
             </div>
           ) : (
             <div className="p-16 text-center flex flex-col items-center justify-center h-full">
-              <span className="flex items-center justify-center w-16 h-16 rounded-3xl bg-rose-50 text-rose-500 mb-5 material-symbols-outlined text-[32px]">event_busy</span>
-              <h3 className="text-xl font-bold text-stone-900 mb-2">No appointments</h3>
-              <p className="text-stone-500">Your calendar is clear. Schedule a fitting to get started.</p>
+              <span className="flex items-center justify-center w-16 h-16 rounded-2xl bg-gold-soft text-gold mb-5 material-symbols-outlined text-[32px]">event_busy</span>
+              <h3 className="text-xl font-bold text-[var(--ink)] mb-2">No appointments</h3>
+              <p className="text-[var(--muted)]">Your calendar is clear. Schedule a fitting to get started.</p>
             </div>
           )}
         </div>
