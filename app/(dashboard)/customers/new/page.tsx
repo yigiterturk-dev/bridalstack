@@ -24,8 +24,12 @@ export default function NewCustomerPage() {
           </div>
         </div>
         <div>
+          <label htmlFor="customer-event-date" className="block text-sm font-medium text-gray-700 mb-1">Wedding date</label>
+          <input id="customer-event-date" name="event_date" type="date" className="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none text-sm" />
+        </div>
+        <div>
           <label htmlFor="customer-notes" className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
-          <textarea id="customer-notes" name="notes" rows={3} className="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none text-sm resize-y" placeholder="Wedding date, preferences..." />
+          <textarea id="customer-notes" name="notes" rows={3} className="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none text-sm resize-y" placeholder="Style, budget, who she brings..." />
         </div>
         <div className="flex gap-3 pt-2">
           <SubmitButton pendingLabel="Saving customer…" className="px-6 py-2.5 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors disabled:opacity-60 disabled:cursor-wait">Save Customer</SubmitButton>

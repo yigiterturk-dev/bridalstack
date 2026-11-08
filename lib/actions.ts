@@ -8,6 +8,7 @@ import { hasPermission, type Permission } from "@/lib/rbac";
 import { derivedOrderTotals, parseDraftLines } from "@/lib/order-lines";
 import { boundedInt, nonNegativeFloat } from "@/lib/numbers";
 import { dateInTimeZone, dateTimeInTimeZone, normalizeTimeZone } from "@/lib/timezone";
+import { normalizeEventDate } from "@/lib/journey";
 
 // Auth + tenant + (opsiyonel) izin kapısı. Fail-closed: yetkisiz reddedilir.
 async function requireAuth(permission?: Permission, denyRedirect = "/dashboard?error=forbidden") {
@@ -31,12 +32,13 @@ export async function createCustomer(formData: FormData) {
   const phone = String(formData.get("phone") || "").trim() || null;
   const email = String(formData.get("email") || "").trim() || null;
   const notes = String(formData.get("notes") || "").trim() || null;
+  const event_date = normalizeEventDate(formData.get("event_date"));
 
   if (!name) redirect("/customers/new?error=required");
 
   try {
     await prisma.customer.create({
-      data: { tenant_id: tenant.id, name, phone, email, notes, created_by: userId },
+      data: { tenant_id: tenant.id, name, phone, email, notes, event_date, created_by: userId },
     });
   } catch {
     redirect("/customers/new?error=insert");
