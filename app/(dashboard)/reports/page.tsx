@@ -1,4 +1,6 @@
 import Link from "next/link";
+import PageHead, { BTN_PRIMARY, BTN_SECONDARY } from "@/components/page-head";
+import ListRow from "@/components/list-row";
 import { redirect } from "next/navigation";
 import { getCurrentTenant } from "@/lib/tenant";
 import { formatPrice } from "@/config/modules";
@@ -37,31 +39,17 @@ async function ReportsContent({ tenantId, rangeParam }: { tenantId: string; rang
 
   return (
     <div className="animate-fade-in-up space-y-8">
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
-        <div>
-          <h1 className="text-3xl lg:text-4xl font-serif font-normal text-[var(--ink)] flex items-center gap-3">
-            Reports
-          </h1>
-          <p className="text-[var(--muted)] mt-2 font-medium">
-            Line-by-line detail for the last {range.days} days, ready to export.
-          </p>
-        </div>
-        <div className="flex gap-2">
-          {RANGES.map((r) => (
-            <Link
-              key={r.value}
-              href={`/reports?range=${r.value}`}
-              className={`px-3.5 py-2 rounded-xl text-sm font-medium border transition-colors ${
-                String(range.days) === r.value
-                  ? "bg-stone-900 text-white border-stone-900"
-                  : "bg-white text-stone-600 border-stone-200 hover:border-stone-300"
-              }`}
-            >
-              {r.label}
-            </Link>
-          ))}
-        </div>
-      </div>
+      <PageHead title="Reports" sub={`Line-by-line detail for the last ${range.days} days, ready to export`}>
+        {RANGES.map((r) => (
+          <Link
+            key={r.value}
+            href={`/reports?range=${r.value}`}
+            className={String(range.days) === r.value ? BTN_PRIMARY : BTN_SECONDARY}
+          >
+            {r.label}
+          </Link>
+        ))}
+      </PageHead>
 
       <div className="grid grid-cols-2 md:grid-cols-[repeat(auto-fit,minmax(11rem,1fr))] gap-4">
         {[
@@ -72,9 +60,9 @@ async function ReportsContent({ tenantId, rangeParam }: { tenantId: string; rang
           { label: "What is a typical order?", value: money(data.totals.averageOrder), sub: "Average, cancelled left out" },
         ].map((k) => (
           <div key={k.label} className="bg-white rounded-2xl p-5 border border-[var(--line)]">
-            <div className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-2">{k.label}</div>
-            <div className="text-2xl font-extrabold text-[var(--ink)] tabular-nums">{k.value}</div>
-            <div className="text-xs text-stone-400 mt-1">{k.sub}</div>
+            <div className="mb-1 text-sm text-[var(--muted)]">{k.label}</div>
+            <div className="font-serif text-2xl tabular-nums text-[var(--ink)]">{k.value}</div>
+            <div className="mt-1 text-xs text-[var(--muted)]">{k.sub}</div>
           </div>
         ))}
       </div>
@@ -86,20 +74,22 @@ async function ReportsContent({ tenantId, rangeParam }: { tenantId: string; rang
         empty={data.orderRows.length === 0}
         emptyText="No orders were created in this range."
       >
-        <Table
-          head={["Reference", "Date", "Customer", "Status", "Total", "Collected", "Outstanding"]}
-          align={["left", "left", "left", "left", "right", "right", "right"]}
-          rows={data.orderRows.slice(0, 100).map((o) => [
-            o.ref_no,
-            o.date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
-            o.customerName,
-            o.status.replace(/_/g, " "),
-            money(o.total),
-            money(o.collected),
-            money(o.outstanding),
-          ])}
-          note={data.orderRows.length > 100 ? "Showing the first 100. Export for the full list." : undefined}
-        />
+        <Rows>
+          {data.orderRows.slice(0, 100).map((o) => (
+            <ListRow
+              key={o.id}
+              href={`/orders/${o.id}`}
+              title={o.customerName}
+              sub={`${o.ref_no} · ${o.date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })} · ${o.status.replace(/_/g, " ")}`}
+              value={money(o.total)}
+              valueSub={o.outstanding > 0 ? `${money(o.outstanding)} still owed` : "paid in full"}
+              valueTone={o.status === "cancelled" ? "muted" : "ink"}
+            />
+          ))}
+        </Rows>
+        {data.orderRows.length > 100 && (
+          <p className="border-t border-[var(--line)] px-4 py-3 text-xs text-[var(--muted)]">Showing the first 100. Export for the full list.</p>
+        )}
       </Section>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -110,11 +100,11 @@ async function ReportsContent({ tenantId, rangeParam }: { tenantId: string; rang
           empty={data.staff.length === 0}
           emptyText="No orders to attribute yet."
         >
-          <Table
-            head={["Stylist", "Orders", "Revenue"]}
-            align={["left", "right", "right"]}
-            rows={data.staff.map((s) => [s.name, String(s.orders), money(s.revenue)])}
-          />
+          <Rows>
+            {data.staff.map((s) => (
+              <ListRow key={s.name} title={s.name} sub={`${s.orders} ${s.orders === 1 ? "order" : "orders"}`} value={money(s.revenue)} />
+            ))}
+          </Rows>
         </Section>
 
         <Section
@@ -124,21 +114,35 @@ async function ReportsContent({ tenantId, rangeParam }: { tenantId: string; rang
           empty={data.categories.length === 0}
           emptyText="Add products to see category breakdowns."
         >
-          <Table
-            head={["Category", "Try-ons", "Units", "Stock value"]}
-            align={["left", "right", "right", "right"]}
-            rows={data.categories.map((c) => [c.category, String(c.tryOns), String(c.units), money(c.revenue)])}
-          />
+          <Rows>
+            {data.categories.map((c) => (
+              <ListRow
+                key={c.category}
+                title={c.category}
+                sub={`${c.tryOns} ${c.tryOns === 1 ? "try-on" : "try-ons"} · ${c.units} in stock`}
+                value={money(c.revenue)}
+                valueSub="stock value"
+              />
+            ))}
+          </Rows>
         </Section>
       </div>
 
       {data.statuses.length > 0 && (
         <Section title="Where do my orders stand?" subtitle="Orders from this range, by status" empty={false} emptyText="">
-          <Table
-            head={["Status", "Orders", "Value"]}
-            align={["left", "right", "right"]}
-            rows={data.statuses.map((s) => [s.status.replace(/_/g, " "), String(s.count), money(s.amount)])}
-          />
+          <Rows>
+            {data.statuses.map((s) => {
+              const label = s.status.replace(/_/g, " ");
+              return (
+                <ListRow
+                  key={s.status}
+                  title={label.charAt(0).toUpperCase() + label.slice(1)}
+                  sub={`${s.count} ${s.count === 1 ? "order" : "orders"}`}
+                  value={money(s.amount)}
+                />
+              );
+            })}
+          </Rows>
         </Section>
       )}
     </div>
@@ -152,63 +156,27 @@ function Section({
   empty: boolean; emptyText: string; children: React.ReactNode;
 }) {
   return (
-    <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm overflow-hidden">
-      <div className="flex items-center justify-between gap-4 px-6 py-5 border-b border-stone-100">
+    <div className="overflow-hidden rounded-2xl border border-[var(--line)] bg-white">
+      <div className="flex items-center justify-between gap-4 border-b border-[var(--line)] px-4 py-4">
         <div>
-          <h2 className="font-serif font-normal text-[var(--ink)]">{title}</h2>
-          <p className="text-xs text-stone-400 mt-0.5">{subtitle}</p>
+          <h2 className="font-serif text-lg text-[var(--ink)]">{title}</h2>
+          <p className="mt-0.5 text-sm text-[var(--muted)]">{subtitle}</p>
         </div>
         {exportHref && !empty && (
           <a
             href={exportHref}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-stone-200 text-sm font-medium text-stone-600 hover:border-stone-400 hover:text-[var(--ink)] transition-colors"
+            className={BTN_SECONDARY}
           >
             <span className="material-symbols-outlined text-[18px]">download</span>
             CSV
           </a>
         )}
       </div>
-      {empty ? <p className="px-6 py-10 text-sm text-stone-400 text-center">{emptyText}</p> : children}
+      {empty ? <p className="px-4 py-10 text-center text-sm text-[var(--muted)]">{emptyText}</p> : children}
     </div>
   );
 }
 
-function Table({
-  head, rows, align, note,
-}: {
-  head: string[]; rows: string[][]; align: ("left" | "right")[]; note?: string;
-}) {
-  return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-left border-collapse text-sm">
-        <thead>
-          <tr className="bg-stone-50/50 border-b border-stone-100">
-            {head.map((h, i) => (
-              <th
-                key={h}
-                className={`px-6 py-3 text-xs font-bold text-[var(--muted)] uppercase tracking-wider ${align[i] === "right" ? "text-right" : ""}`}
-              >
-                {h}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-[var(--line)]">
-          {rows.map((row, ri) => (
-            <tr key={ri} className="hover:bg-white/70 transition-colors">
-              {row.map((cell, ci) => (
-                <td
-                  key={ci}
-                  className={`px-6 py-3.5 ${align[ci] === "right" ? "text-right tabular-nums" : ""} ${ci === 0 ? "font-medium text-stone-800" : "text-stone-600"} ${ci === 3 && align[ci] === "left" ? "capitalize" : ""}`}
-                >
-                  {cell}
-                </td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      {note && <p className="px-6 py-3 text-xs text-stone-400 border-t border-stone-100">{note}</p>}
-    </div>
-  );
+function Rows({ children }: { children: React.ReactNode }) {
+  return <div className="divide-y divide-[var(--line)]">{children}</div>;
 }

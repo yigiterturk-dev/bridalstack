@@ -7,6 +7,7 @@ import { formatPrice } from "@/config/modules";
 import RangeFilter from "./range-filter";
 import PageHead from "@/components/page-head";
 import EmptyState from "@/components/empty-state";
+import { dateInTimeZone, normalizeTimeZone, startOfDayInTimeZone } from "@/lib/timezone";
 
 export const dynamic = "force-dynamic";
 
@@ -46,8 +47,15 @@ export default async function AnalyticsPage({ searchParams }: Props) {
   const hasBooking = modules.includes("booking");
 
   const now = new Date();
+  const tz = normalizeTimeZone((tenant.settings as Record<string, unknown> | null)?.time_zone);
   const rangeStart = new Date(now.getTime() - rangeDays * 24 * 60 * 60 * 1000);
-  const revenueStart = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+  // Ay sınırları dükkânın saat dilimine göre (sunucu saatine göre değil).
+  const [tzYear, tzMonth] = dateInTimeZone(now, tz).split("-").map(Number); // tzMonth 1-12
+  const monthKey = (y: number, m0: number) => {
+    const d = new Date(Date.UTC(y, m0, 1));
+    return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
+  };
+  const revenueStart = startOfDayInTimeZone(`${monthKey(tzYear, tzMonth - 1 - 5)}-01`, tz);
   const weekStart = startOfWeek(now);
   const weekEnd = new Date(weekStart);
   weekEnd.setDate(weekEnd.getDate() + 7);
@@ -140,11 +148,11 @@ export default async function AnalyticsPage({ searchParams }: Props) {
   // Son 6 ayın gelir serisi.
   const revenueBuckets: { key: string; label: string; value: number }[] = [];
   for (let i = 5; i >= 0; i--) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    revenueBuckets.push({ key: `${d.getFullYear()}-${d.getMonth()}`, label: MONTHS[d.getMonth()], value: 0 });
+    const key = monthKey(tzYear, tzMonth - 1 - i);
+    revenueBuckets.push({ key, label: MONTHS[Number(key.slice(5)) - 1], value: 0 });
   }
   for (const o of revenueOrders) {
-    const bucket = revenueBuckets.find((b) => b.key === `${o.created_at.getFullYear()}-${o.created_at.getMonth()}`);
+    const bucket = revenueBuckets.find((b) => b.key === dateInTimeZone(o.created_at, tz).slice(0, 7));
     if (bucket) bucket.value += o.discounted_total;
   }
   const revenueSeries = revenueBuckets.map(({ label, value }) => ({ label, value }));

@@ -22,6 +22,8 @@ import {
 import { markPaid, unmarkPaid } from "./actions";
 import PeriodPicker from "./period-picker";
 import EmptyState from "@/components/empty-state";
+import PageHead, { BTN_PRIMARY, BTN_SECONDARY } from "@/components/page-head";
+import ListRow, { ListBox } from "@/components/list-row";
 
 export const dynamic = "force-dynamic";
 
@@ -94,25 +96,15 @@ async function CommissionsContent({
 
   return (
     <div className="animate-fade-in-up">
-      <div className="mb-8 flex items-start justify-between gap-4 flex-wrap">
-        <div>
-          <h1 className="text-3xl lg:text-4xl font-serif font-normal text-[var(--ink)]">Commissions</h1>
-          <p className="text-[var(--muted)] mt-2 font-medium">
-            {activeRules.length === 0
-              ? "No rules yet — nothing is being earned"
-              : `${formatPrice(Math.round(totalCommission))} earned on ${formatPrice(Math.round(totalRevenue))} of sales`}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <PeriodPicker periods={periods} active={active} />
-          <Link
-            href="/commissions/rules"
-            className="px-4 py-2.5 rounded-xl border border-stone-200 bg-white text-sm font-semibold text-stone-700 hover:border-stone-300"
-          >
-            Rules
-          </Link>
-        </div>
-      </div>
+      <PageHead
+        title="Commissions"
+        sub={activeRules.length === 0
+          ? "No rules yet — nothing is being earned"
+          : `${formatPrice(Math.round(totalCommission))} earned on ${formatPrice(Math.round(totalRevenue))} of sales`}
+      >
+        <PeriodPicker periods={periods} active={active} />
+        <Link href="/commissions/rules" className={BTN_SECONDARY}>Rules</Link>
+      </PageHead>
 
       {error && (
         <div className="mb-6 rounded-2xl border border-gold/30 bg-gold-soft px-5 py-3 text-sm font-medium text-gold">
@@ -126,138 +118,83 @@ async function CommissionsContent({
         </EmptyState>
       ) : (
         <>
-          <h2 className="text-sm font-serif font-normal text-[var(--muted)] uppercase tracking-wider mb-4">
-            {formatPeriod(active)}
-          </h2>
+          <h2 className="mb-3 font-serif text-lg text-[var(--ink)]">{formatPeriod(active)}</h2>
 
           {rows.length === 0 ? (
             <EmptyState action={{ href: "/orders/new", label: "New order" }} title="No orders this month">
               Nothing was sold in {formatPeriod(active)}.
             </EmptyState>
           ) : (
-            <div className="flex flex-col gap-3 mb-10">
-              {rows.map((row) => {
-                const payout = paidKey.get(`${row.staff.toLowerCase()}|${active}`);
-                return (
-                  <div key={row.staff} className="bg-white rounded-2xl border border-[var(--line)] shadow-sm p-5 flex items-center gap-4 flex-wrap">
-                    <div className="w-11 h-11 rounded-xl bg-amber-50 flex items-center justify-center flex-shrink-0">
-                      <span className="material-symbols-outlined text-amber-600 text-[20px]">badge</span>
-                    </div>
-
-                    <div className="flex-1 min-w-[180px]">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="font-bold text-[var(--ink)]">{row.staff}</h3>
-                        {payout && (
-                          <span className="text-[11px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100">
-                            Paid {payout.paid_at.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-                          </span>
+            <div className="mb-10">
+              <ListBox>
+                {rows.map((row) => {
+                  const payout = paidKey.get(`${row.staff.toLowerCase()}|${active}`);
+                  return (
+                    <div key={row.staff} className="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:gap-4">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <span aria-hidden="true" className={`h-2 w-2 shrink-0 rounded-full ${payout ? "bg-[var(--line)]" : "bg-gold"}`} />
+                          <span className="truncate font-medium text-[var(--ink)]">{row.staff}</span>
+                        </div>
+                        <p className="mt-0.5 text-sm text-[var(--muted)]">
+                          {row.orderCount} {row.orderCount === 1 ? "order" : "orders"} · {formatPrice(Math.round(row.revenue))} sold
+                          {payout && ` · paid ${payout.paid_at.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`}
+                        </p>
+                      </div>
+                      <div className="flex shrink-0 items-center gap-4">
+                        <div className="text-right">
+                          <div className="font-serif text-lg tabular-nums text-[var(--ink)]">{formatPrice(Math.round(row.commission))}</div>
+                          <div className="text-xs text-[var(--muted)]">commission</div>
+                        </div>
+                        {payout ? (
+                          <form action={unmarkPaid}>
+                            <input type="hidden" name="staff" value={row.staff} />
+                            <input type="hidden" name="period" value={active} />
+                            <button type="submit" className="text-sm text-[var(--muted)] hover:text-[var(--ink)]">Undo</button>
+                          </form>
+                        ) : (
+                          <form action={markPaid}>
+                            <input type="hidden" name="staff" value={row.staff} />
+                            <input type="hidden" name="period" value={active} />
+                            <button type="submit" disabled={row.commission <= 0} className={`${BTN_PRIMARY} disabled:opacity-30`}>
+                              Mark paid
+                            </button>
+                          </form>
                         )}
                       </div>
-                      <p className="text-sm text-[var(--muted)] mt-0.5">
-                        {row.orderCount} {row.orderCount === 1 ? "order" : "orders"} ·{" "}
-                        {formatPrice(Math.round(row.revenue))} sold
-                      </p>
                     </div>
-
-                    <div className="text-right">
-                      <div className="text-2xl font-extrabold tabular-nums text-[var(--ink)]">
-                        {formatPrice(Math.round(row.commission))}
-                      </div>
-                      <div className="text-[11px] text-stone-400">commission</div>
-                    </div>
-
-                    <div className="flex-shrink-0">
-                      {payout ? (
-                        <form action={unmarkPaid}>
-                          <input type="hidden" name="staff" value={row.staff} />
-                          <input type="hidden" name="period" value={active} />
-                          <button type="submit" className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-stone-200 text-[var(--muted)] hover:bg-stone-50">
-                            Undo
-                          </button>
-                        </form>
-                      ) : (
-                        <form action={markPaid}>
-                          <input type="hidden" name="staff" value={row.staff} />
-                          <input type="hidden" name="period" value={active} />
-                          <button
-                            type="submit"
-                            disabled={row.commission <= 0}
-                            className="text-xs font-semibold px-3.5 py-2 rounded-lg bg-stone-900 text-white hover:bg-gold disabled:opacity-30"
-                          >
-                            Mark paid
-                          </button>
-                        </form>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </ListBox>
             </div>
           )}
 
-          <h2 className="text-sm font-serif font-normal text-[var(--muted)] uppercase tracking-wider mb-4">
-            Order by order
-          </h2>
-          <div className="bg-white rounded-2xl border border-[var(--line)] shadow-sm overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="text-left text-xs font-bold uppercase tracking-wide text-stone-400 border-b border-stone-100">
-                    <th className="px-6 py-3">Order</th>
-                    <th className="px-4 py-3">Stylist</th>
-                    <th className="px-4 py-3">Rule applied</th>
-                    <th className="px-4 py-3 text-right">Sale</th>
-                    <th className="px-6 py-3 text-right">Commission</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {inPeriod.map((order) => {
-                    const lines = linesByOrder.get(order.id) ?? [];
-                    const amount = commissionFor(order, rules, lines);
-                    // Tür kuralı işlediyse tek bir "uygulanan kural" yoktur;
-                    // hangi türün hangi kuraldan kazandırdığı tek tek yazılır.
-                    const breakdown = commissionBreakdown(order, rules, lines).filter((b) => b.rule);
-                    const perKind = breakdown.some((b) => isKindRule(b.rule!));
-                    const orderRule = isEarning(order) ? matchRule(order, rules) : null;
-                    return (
-                      <tr key={order.id} className="border-b border-stone-50 last:border-0">
-                        <td className="px-6 py-3">
-                          <Link href={`/orders/${order.id}`} className="font-semibold text-[var(--ink)] hover:text-gold">
-                            {order.ref_no}
-                          </Link>
-                          {!isEarning(order) && (
-                            <span className="ml-2 text-[11px] font-semibold uppercase text-stone-400">{order.status}</span>
-                          )}
-                        </td>
-                        <td className="px-4 py-3 text-stone-600">{salesPersonOf(order)}</td>
-                        <td className="px-4 py-3 text-stone-400">
-                          {perKind ? (
-                            <span className="flex flex-col gap-0.5">
-                              {breakdown.map((b) => (
-                                <span key={b.kind}>
-                                  <span className="text-[var(--muted)]">{kindLabel(b.kind)}</span>
-                                  {" · "}
-                                  {b.rule!.name}
-                                </span>
-                              ))}
-                            </span>
-                          ) : (
-                            orderRule?.name ?? "—"
-                          )}
-                        </td>
-                        <td className="px-4 py-3 text-right tabular-nums text-stone-600">
-                          {formatPrice(Math.round(order.discounted_total))}
-                        </td>
-                        <td className="px-6 py-3 text-right tabular-nums font-bold text-[var(--ink)]">
-                          {amount > 0 ? formatPrice(Math.round(amount)) : <span className="text-stone-300">—</span>}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          <h2 className="mb-3 font-serif text-lg text-[var(--ink)]">Order by order</h2>
+          <ListBox>
+            {inPeriod.map((order) => {
+              const lines = linesByOrder.get(order.id) ?? [];
+              const amount = commissionFor(order, rules, lines);
+              // Tür kuralı işlediyse tek bir "uygulanan kural" yoktur;
+              // hangi türün hangi kuraldan kazandırdığı tek tek yazılır.
+              const breakdown = commissionBreakdown(order, rules, lines).filter((b) => b.rule);
+              const perKind = breakdown.some((b) => isKindRule(b.rule!));
+              const orderRule = isEarning(order) ? matchRule(order, rules) : null;
+              const ruleText = perKind
+                ? breakdown.map((b) => `${kindLabel(b.kind)}: ${b.rule!.name}`).join(", ")
+                : orderRule?.name ?? "no rule";
+              return (
+                <ListRow
+                  key={order.id}
+                  href={`/orders/${order.id}`}
+                  title={order.ref_no}
+                  sub={`${salesPersonOf(order)} · ${isEarning(order) ? ruleText : order.status}`}
+                  value={amount > 0 ? formatPrice(Math.round(amount)) : "—"}
+                  valueTone={amount > 0 ? "ink" : "muted"}
+                  valueSub={`of ${formatPrice(Math.round(order.discounted_total))}`}
+                />
+              );
+            })}
+          </ListBox>
         </>
       )}
     </div>

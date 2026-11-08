@@ -1,3 +1,4 @@
+import PageHead from "@/components/page-head";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
@@ -73,18 +74,15 @@ export default async function SettingsPage({ searchParams }: Props) {
 
   return (
     <div>
-      <div className="mb-8">
-        <h1 className="font-serif text-3xl font-normal text-[var(--ink)] lg:text-4xl">Settings</h1>
-        <p className="mt-1.5 text-[var(--muted)]">Manage your shop and subscription</p>
-      </div>
+      <PageHead title="Settings" sub="Your shop, your plan and your account" />
 
       {params?.success === "saved" && (
-        <div className="mb-6 rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-800">
+        <div className="mb-6 rounded-xl border border-[var(--line)] bg-white px-4 py-3 text-sm text-[var(--ink)]">
           Your shop details have been saved.
         </div>
       )}
       {params?.success === "subscribed" && (
-        <div className="mb-6 rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-800">
+        <div className="mb-6 rounded-xl border border-[var(--line)] bg-white px-4 py-3 text-sm text-[var(--ink)]">
           Payment received — thank you! Your new modules unlock within a few seconds.
           <SubscriptionRefresher />
         </div>
@@ -95,26 +93,26 @@ export default async function SettingsPage({ searchParams }: Props) {
         </div>
       )}
       {params?.success === "demo_loaded" && (
-        <div className="mb-6 rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-800">
+        <div className="mb-6 rounded-xl border border-[var(--line)] bg-white px-4 py-3 text-sm text-[var(--ink)]">
           Sample data added. Remove it any time from this page — your own records are never touched.
         </div>
       )}
       {params?.success === "demo_cleared" && (
-        <div className="mb-6 rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-800">
+        <div className="mb-6 rounded-xl border border-[var(--line)] bg-white px-4 py-3 text-sm text-[var(--ink)]">
           Sample data removed.
         </div>
       )}
       {params?.error && (
-        <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+        <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-late">
           {ERRORS[params.error] ?? "Something went wrong."}
         </div>
       )}
 
       <div className="grid gap-6">
         {/* Shop profile */}
-        <div className="bg-white rounded-2xl border border-gray-200 p-6">
-          <h2 className="text-lg font-serif font-normal text-gray-900 mb-1">Shop Details</h2>
-          <p className="text-sm text-gray-500 mb-5">
+        <div className="bg-white rounded-2xl border border-[var(--line)] p-6">
+          <h2 className="font-serif text-lg text-[var(--ink)] mb-1">Shop details</h2>
+          <p className="text-sm text-[var(--muted)] mb-5">
             These appear on your public booking page and in the client portal.
           </p>
 
@@ -122,19 +120,19 @@ export default async function SettingsPage({ searchParams }: Props) {
             <form action={updateShopProfile} className="grid gap-4">
               <div className="grid sm:grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="shop-name" className="block text-sm font-medium text-gray-700 mb-1">Shop Name</label>
+                  <label htmlFor="shop-name" className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">Shop Name</label>
                   <input
                     id="shop-name"
                     name="name"
                     required
                     defaultValue={tenant.name}
-                    className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none focus:border-gray-900"
+                    className="w-full px-4 py-2.5 rounded-xl border border-stone-200 text-sm outline-none focus:border-stone-400"
                   />
                 </div>
                 <div>
-                  <label htmlFor="booking-slug" className="block text-sm font-medium text-gray-700 mb-1">Booking Address</label>
-                  <div className="flex items-center rounded-xl border border-gray-300 overflow-hidden focus-within:border-gray-900">
-                    <span className="px-3 py-2.5 text-xs text-gray-400 bg-gray-50 border-r border-gray-200 whitespace-nowrap font-mono">
+                  <label htmlFor="booking-slug" className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">Booking Address</label>
+                  <div className="flex items-center rounded-xl border border-stone-200 overflow-hidden focus-within:border-[var(--ink)]">
+                    <span className="px-3 py-2.5 text-xs text-[var(--muted)] bg-stone-50 border-r border-[var(--line)] whitespace-nowrap font-mono">
                       /book/
                     </span>
                     <input
@@ -153,70 +151,70 @@ export default async function SettingsPage({ searchParams }: Props) {
               </div>
 
               <div>
-                <label htmlFor="logo-url" className="block text-sm font-medium text-gray-700 mb-1">Logo URL</label>
+                <label htmlFor="logo-url" className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">Logo URL</label>
                 <input
                   id="logo-url"
                   name="logo_url"
                   type="url"
                   defaultValue={tenant.logo_url ?? ""}
                   placeholder="https://example.com/logo.png"
-                  className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none focus:border-gray-900"
+                  className="w-full px-4 py-2.5 rounded-xl border border-stone-200 text-sm outline-none focus:border-stone-400"
                 />
               </div>
 
               <div className="grid sm:grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="primary-color" className="block text-sm font-medium text-gray-700 mb-1">Primary Color</label>
+                  <label htmlFor="primary-color" className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">Primary Color</label>
                   <div className="flex items-center gap-3">
                     <input
                       id="primary-color"
                       name="primary_color"
                       type="color"
                       defaultValue={tenant.primary_color ?? "#0A0A0C"}
-                      className="h-11 w-14 rounded-xl border border-gray-300 bg-white cursor-pointer"
+                      className="h-11 w-14 rounded-xl border border-stone-200 bg-white cursor-pointer"
                     />
-                    <span className="text-xs text-gray-500">Headings and buttons</span>
+                    <span className="text-xs text-[var(--muted)]">Headings and buttons</span>
                   </div>
                 </div>
                 <div>
-                  <label htmlFor="accent-color" className="block text-sm font-medium text-gray-700 mb-1">Accent Color</label>
+                  <label htmlFor="accent-color" className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">Accent Color</label>
                   <div className="flex items-center gap-3">
                     <input
                       id="accent-color"
                       name="accent_color"
                       type="color"
                       defaultValue={tenant.accent_color ?? "#2563EB"}
-                      className="h-11 w-14 rounded-xl border border-gray-300 bg-white cursor-pointer"
+                      className="h-11 w-14 rounded-xl border border-stone-200 bg-white cursor-pointer"
                     />
-                    <span className="text-xs text-gray-500">Booking page highlights</span>
+                    <span className="text-xs text-[var(--muted)]">Booking page highlights</span>
                   </div>
                 </div>
               </div>
 
               <div>
-                <label htmlFor="shop-time-zone" className="block text-sm font-medium text-gray-700 mb-1">Shop time zone</label>
+                <label htmlFor="shop-time-zone" className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">Shop time zone</label>
                 <select
                   id="shop-time-zone"
                   name="time_zone"
                   defaultValue={timeZone}
-                  className="w-full px-4 py-2.5 rounded-xl border border-gray-300 bg-white text-sm outline-none focus:border-gray-900 focus-visible:ring-2 focus-visible:ring-gray-500 focus-visible:ring-offset-1"
+                  className="w-full px-4 py-2.5 rounded-xl border border-stone-200 bg-white text-sm outline-none focus:border-stone-400 focus-visible:ring-2 focus-visible:ring-gold/40 focus-visible:ring-offset-1"
                 >
                   {TIME_ZONE_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
                   {!TIME_ZONE_OPTIONS.some((option) => option.value === timeZone) && <option value={timeZone}>{timeZone}</option>}
                 </select>
-                <p className="text-xs text-gray-500 mt-1">Used for the public booking calendar and date validation.</p>
+                <p className="text-xs text-[var(--muted)] mt-1">Used for the public booking calendar and date validation.</p>
               </div>
 
-              <label className="flex items-start gap-3 p-4 rounded-xl border border-gray-100 cursor-pointer hover:border-gray-300 transition-colors">
+              <label className="flex items-start gap-3 p-4 rounded-xl border border-[var(--line)] cursor-pointer hover:border-stone-300 transition-colors">
                 <input
                   type="checkbox"
                   name="briefing_emails"
                   defaultChecked={tenant.briefing_emails !== false}
-                  className="mt-0.5 w-4 h-4 accent-gray-900"
+                  className="mt-0.5 w-4 h-4 accent-[var(--ink)]"
                 />
                 <span>
-                  <span className="block text-sm font-medium text-gray-900">Daily briefing email</span>
-                  <span className="block text-xs text-gray-500 mt-0.5">
+                  <span className="block text-sm font-medium text-[var(--ink)]">Daily briefing email</span>
+                  <span className="block text-xs text-[var(--muted)] mt-0.5">
                     Each morning we email you what needs chasing: unanswered bookings, overdue
                     payments, brides who loved a gown but have not ordered. Nothing is sent on a
                     quiet day.
@@ -227,7 +225,7 @@ export default async function SettingsPage({ searchParams }: Props) {
               <div>
                 <SubmitButton
                   pendingLabel="Saving changes…"
-                  className="px-5 py-2.5 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-800 disabled:opacity-60 disabled:cursor-wait"
+                  className="px-5 py-2.5 bg-[var(--ink)] text-white rounded-xl text-sm font-medium hover:bg-stone-800 disabled:opacity-60 disabled:cursor-wait"
                 >
                   Save Changes
                 </SubmitButton>
@@ -236,21 +234,21 @@ export default async function SettingsPage({ searchParams }: Props) {
           ) : (
             <div className="grid sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Shop Name</label>
-                <div className="px-4 py-2.5 rounded-xl bg-gray-50 text-sm text-gray-900">{tenant.name}</div>
+                <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">Shop Name</label>
+                <div className="px-4 py-2.5 rounded-xl bg-stone-50 text-sm text-[var(--ink)]">{tenant.name}</div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Plan</label>
-                <div className="px-4 py-2.5 rounded-xl bg-gray-50 text-sm text-gray-900 capitalize">{tenant.plan}</div>
+                <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">Plan</label>
+                <div className="px-4 py-2.5 rounded-xl bg-stone-50 text-sm text-[var(--ink)] capitalize">{tenant.plan}</div>
               </div>
             </div>
           )}
         </div>
 
         {/* Public booking link */}
-        <div className="bg-white rounded-2xl border border-gray-200 p-6">
-          <h2 className="text-lg font-serif font-normal text-gray-900 mb-1">Public Booking Link</h2>
-          <p className="text-sm text-gray-500 mb-4">
+        <div className="bg-white rounded-2xl border border-[var(--line)] p-6">
+          <h2 className="font-serif text-lg text-[var(--ink)] mb-1">Public booking link</h2>
+          <p className="text-sm text-[var(--muted)] mb-4">
             Share this with clients so they can book appointments themselves.
           </p>
           <CopyField value={bookingUrl} />
@@ -258,7 +256,7 @@ export default async function SettingsPage({ searchParams }: Props) {
             href={bookingUrl}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-1.5 mt-3 text-sm font-medium text-gray-700 hover:text-gray-900"
+            className="inline-flex items-center gap-1.5 mt-3 text-sm font-medium text-[var(--ink)] hover:text-[var(--ink)]"
           >
             <span className="material-symbols-outlined text-base">open_in_new</span>
             Preview your booking page
@@ -266,11 +264,11 @@ export default async function SettingsPage({ searchParams }: Props) {
         </div>
 
         {/* Team */}
-        <div className="bg-white rounded-2xl border border-gray-200 p-6">
+        <div className="bg-white rounded-2xl border border-[var(--line)] p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-serif font-normal text-gray-900">Team</h2>
+            <h2 className="font-serif text-lg text-[var(--ink)]">Team</h2>
             {canManageStaff && (
-              <a href="/staff" className="text-sm font-medium text-gray-600 hover:text-gray-900">
+              <a href="/staff" className="text-sm font-medium text-[var(--muted)] hover:text-[var(--ink)]">
                 Manage staff
               </a>
             )}
@@ -279,15 +277,15 @@ export default async function SettingsPage({ searchParams }: Props) {
             {team.map((m) => {
               const name = m.display_name || m.user.name || m.user.email;
               return (
-                <div key={m.id} className="flex items-center justify-between px-4 py-3 rounded-xl border border-gray-100">
+                <div key={m.id} className="flex items-center justify-between px-4 py-3 rounded-xl border border-[var(--line)]">
                   <div className="min-w-0">
-                    <div className="text-sm font-medium text-gray-900 truncate">{name}</div>
-                    <div className="text-xs text-gray-500 truncate">
+                    <div className="text-sm font-medium text-[var(--ink)] truncate">{name}</div>
+                    <div className="text-xs text-[var(--muted)] truncate">
                       {m.user.email}
                       {m.title ? ` · ${m.title}` : ""}
                     </div>
                   </div>
-                  <span className="text-xs font-medium text-gray-600 bg-gray-100 px-2.5 py-1 rounded-full whitespace-nowrap">
+                  <span className="text-xs font-medium text-[var(--muted)] bg-stone-100 px-2.5 py-1 rounded-full whitespace-nowrap">
                     {ROLE_LABELS[normalizeRole(m.role)]}
                   </span>
                 </div>
@@ -297,21 +295,21 @@ export default async function SettingsPage({ searchParams }: Props) {
         </div>
 
         {/* Billing */}
-        <div className="bg-white rounded-2xl border border-gray-200 p-6">
+        <div className="bg-white rounded-2xl border border-[var(--line)] p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-serif font-normal text-gray-900">Subscription</h2>
-            <div className="text-sm font-medium text-gray-500">{formatPrice(currentPrice)}/mo</div>
+            <h2 className="font-serif text-lg text-[var(--ink)]">Subscription</h2>
+            <div className="text-sm font-medium text-[var(--muted)]">{formatPrice(currentPrice)}/mo</div>
           </div>
           <div className="flex gap-3">
             <UpgradeButton currentPacks={tenant.packs} currentInterval={currentInterval} billingConfigured={BILLING_CONFIGURED} billingAnnualConfigured={BILLING_ANNUAL_CONFIGURED} />
             {Boolean(dodoCustomerId) && <ManageBillingButton />}
           </div>
           {canEdit && (
-            <p className="mt-4 text-xs text-gray-500">
+            <p className="mt-4 text-xs text-[var(--muted)]">
               Run more than one shop?{" "}
               <a
                 href="mailto:hello@bridalstack.com?subject=Multi-location%20BridalStack"
-                className="font-semibold text-gray-700 underline underline-offset-2 hover:text-gold rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40"
+                className="font-semibold text-[var(--ink)] underline underline-offset-2 hover:text-gold rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40"
               >
                 Talk to us about multi-location
               </a>
@@ -321,10 +319,10 @@ export default async function SettingsPage({ searchParams }: Props) {
         </div>
 
         {/* Active Packs */}
-        <div className="bg-white rounded-2xl border border-gray-200 p-6">
+        <div className="bg-white rounded-2xl border border-[var(--line)] p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-serif font-normal text-gray-900">Your Modules</h2>
-            <div className="text-sm font-medium text-gray-500">{formatPrice(currentPrice)}/mo</div>
+            <h2 className="font-serif text-lg text-[var(--ink)]">Your modules</h2>
+            <div className="text-sm font-medium text-[var(--muted)]">{formatPrice(currentPrice)}/mo</div>
           </div>
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
             {ALL_PACK_IDS.map((packId) => {
@@ -336,24 +334,24 @@ export default async function SettingsPage({ searchParams }: Props) {
                 <div
                   key={packId}
                   className={`p-4 rounded-xl border-2 transition-colors ${
-                    isActive ? "border-gray-900 bg-gray-50" : "border-gray-100 bg-white opacity-60"
+                    isActive ? "border-[var(--ink)] bg-stone-50" : "border-[var(--line)] bg-white opacity-60"
                   }`}
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-semibold text-gray-900">{pack.name}</h3>
+                    <h3 className="font-semibold text-[var(--ink)]">{pack.name}</h3>
                     {onTrial ? (
                       <span className="text-xs font-medium text-gold bg-gold-soft px-2 py-0.5 rounded-full">
                         Trial · {tenant.trial_days_left}d left
                       </span>
                     ) : isActive ? (
-                      <span className="text-xs font-medium text-green-700 bg-green-100 px-2 py-0.5 rounded-full">Active</span>
+                      <span className="text-xs font-medium text-gold bg-gold-soft px-2 py-0.5 rounded-full">Active</span>
                     ) : !sellable ? (
                       <span className="text-xs font-medium text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">In development</span>
                     ) : (
-                      <span className="text-xs font-medium text-gray-400">{pack.monthlyPrice === 0 ? "Included" : `${formatPrice(pack.monthlyPrice)}/mo${BILLING_ANNUAL_CONFIGURED ? ` · ${formatPrice(annualPrice(pack.monthlyPrice))}/yr` : ""}`}</span>
+                      <span className="text-xs font-medium text-[var(--muted)]">{pack.monthlyPrice === 0 ? "Included" : `${formatPrice(pack.monthlyPrice)}/mo${BILLING_ANNUAL_CONFIGURED ? ` · ${formatPrice(annualPrice(pack.monthlyPrice))}/yr` : ""}`}</span>
                     )}
                   </div>
-                  <p className="text-xs text-gray-500 mb-3">{pack.description}</p>
+                  <p className="text-xs text-[var(--muted)] mb-3">{pack.description}</p>
                   <div className="flex flex-wrap gap-1">
                     {pack.modules.map((moduleId) => {
                       const live = isModuleLive(moduleId);
@@ -361,7 +359,7 @@ export default async function SettingsPage({ searchParams }: Props) {
                         <span
                           key={moduleId}
                           className={`text-[10px] px-2 py-0.5 rounded ${
-                            live ? "bg-gray-100 text-gray-600" : "bg-amber-50 text-amber-700 border border-amber-100"
+                            live ? "bg-stone-100 text-[var(--muted)]" : "bg-amber-50 text-amber-700 border border-amber-100"
                           }`}
                         >
                           {MODULES[moduleId]?.name}
@@ -375,7 +373,7 @@ export default async function SettingsPage({ searchParams }: Props) {
                       <input type="hidden" name="pack" value={packId} />
                       <button
                         type="submit"
-                        className="w-full text-xs font-medium text-white bg-gray-900 hover:bg-gray-800 rounded-lg px-3 py-2 transition-colors"
+                        className="w-full text-xs font-medium text-white bg-[var(--ink)] hover:bg-stone-800 rounded-lg px-3 py-2 transition-colors"
                       >
                         Start {TRIAL_DAYS}-day free trial
                       </button>
@@ -389,9 +387,9 @@ export default async function SettingsPage({ searchParams }: Props) {
 
         {/* Sample data */}
         {canEdit && (
-          <div className="bg-white rounded-2xl border border-gray-200 p-6">
-            <h2 className="text-lg font-serif font-normal text-gray-900 mb-1">Sample data</h2>
-            <p className="text-sm text-gray-500 mb-4 max-w-2xl">
+          <div className="bg-white rounded-2xl border border-[var(--line)] p-6">
+            <h2 className="font-serif text-lg text-[var(--ink)] mb-1">Sample data</h2>
+            <p className="text-sm text-[var(--muted)] mb-4 max-w-2xl">
               Fill the workspace with an example boutique — brides, gowns, orders and
               fittings — so you can see how everything fits together before entering your
               own records. Sample records are tagged and removed in one click; your own
@@ -401,7 +399,7 @@ export default async function SettingsPage({ searchParams }: Props) {
               <form action={clearDemoData}>
                 <button
                   type="submit"
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-[var(--line)] text-sm font-medium text-[var(--ink)] hover:bg-stone-50 transition-colors"
                 >
                   <span className="material-symbols-outlined text-lg">delete_sweep</span>
                   Remove sample data
@@ -411,7 +409,7 @@ export default async function SettingsPage({ searchParams }: Props) {
               <form action={seedDemoData}>
                 <button
                   type="submit"
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gray-900 text-white text-sm font-medium hover:bg-gray-800 transition-colors"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[var(--ink)] text-white text-sm font-medium hover:bg-stone-800 transition-colors"
                 >
                   <span className="material-symbols-outlined text-lg">auto_awesome</span>
                   Load sample data
@@ -422,18 +420,18 @@ export default async function SettingsPage({ searchParams }: Props) {
         )}
 
         {/* Account */}
-        <div className="bg-white rounded-2xl border border-gray-200 p-6">
+        <div className="bg-white rounded-2xl border border-[var(--line)] p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-serif font-normal text-gray-900">Account</h2>
+            <h2 className="font-serif text-lg text-[var(--ink)]">Account</h2>
             <a
               href="/settings/export"
-              className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-600 hover:text-gray-900"
+              className="inline-flex items-center gap-1.5 text-sm font-medium text-[var(--muted)] hover:text-[var(--ink)]"
             >
               <span className="material-symbols-outlined text-base">download</span>
               Export my data
             </a>
           </div>
-          <p className="text-sm text-gray-500 mb-4">
+          <p className="text-sm text-[var(--muted)] mb-4">
             Download everything in this workspace as JSON — customers, orders, appointments,
             products and the rest.
           </p>
@@ -443,14 +441,14 @@ export default async function SettingsPage({ searchParams }: Props) {
         {/* Danger zone */}
         <div className="bg-white rounded-2xl border border-red-200 p-6">
           <h2 className="text-lg font-serif font-normal text-red-700 mb-1">Delete account</h2>
-          <p className="text-sm text-gray-500 mb-5 max-w-2xl">
+          <p className="text-sm text-[var(--muted)] mb-5 max-w-2xl">
             This permanently deletes your account and, if you own this workspace, every record in
             it. It cannot be undone. To confirm, type your booking address
-            (<span className="font-mono text-gray-700">{tenant.slug}</span>) and your password.
+            (<span className="font-mono text-[var(--ink)]">{tenant.slug}</span>) and your password.
           </p>
           <form action={deleteAccount} className="grid gap-4 max-w-md">
             <div>
-              <label htmlFor="delete-confirm" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="delete-confirm" className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
                 Booking address
               </label>
               <input
@@ -459,11 +457,11 @@ export default async function SettingsPage({ searchParams }: Props) {
                 required
                 autoComplete="off"
                 placeholder={tenant.slug}
-                className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none focus:border-red-500 font-mono"
+                className="w-full px-4 py-2.5 rounded-xl border border-stone-200 text-sm outline-none focus:border-red-500 font-mono"
               />
             </div>
             <div>
-              <label htmlFor="delete-password" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="delete-password" className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
                 Password
               </label>
               <input
@@ -472,7 +470,7 @@ export default async function SettingsPage({ searchParams }: Props) {
                 type="password"
                 required
                 autoComplete="current-password"
-                className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm outline-none focus:border-red-500"
+                className="w-full px-4 py-2.5 rounded-xl border border-stone-200 text-sm outline-none focus:border-red-500"
               />
             </div>
             <div>

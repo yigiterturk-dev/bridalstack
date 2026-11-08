@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { updateBookingStatus } from "./actions";
 import { formatPrice } from "@/config/modules";
+import PageHead from "@/components/page-head";
 
 type Booking = {
   id: string;
@@ -64,200 +65,118 @@ export default function BookingsTable({ bookings }: { bookings: Booking[] }) {
     cancelled: bookings.filter((b) => b.status === "cancelled").length,
   };
 
+  const dot: Record<Booking["status"], string> = {
+    pending: "bg-amber",
+    confirmed: "bg-gold",
+    completed: "bg-[var(--line)]",
+    cancelled: "bg-[var(--line)]",
+    no_show: "bg-late",
+  };
+  const label = (st: string) => {
+    const t = st.replace("_", " ");
+    return t.charAt(0).toUpperCase() + t.slice(1);
+  };
+  const busy = (id: string) => updatingId === id || pending;
+  const BTN_SMALL_PRIMARY = "rounded-lg bg-[var(--ink)] px-3 py-1.5 text-sm font-medium text-white hover:bg-stone-800 disabled:opacity-50";
+  const BTN_SMALL = "rounded-lg border border-[var(--line)] bg-white px-3 py-1.5 text-sm font-medium text-[var(--ink)] hover:border-stone-300 disabled:opacity-50";
+
   return (
-    <div className="space-y-6">
-      {/* Title */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-serif font-normal text-gray-900">Bookings</h1>
-          <p className="text-sm text-gray-500 mt-1">Manage client online appointment bookings and statuses.</p>
-        </div>
-      </div>
+    <div>
+      <PageHead
+        title="Bookings"
+        sub={
+          stats.total === 0
+            ? "Online bookings from your booking page land here"
+            : `${stats.pending} waiting for you · ${stats.confirmed} confirmed · ${stats.completed} done${stats.cancelled ? ` · ${stats.cancelled} cancelled` : ""}`
+        }
+      />
 
       {actionError && (
-        <div role="alert" aria-live="assertive" className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+        <div role="alert" aria-live="assertive" className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-late">
           {actionError}
         </div>
       )}
 
-      {/* Stats Widget */}
-      {stats.total > 0 && (
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
-        <div className="bg-white p-5 rounded-2xl border border-gray-200">
-          <div className="text-xs font-semibold text-gray-400 uppercase">Total Bookings</div>
-          <div className="text-2xl font-bold text-gray-900 mt-1">{stats.total}</div>
-        </div>
-        <div className="bg-white p-5 rounded-2xl border border-gray-200">
-          <div className="text-xs font-semibold uppercase text-amber-600">Awaiting Approval</div>
-          <div className="text-2xl font-bold text-amber-600 mt-1">{stats.pending}</div>
-        </div>
-        <div className="bg-white p-5 rounded-2xl border border-gray-200">
-          <div className="text-xs font-semibold text-gray-400 uppercase text-gold">Confirmed</div>
-          <div className="text-2xl font-bold text-gold mt-1">{stats.confirmed}</div>
-        </div>
-        <div className="bg-white p-5 rounded-2xl border border-gray-200">
-          <div className="text-xs font-semibold text-gray-400 uppercase text-emerald-600">Completed</div>
-          <div className="text-2xl font-bold text-emerald-600 mt-1">{stats.completed}</div>
-        </div>
-        <div className="bg-white p-5 rounded-2xl border border-gray-200">
-          <div className="text-xs font-semibold text-gray-400 uppercase text-gray-500">Cancelled</div>
-          <div className="text-2xl font-bold text-gray-500 mt-1">{stats.cancelled}</div>
-        </div>
-      </div>
-      )}
-
-      {/* Filters bar */}
-      <div className="bg-white p-4 rounded-2xl border border-gray-200 flex flex-col md:flex-row gap-3 items-center justify-between">
-        <div className="w-full md:w-72 relative">
-          <input
-            type="text"
-            placeholder="Search by customer or service..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full px-4 py-2 bg-gray-50 border border-gray-250 rounded-xl text-sm outline-none focus:border-gold focus:bg-white transition-all"
-          />
-        </div>
-
-        <div className="flex gap-2 w-full md:w-auto">
+      <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <input
+          type="text"
+          aria-label="Search bookings"
+          placeholder="Search by customer or service…"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full rounded-xl border border-stone-200 bg-white px-4 py-2.5 text-sm text-[var(--ink)] outline-none transition-colors focus:border-stone-400 md:w-72"
+        />
+        <div className="flex flex-wrap gap-2">
           {["all", "pending", "confirmed", "completed", "cancelled", "no_show"].map((filter) => (
             <button
               key={filter}
+              type="button"
               onClick={() => setStatusFilter(filter)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold capitalize border transition-all ${
+              aria-pressed={statusFilter === filter}
+              className={`rounded-xl border px-3 py-1.5 text-sm font-medium transition-colors ${
                 statusFilter === filter
-                  ? "bg-gold-soft border-gold/30 text-gold"
-                  : "bg-white border-gray-200 text-gray-600 hover:bg-gray-50"
+                  ? "border-[var(--ink)] bg-[var(--ink)] text-white"
+                  : "border-[var(--line)] bg-white text-[var(--ink)] hover:border-stone-300"
               }`}
             >
-              {filter.replace("_", " ")}
+              {label(filter)}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Bookings List */}
-      <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-        {filtered.length === 0 ? (
-          <div className="py-20 text-center text-sm text-gray-400">
-            No bookings found matching filters.
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm border-collapse">
-              <thead>
-                <tr className="bg-gray-50 border-b border-gray-200 text-xs font-bold text-gray-400 uppercase">
-                  <th className="p-4">Customer</th>
-                  <th className="p-4">Service & Staff</th>
-                  <th className="p-4">Date & Time</th>
-                  <th className="p-4">Price</th>
-                  <th className="p-4">Status</th>
-                  <th className="p-4 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {filtered.map((b) => (
-                  <tr key={b.id} className="hover:bg-gray-50/50 transition-colors">
-                    <td className="p-4">
-                      <div className="font-semibold text-gray-900">{b.customer_name}</div>
-                      <div className="text-xs text-gray-450 mt-0.5">
-                        {b.customer_phone && <span>{b.customer_phone}</span>}
-                        {b.customer_phone && b.customer_email && <span> · </span>}
-                        {b.customer_email && <span>{b.customer_email}</span>}
-                      </div>
-                      {b.notes && (
-                        <div className="text-xs text-amber-600 mt-1 bg-amber-50/60 border border-amber-100 rounded-lg px-2.5 py-1 inline-block">
-                          📝 {b.notes}
-                        </div>
-                      )}
-                    </td>
-                    <td className="p-4">
-                      <div className="font-medium text-gray-800">{b.services?.name ?? "Custom Service"}</div>
-                      <div className="text-xs text-gray-400 mt-0.5">with {b.tenant_members?.display_name ?? "Anyone"}</div>
-                    </td>
-                    <td className="p-4">
-                      <div className="font-medium text-gray-800">
-                        {new Date(b.booking_date + "T12:00:00").toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                        })}
-                      </div>
-                      <div className="text-xs text-gray-400 mt-0.5">
-                        {b.start_time.slice(0, 5)} – {b.end_time.slice(0, 5)}
-                      </div>
-                    </td>
-                    <td className="p-4 font-semibold text-gray-900">{formatPrice(b.amount)}</td>
-                    <td className="p-4">
-                      <span
-                        className={`px-2 py-0.5 rounded-full text-xs font-semibold uppercase border ${
-                          b.status === "pending"
-                            ? "bg-amber-50 border-amber-100 text-amber-700"
-                            : b.status === "confirmed"
-                            ? "bg-gold-soft border-gold/30 text-gold"
-                            : b.status === "completed"
-                            ? "bg-emerald-50 border-emerald-100 text-emerald-700"
-                            : b.status === "cancelled"
-                            ? "bg-gray-50 border-gray-200 text-gray-500"
-                            : "bg-red-50 border-red-100 text-red-700"
-                        }`}
-                      >
-                        {b.status.replace("_", " ")}
-                      </span>
-                    </td>
-                    <td className="p-4 text-right">
-                      {updatingId === b.id || pending ? (
-                        <span className="text-xs text-gray-450 italic">Saving...</span>
-                      ) : (
-                        <div className="flex gap-2 justify-end">
-                          {b.status === "pending" && (
-                            <>
-                              <button
-                                onClick={() => updateStatus(b.id, "confirmed")}
-                                className="px-2 py-1 bg-gold hover:bg-gold text-white rounded-lg text-xs font-semibold transition-colors"
-                              >
-                                Approve
-                              </button>
-                              <button
-                                onClick={() => updateStatus(b.id, "cancelled")}
-                                className="px-2 py-1 border border-gray-200 hover:bg-gray-50 text-gray-600 rounded-lg text-xs font-semibold transition-colors"
-                              >
-                                Decline
-                              </button>
-                            </>
-                          )}
-                          {b.status === "confirmed" && (
-                            <>
-                              <button
-                                onClick={() => updateStatus(b.id, "completed")}
-                                className="px-2 py-1 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-xs font-semibold transition-colors"
-                              >
-                                Complete
-                              </button>
-                              <button
-                                onClick={() => updateStatus(b.id, "cancelled")}
-                                className="px-2 py-1 border border-gray-200 hover:bg-gray-50 text-gray-600 rounded-lg text-xs font-semibold transition-colors"
-                              >
-                                Cancel
-                              </button>
-                            </>
-                          )}
-                          {b.status === "cancelled" && (
-                            <button
-                              onClick={() => updateStatus(b.id, "confirmed")}
-                              className="px-2 py-1 bg-gold hover:bg-gold text-white rounded-lg text-xs font-semibold transition-colors"
-                            >
-                              Reconfirm
-                            </button>
-                          )}
-                        </div>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+      {filtered.length === 0 ? (
+        <div className="rounded-2xl border border-[var(--line)] bg-white py-16 text-center text-sm text-[var(--muted)]">
+          {bookings.length === 0 ? "No bookings yet." : "No bookings match this search."}
+        </div>
+      ) : (
+        <div className="overflow-hidden rounded-2xl border border-[var(--line)] bg-white divide-y divide-[var(--line)]">
+          {filtered.map((b) => {
+            const day = new Date(b.booking_date + "T12:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+            const contact = [b.customer_phone, b.customer_email].filter(Boolean).join(" · ");
+            return (
+              <div key={b.id} className="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:gap-4">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <span aria-hidden="true" className={`h-2 w-2 shrink-0 rounded-full ${dot[b.status]}`} />
+                    <span className="truncate font-medium text-[var(--ink)]">{b.customer_name}</span>
+                  </div>
+                  <p className="mt-0.5 text-sm text-[var(--muted)]">
+                    {day}, {b.start_time.slice(0, 5)}–{b.end_time.slice(0, 5)} · {b.services?.name ?? "Custom service"} with{" "}
+                    {b.tenant_members?.display_name ?? "anyone"} · {label(b.status)}
+                  </p>
+                  {(contact || b.notes) && (
+                    <p className="mt-0.5 text-sm text-[var(--muted)]">
+                      {contact}
+                      {contact && b.notes ? " · " : ""}
+                      {b.notes && <span className="italic">“{b.notes}”</span>}
+                    </p>
+                  )}
+                </div>
+                <div className="flex shrink-0 items-center gap-3">
+                  <div className="font-serif text-lg tabular-nums text-[var(--ink)]">{formatPrice(b.amount)}</div>
+                  {b.status === "pending" && (
+                    <>
+                      <button type="button" disabled={busy(b.id)} onClick={() => updateStatus(b.id, "confirmed")} className={BTN_SMALL_PRIMARY}>Approve</button>
+                      <button type="button" disabled={busy(b.id)} onClick={() => updateStatus(b.id, "cancelled")} className={BTN_SMALL}>Decline</button>
+                    </>
+                  )}
+                  {b.status === "confirmed" && (
+                    <>
+                      <button type="button" disabled={busy(b.id)} onClick={() => updateStatus(b.id, "completed")} className={BTN_SMALL_PRIMARY}>Complete</button>
+                      <button type="button" disabled={busy(b.id)} onClick={() => updateStatus(b.id, "cancelled")} className={BTN_SMALL}>Cancel</button>
+                    </>
+                  )}
+                  {b.status === "cancelled" && (
+                    <button type="button" disabled={busy(b.id)} onClick={() => updateStatus(b.id, "confirmed")} className={BTN_SMALL}>Reconfirm</button>
+                  )}
+                  {updatingId === b.id && <span className="text-sm text-[var(--muted)]">Saving…</span>}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

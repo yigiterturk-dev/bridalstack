@@ -10,6 +10,7 @@ export function resolveRange(rangeParam?: string): ReportRange {
 }
 
 export type OrderRow = {
+  id: string;
   ref_no: string;
   customerName: string;
   order_type: string;
@@ -62,6 +63,7 @@ export async function loadReports(tenantId: string, range: ReportRange) {
   const orderRows: OrderRow[] = orders.map((o) => {
     const collected = o.deposit_amount + (paidByOrder.get(o.id) ?? 0);
     return {
+      id: o.id,
       ref_no: o.ref_no,
       customerName: o.customer?.name ?? "—",
       order_type: o.order_type,

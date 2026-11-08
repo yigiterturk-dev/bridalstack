@@ -5,6 +5,9 @@ import { getCurrentTenant, getCurrentUserId } from "@/lib/tenant";
 import { calculateMonthlyPrice, formatPrice, type PackId } from "@/config/modules";
 import { isDemoTenant } from "@/lib/demo-identity";
 import { switchTenant, createLocation } from "./actions";
+import PageHead, { BTN_PRIMARY, BTN_SECONDARY } from "@/components/page-head";
+import AddPanel from "@/components/add-panel";
+import { ListBox } from "@/components/list-row";
 
 export const dynamic = "force-dynamic";
 
@@ -41,104 +44,80 @@ export default async function LocationsPage({
 
   return (
     <div className="max-w-3xl">
-      <div className="mb-8">
-        <h1 className="font-serif text-3xl font-normal text-[var(--ink)] lg:text-4xl">Locations</h1>
-        <p className="mt-1.5 text-[var(--muted)]">
-          Each location is its own workspace: its own customers, stock, orders and team.
-          Billing is per location, so every shop carries its own subscription.
-        </p>
-      </div>
+      <PageHead
+        title="Locations"
+        sub="Each shop has its own customers, stock, orders, team and subscription"
+      />
 
       {error && (
-        <div role="alert" className="mb-6 rounded-xl border border-gold/30 bg-gold-soft px-4 py-3 text-sm text-gold">
+        <div role="alert" className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-late">
           {error}
         </div>
       )}
 
-      <div className="space-y-3">
-        {memberships.map((m) => {
-          const current = m.tenant_id === active?.id;
-          const price = calculateMonthlyPrice((m.tenant.packs ?? []) as PackId[]);
-          return (
-            <div
-              key={m.tenant_id}
-              className={`flex flex-wrap items-center justify-between gap-4 rounded-2xl border p-5 ${
-                current ? "border-gold/30 bg-gold-soft" : "border-gray-200 bg-white"
-              }`}
-            >
-              <div className="min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold text-gray-900 truncate">{m.tenant.name}</span>
-                  {current && (
-                    <span className="rounded-full bg-gold-soft px-2 py-0.5 text-[11px] font-semibold text-gold">
-                      Current
-                    </span>
-                  )}
+      <div className="flex flex-col gap-6">
+        <ListBox>
+          {memberships.map((m) => {
+            const current = m.tenant_id === active?.id;
+            const price = calculateMonthlyPrice((m.tenant.packs ?? []) as PackId[]);
+            return (
+              <div key={m.tenant_id} className="flex items-center gap-4 px-4 py-3">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    {current && <span aria-hidden="true" className="h-2 w-2 shrink-0 rounded-full bg-gold" />}
+                    <span className="truncate font-medium text-[var(--ink)]">{m.tenant.name}</span>
+                  </div>
+                  <p className="mt-0.5 text-sm text-[var(--muted)]">
+                    {current ? "You are here · " : ""}
+                    {price > 0 ? `${formatPrice(price)}/mo` : "Free plan"} · {m.role}
+                  </p>
                 </div>
-                <p className="mt-1 text-xs text-gray-500">
-                  {price > 0 ? `${formatPrice(price)}/mo` : "Free plan"} · {m.role}
-                </p>
+                {current ? (
+                  <Link href="/dashboard" className={BTN_SECONDARY}>Open</Link>
+                ) : (
+                  <form action={switchTenant}>
+                    <input type="hidden" name="tenantId" value={m.tenant_id} />
+                    <button type="submit" className={BTN_PRIMARY}>Switch here</button>
+                  </form>
+                )}
               </div>
-              {current ? (
-                <Link
-                  href="/dashboard"
-                  className="rounded-xl border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-                >
-                  Open
-                </Link>
-              ) : (
-                <form action={switchTenant}>
-                  <input type="hidden" name="tenantId" value={m.tenant_id} />
-                  <button
-                    type="submit"
-                    className="rounded-xl bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800"
-                  >
-                    Switch here
-                  </button>
-                </form>
-              )}
-            </div>
-          );
-        })}
+            );
+          })}
+        </ListBox>
+
+        {!demo && (
+          <AddPanel title="Add a location">
+            <form action={createLocation} className="flex flex-col gap-3">
+              <div>
+                <label htmlFor="location-name" className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
+                  Location name
+                </label>
+                <input
+                  id="location-name"
+                  name="name"
+                  required
+                  minLength={2}
+                  maxLength={80}
+                  placeholder="e.g. Bridal Stack — Austin"
+                  className="w-full rounded-xl border border-stone-200 bg-white px-4 py-2.5 text-sm text-[var(--ink)] outline-none transition-colors focus:border-stone-400"
+                />
+              </div>
+              <p className="text-sm text-[var(--muted)]">
+                Starts on the free plan with a 30-day trial of every paid module. You can switch back any time.
+              </p>
+              <button type="submit" className={`${BTN_PRIMARY} justify-center`}>Add location</button>
+            </form>
+          </AddPanel>
+        )}
+
+        <p className="text-sm text-[var(--muted)]">
+          Need a multi-location discount or shared customers across shops?{" "}
+          <a href="mailto:hello@bridalstack.com?subject=Multi-location%20BridalStack" className="text-[var(--ink)] underline">
+            Talk to us
+          </a>
+          .
+        </p>
       </div>
-
-      {!demo && (
-        <div className="mt-8 rounded-2xl border border-gray-200 bg-white p-6">
-          <h2 className="text-lg font-serif font-normal text-gray-900">Add a location</h2>
-          <p className="mt-1 text-sm text-gray-500">
-            A new location starts on the free plan with a 30-day trial of every paid module.
-            You can switch back to your current shop at any time.
-          </p>
-          <form action={createLocation} className="mt-4 flex flex-col gap-3 sm:flex-row">
-            <label htmlFor="location-name" className="sr-only">
-              Location name
-            </label>
-            <input
-              id="location-name"
-              name="name"
-              required
-              minLength={2}
-              maxLength={80}
-              placeholder="e.g. Bridal Stack — Austin"
-              className="flex-1 rounded-xl border border-gray-300 px-4 py-2.5 text-sm outline-none focus:border-gold/30 focus:ring-4 focus:ring-gold/40"
-            />
-            <button
-              type="submit"
-              className="rounded-xl bg-gold px-5 py-2.5 text-sm font-semibold text-white hover:bg-gold"
-            >
-              Add location
-            </button>
-          </form>
-        </div>
-      )}
-
-      <p className="mt-6 text-xs text-gray-400">
-        Need a multi-location discount or shared customers across shops?{" "}
-        <a href="mailto:hello@bridalstack.com?subject=Multi-location%20BridalStack" className="underline hover:text-gray-600">
-          Talk to us
-        </a>
-        .
-      </p>
     </div>
   );
 }
