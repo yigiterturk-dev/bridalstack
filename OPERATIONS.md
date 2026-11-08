@@ -225,3 +225,18 @@ issues or chat.
 - DNSSEC is not enabled.
 - There is no separate staging environment; verify locally against a scratch
   PostgreSQL database before deploying.
+
+## Dodo canlı moda geçiş
+
+Doğrulama onaylanınca, Dodo panelinde **canlı modda** bir API anahtarı aç, sonra:
+
+```
+DODO_PAYMENTS_API_KEY=<live anahtar> DODO_PAYMENTS_ENVIRONMENT=live \
+  node scripts/dodo-setup.ts                                   # kuru çalıştırma
+DODO_PAYMENTS_API_KEY=<live anahtar> DODO_PAYMENTS_ENVIRONMENT=live \
+  node scripts/dodo-setup.ts --apply --out ~/.claude/.secrets/dodo-bridalstack-live.env
+```
+
+Betik 8 ürünü (fiyatlar `config/modules.ts`'ten) ve webhook'u açar, tekrar çalıştırmak güvenlidir.
+Çıkan satırları + `DODO_PAYMENTS_API_KEY` prod `.env`'deki test değerlerinin yerine yaz, container'ı yeniden başlat.
+`DODO_PAYMENTS_ENVIRONMENT` tam olarak `live` olmalı (`live_mode` test sayılır).
