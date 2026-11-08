@@ -15,6 +15,7 @@ const STATUS: Record<string, string> = {
   draft: "Draft",
   confirmed: "Confirmed",
   in_progress: "Being made",
+  in_production: "Being made",
   delivered: "Picked up",
   completed: "Done",
   cancelled: "Cancelled",

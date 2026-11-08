@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getCurrentTenant } from "@/lib/tenant";
-import { RevenueBars, FillLine, StaffBars, DistributionPie } from "@/components/analytics-charts";
+import { RevenueBars, FillLine, StaffBars } from "@/components/analytics-charts";
 import { formatPrice } from "@/config/modules";
 import RangeFilter from "./range-filter";
 import PageHead from "@/components/page-head";
@@ -256,7 +256,19 @@ export default async function AnalyticsPage({ searchParams }: Props) {
             <div className="rounded-2xl border border-[var(--line)] bg-white p-6">
               <h3 className="font-serif text-lg text-[var(--ink)]">What is on my racks?</h3>
               <p className="mb-5 mt-0.5 text-sm text-[var(--muted)]">Pieces in stock, by category</p>
-              <DistributionPie data={inventorySeries} />
+              <ul className="flex flex-col gap-3">
+                {inventorySeries.map((c) => (
+                  <li key={c.name}>
+                    <div className="mb-1 flex justify-between text-sm">
+                      <span className="text-[var(--ink)]">{c.name}</span>
+                      <span className="tabular-nums text-[var(--muted)]">{c.value} {c.value === 1 ? "piece" : "pieces"}</span>
+                    </div>
+                    <div className="h-2 rounded-full bg-stone-100">
+                      <div className="h-2 rounded-full bg-gold" style={{ width: `${Math.max(4, Math.round((c.value / inventorySeries[0].value) * 100))}%` }} />
+                    </div>
+                  </li>
+                ))}
+              </ul>
             </div>
           )}
         </div>

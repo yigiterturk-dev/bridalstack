@@ -65,7 +65,7 @@ async function AppointmentsContent({ tenantId, timeZone, customer }: { tenantId:
     const needsClose = isPast && a.status !== "completed";
     return (
       <div key={a.id} className="flex items-center gap-4 px-4 py-3">
-        <span className="w-20 shrink-0 font-serif text-lg tabular-nums text-[var(--ink)]">{time(a.appointment_date)}</span>
+        <span className="w-24 shrink-0 whitespace-nowrap font-serif text-lg tabular-nums text-[var(--ink)]">{time(a.appointment_date)}</span>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             {unconfirmed && !isPast && <span aria-hidden="true" className="h-2 w-2 shrink-0 rounded-full bg-amber" />}

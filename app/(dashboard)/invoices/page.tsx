@@ -92,13 +92,13 @@ async function InvoicesContent({ tenantId, bucket }: { tenantId: string; bucket?
             const c = customerById.get(r.customer_id);
             const when = r.daysOverdue > 0
               ? `${r.daysOverdue} ${r.daysOverdue === 1 ? "day" : "days"} late`
-              : r.nextDueDate ? `next payment ${shortDate(r.nextDueDate)}` : "no payment plan";
+              : r.nextDueDate ? `Next payment ${shortDate(r.nextDueDate)}` : "No payment plan";
             return (
               <ListRow
                 key={r.orderId}
                 href={`/orders/${r.orderId}`}
                 title={c?.name ?? "No bride"}
-                sub={`${when} · paid ${formatPrice(r.collected)} of ${formatPrice(r.total)} · ${r.ref_no}`}
+                sub={`${when} · Paid ${formatPrice(r.collected)} of ${formatPrice(r.total)} · ${r.ref_no}`}
                 tone={r.daysOverdue > 0 ? "late" : "ok"}
                 value={formatPrice(r.outstanding)}
                 valueTone={r.daysOverdue > 0 ? "late" : "ink"}
