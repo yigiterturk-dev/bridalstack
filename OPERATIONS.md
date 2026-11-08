@@ -68,8 +68,14 @@ server after taking a backup:
 
 ```bash
 ssh netcup 'bash /opt/nocturn-yedek/nocturn-yedek.sh bridalstack'
-ssh netcup 'cd /opt/bridalstack && docker exec bridalstack npx prisma migrate deploy'
+ssh netcup 'cd /opt/bridalstack && set -a && . ./.env && set +a && npx -y prisma@5.14.0 migrate deploy'
 ```
+
+Run it on the host, not inside the container: the image has no `prisma/`
+directory and no Prisma CLI, so `docker exec … npx prisma` downloads Prisma 7,
+which refuses `migrate deploy` and exits without applying anything. Pin the CLI
+to the project's Prisma version. Deploy and migrate back to back — the new code
+reads the new columns, so a gap between them breaks those queries.
 
 `DATABASE_URL` is the runtime connection and `DIRECT_URL` is used for migration
 operations. Never run a destructive reset against production. Take or confirm a
