@@ -5,6 +5,10 @@ import { ANNUAL_BILLING_MONTHS } from "@/config/modules";
 import { TRIAL_DAYS } from "@/lib/trial";
 import { siteBase, siteMetadata } from "@/lib/seo";
 
+// Ödeme hattı env'den okunur; Docker build'inde env yok → statik üretimde
+// "ödeme kapalı" sürümü donardı. İstek anında render et.
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = siteMetadata({
   base: siteBase(),
   path: "/pricing",

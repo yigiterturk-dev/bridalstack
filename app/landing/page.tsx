@@ -5,6 +5,10 @@ import { formatPrice } from "@/config/modules";
 import type { Metadata } from "next";
 import { siteBase, siteMetadata } from "@/lib/seo";
 
+// Ödeme hattı env'den okunur; Docker build'inde env yok → statik üretimde
+// "ödeme kapalı" sürümü donardı. İstek anında render et.
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = siteMetadata({
   base: siteBase(),
   path: "/landing",
