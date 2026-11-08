@@ -54,6 +54,13 @@ Switching an existing subscription between monthly and annual is supported from
 the selected interval. The switch only succeeds when the target interval's four
 product IDs are configured.
 
+## Multiple locations
+
+Each location is its own tenant/workspace and is billed separately on
+`/settings`. There is no extra-location product to create in Dodo: a chain buys
+the normal plan for each location. A future multi-location discount would be a
+Dodo coupon or a dedicated product, not part of the current setup.
+
 ## 2. Resend (transactional email)
 
 ```

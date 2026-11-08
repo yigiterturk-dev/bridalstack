@@ -5,7 +5,7 @@ Kayıt yazarlar, o yüzden **üretim veritabanına karşı çalıştırmayın.**
 
 ## Önkoşullar
 
-1. **Veritabanı.** Ana veritabanı (HTTP aşamaları 1–13, 21–22) ve izole bir
+1. **Veritabanı.** Ana veritabanı (HTTP aşamaları 1–13, 21–22, 24) ve izole bir
    veritabanı (DB aşamaları 14–20) gerekir. İzole DB boş olmalıdır:
 
    ```bash
@@ -64,6 +64,7 @@ node tests/e2e/stage12.mjs     # kaldırılan modüller, ücretsiz katman ve den
 node tests/e2e/stage13.mjs     # tenant izolasyonu ve rol erişimleri
 node tests/e2e/stage21-ai-gate.mjs # AI Stylist paket kapısı
 node tests/e2e/stage22-booking-concurrency.mjs # eşzamanlı booking kilidi, no-preference ataması ve müşteri dedupe
+node tests/e2e/stage24-locations.mjs # çok şube: aktif kiracı çerezi ve üyelik doğrulaması
 
 # İzole DB gerektirir (DATABASE_URL/DIRECT_URL = bridalstack_e2e_iso):
 node tests/e2e/stage14-db.mjs  # kiralama, temizlik ve tadilat veritabanı değişmezleri

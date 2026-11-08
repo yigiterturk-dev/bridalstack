@@ -20,7 +20,7 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const HTTP_STAGES = [
   "stage1", "stage2", "stage3", "stage4", "stage5", "stage6", "stage7",
   "stage8", "stage9", "stage10", "stage11", "stage12", "stage13",
-  "stage21-ai-gate", "stage22-booking-concurrency",
+  "stage21-ai-gate", "stage22-booking-concurrency", "stage24-locations",
 ];
 
 const DB_STAGES = [

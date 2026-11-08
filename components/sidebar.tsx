@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { switchTenant } from "@/app/(dashboard)/locations/actions";
 
 type NavItem = { href: string; label: string; icon: string };
 type NavGroup = { section?: string; items: NavItem[] };
@@ -15,7 +16,17 @@ function Wordmark({ className = "" }: { className?: string }) {
   );
 }
 
-export default function Sidebar({ groups, tenantName }: { groups: NavGroup[]; tenantName: string }) {
+export default function Sidebar({
+  groups,
+  tenantName,
+  locations = [],
+  activeTenantId,
+}: {
+  groups: NavGroup[];
+  tenantName: string;
+  locations?: { id: string; name: string }[];
+  activeTenantId?: string;
+}) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [collapsedGroups, setCollapsedGroups] = useState<Record<number, boolean>>({});
@@ -37,6 +48,25 @@ export default function Sidebar({ groups, tenantName }: { groups: NavGroup[]; te
             <Wordmark />
           </h1>
           <p className="text-xs font-semibold tracking-wider text-stone-400 uppercase mt-1 truncate">{tenantName}</p>
+          {locations.length > 1 ? (
+            <form action={switchTenant} className="mt-2">
+              <label htmlFor="tenant-switch" className="sr-only">Switch location</label>
+              <select
+                id="tenant-switch"
+                name="tenantId"
+                defaultValue={activeTenantId}
+                onChange={(event) => event.currentTarget.form?.requestSubmit()}
+                className="max-w-[190px] rounded-lg border border-stone-200 bg-white px-2 py-1.5 text-xs font-medium text-stone-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
+              >
+                {locations.map((location) => (
+                  <option key={location.id} value={location.id}>{location.name}</option>
+                ))}
+              </select>
+            </form>
+          ) : null}
+          <Link href="/locations" className="mt-1 inline-block text-[11px] font-medium text-stone-400 hover:text-rose-600">
+            {locations.length > 1 ? "Manage locations" : "Add a location"}
+          </Link>
         </div>
         <button onClick={() => setOpen(false)} className="lg:hidden text-stone-400 hover:text-rose-500 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2 rounded-lg" aria-label="Close menu">
           <span aria-hidden="true" className="material-symbols-outlined">close</span>

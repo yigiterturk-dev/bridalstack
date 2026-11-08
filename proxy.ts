@@ -27,6 +27,7 @@ const PROTECTED_PREFIX = [
   "/try-ons",
   "/workflows",
   "/onboarding",
+  "/locations",
 ];
 
 // Sadece tam eşleşmede oturum ister; alt yolları herkese açıktır.

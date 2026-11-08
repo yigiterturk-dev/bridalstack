@@ -106,6 +106,23 @@ Optional, each feature stays disabled until its values are present:
 Keep all values server-side. Rotate a credential immediately if it appears in
 logs, source, a browser bundle or a support attachment.
 
+## Locations (multi-shop)
+
+A chain can run several locations. Each location is a separate tenant with its
+own customers, stock, orders, team and subscription; data never crosses between
+locations (the same tenant-isolation gate applies).
+
+- The active location is stored in the `bs_tenant` cookie. It is only a
+  preference: `getCurrentTenant` / `getCurrentMember` accept it only when the
+  user actually has a membership in that tenant, otherwise they fall back to the
+  first membership (`lib/tenant-select.ts`).
+- `/locations` lists every location the user belongs to, switches the active one
+  and (for non-demo accounts) creates a new one. A new location starts on the
+  free plan with a 30-day trial; creating is capped at 10 owned locations per
+  account and is blocked for the shared demo account.
+- Billing is per location: open a location, then subscribe on `/settings`. There
+  is no extra-location add-on price or multi-location discount yet.
+
 ## Scheduled jobs
 
 The host runs `/opt/cron-tetik/tetik.py` every minute via
@@ -201,9 +218,9 @@ issues or chat.
 
 - Dodo and Resend credentials must be supplied by the owner before paid checkout
   and email delivery are live (see `scripts/OWNER-SETUP.md`).
-- Multi-location pricing is not implemented: one tenant is one shop. Chains need
-  a locations model (and per-location billing) before an extra-location add-on
-  can be sold.
+- Multi-location: each location is a separate workspace (tenant) with its own
+  subscription. There is no shared customer or inventory across locations and no
+  multi-location discount yet, so a chain pays the normal price per location.
 - Rate limiting is process-local unless Upstash is configured.
 - DNSSEC is not enabled.
 - There is no separate staging environment; verify locally against a scratch

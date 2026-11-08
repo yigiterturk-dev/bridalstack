@@ -1,6 +1,8 @@
+import { cookies } from "next/headers";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { chooseTenantId } from "@/lib/tenant-select";
 import { ModuleId, PackId, getModulesForPacks } from "@/config/modules";
 import { normalizeRole, type Role } from "@/lib/rbac";
 import { activeTrialPacks, trialDaysLeft } from "@/lib/trial";
@@ -29,21 +31,54 @@ export type Tenant = {
   cohort_month?: string | null;
 };
 
+/**
+ * Aktif kiracı çerezi. Bir kullanıcı birden çok şubeye (kiracıya) üye
+ * olabilir; çerez yalnızca HANGİSİNİN aktif olduğunu söyler. Yetki kararı
+ * üyelikten gelir: üye olunmayan bir kiracı çerezle seçilemez.
+ */
+export const ACTIVE_TENANT_COOKIE = "bs_tenant";
+
 /** Oturumdaki kullanıcının id'si — yoksa null. */
 export async function getCurrentUserId(): Promise<string | null> {
   const session = await getServerSession(authOptions);
   return (session?.user as { id?: string } | undefined)?.id ?? null;
 }
 
+/**
+ * Kullanıcının üyeliklerinden aktif olanı seçer.
+ *
+ * Sıra: çerezdeki kiracı (yalnız üye olunansa) → ilk üyelik. Çerez okuması
+ * istek dışı bir bağlamda (ör. statik derleme) hata verirse yok sayılır;
+ * yetkilendirme yine üyelik listesinden yapılır.
+ */
+async function resolveMembership(userId: string) {
+  const memberships = await prisma.tenantMember.findMany({
+    where: { user_id: userId },
+    orderBy: { created_at: "asc" },
+    select: { id: true, tenant_id: true, role: true, created_at: true, tenant: true },
+  });
+  if (memberships.length === 0) return null;
+
+  let preferred: string | null = null;
+  try {
+    const store = await cookies();
+    preferred = store.get(ACTIVE_TENANT_COOKIE)?.value ?? null;
+  } catch {
+    preferred = null;
+  }
+
+  const chosenId = chooseTenantId(
+    memberships.map((m) => ({ tenantId: m.tenant_id, createdAt: m.created_at })),
+    preferred,
+  );
+  return memberships.find((m) => m.tenant_id === chosenId) ?? memberships[0];
+}
+
 export async function getCurrentTenant(): Promise<Tenant | null> {
   const userId = await getCurrentUserId();
   if (!userId) return null;
 
-  const membership = await prisma.tenantMember.findFirst({
-    where: { user_id: userId },
-    select: { tenant: true },
-  });
-
+  const membership = await resolveMembership(userId);
   const tenant = membership?.tenant;
   if (!tenant) return null;
 
@@ -85,11 +120,7 @@ export async function getCurrentMember(): Promise<{
   const userId = await getCurrentUserId();
   if (!userId) return null;
 
-  const membership = await prisma.tenantMember.findFirst({
-    where: { user_id: userId },
-    select: { id: true, tenant_id: true, role: true },
-  });
-
+  const membership = await resolveMembership(userId);
   if (!membership) return null;
 
   return {
