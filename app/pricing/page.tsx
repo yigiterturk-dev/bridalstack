@@ -42,14 +42,14 @@ const DETAILS: { q: string; a: string }[] = [
 
 export default function PricingPage() {
   return (
-    <main className="min-h-screen bg-[#FDFCFB] text-stone-900">
-      <div className="max-w-6xl mx-auto px-6 pt-10 pb-12 flex items-center justify-between gap-4">
-        <Link href="/landing" className="text-sm text-stone-400 hover:text-stone-600 transition-colors">
-          ← Bridal Stack
+    <main className="min-h-screen bg-white text-[var(--ink)]">
+      <div className="max-w-6xl mx-auto px-6 py-5 flex items-center justify-between gap-4">
+        <Link href="/landing" className="text-xl font-extrabold tracking-tight">
+          Bridal<span className="text-gold">Stack</span>
         </Link>
         <Link
           href="/signup"
-          className="px-5 py-2 bg-stone-900 text-white rounded-full text-sm font-semibold hover:bg-stone-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-4"
+          className="rounded-xl bg-[var(--ink)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-stone-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40 focus-visible:ring-offset-2"
         >
           Start free
         </Link>
@@ -58,12 +58,12 @@ export default function PricingPage() {
       <PricingSection headingLevel="h1" />
 
       <section className="max-w-2xl mx-auto px-6 py-24">
-        <h2 className="text-3xl font-extrabold tracking-tight">Billing details</h2>
+        <h2 className="font-serif text-3xl font-normal">Billing details</h2>
         <dl className="mt-10 grid gap-10">
           {DETAILS.map((d) => (
             <div key={d.q}>
-              <dt className="text-lg font-bold tracking-tight">{d.q}</dt>
-              <dd className="mt-3 text-stone-600 leading-[1.8]">{d.a}</dd>
+              <dt className="text-lg font-medium">{d.q}</dt>
+              <dd className="mt-2 leading-relaxed text-[var(--muted)]">{d.a}</dd>
             </div>
           ))}
         </dl>

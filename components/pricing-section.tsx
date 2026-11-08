@@ -10,96 +10,76 @@ import { BILLING_CONFIGURED, BILLING_ANNUAL_CONFIGURED } from "@/lib/dodo";
 export default function PricingSection({ headingLevel = "h2" }: { headingLevel?: "h1" | "h2" }) {
   const Heading = headingLevel;
   return (
-    <section id="pricing" className="py-32 px-6 bg-stone-900 relative z-10 overflow-hidden text-white rounded-t-[4rem]">
-      <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-stone-700 to-transparent" />
-      <div className="absolute -top-[50%] left-[50%] -translate-x-1/2 w-[100%] h-[100%] rounded-full bg-rose-500/10 blur-[120px] pointer-events-none" />
-      
-      <div className="max-w-6xl mx-auto relative z-10">
-        <div className="text-center mb-16">
-          <Heading className="text-4xl md:text-5xl font-extrabold tracking-tight drop-shadow-md">Simple, modular pricing.</Heading>
-          <p className="text-stone-400 mt-6 text-xl max-w-2xl mx-auto font-light">
-            Every new account opens with a {TRIAL_DAYS}-day trial of all paid modules. When it
-            ends nothing is deleted — you drop back to the free plan and pick what you want to keep.
+    <section id="pricing" className="scroll-mt-20 border-t border-[var(--line)] bg-white px-6 py-24">
+      <div className="mx-auto max-w-6xl">
+        <div className="mx-auto mb-12 max-w-2xl text-center">
+          <Heading className="font-serif text-4xl font-normal text-[var(--ink)] md:text-5xl">Every price, on the page.</Heading>
+          <p className="mt-4 text-lg text-[var(--muted)]">
+            Every new shop gets {TRIAL_DAYS} days of every paid module. When it ends nothing is deleted:
+            you drop to the free plan and keep what you pay for.
           </p>
-          <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 mt-10 text-sm text-stone-400">
-            {[
-              "Client portal included, not an add-on",
-              "Online booking page included",
-              "No setup fee, no contract",
-              "Cancel any time",
-            ].map((line) => (
-              <span key={line} className="inline-flex items-center gap-2">
-                <span aria-hidden="true" className="material-symbols-outlined text-rose-400 text-[18px]">check_circle</span>
+          <ul className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-[var(--muted)]">
+            {["Client portal included", "Online booking page included", "No setup fee, no contract", "Cancel any time"].map((line) => (
+              <li key={line} className="inline-flex items-center gap-1.5">
+                <span aria-hidden="true" className="material-symbols-outlined text-[18px] text-gold">check</span>
                 {line}
-              </span>
+              </li>
             ))}
-          </div>
+          </ul>
           {BILLING_CONFIGURED || BILLING_ANNUAL_CONFIGURED ? (
-            <p className="text-stone-500 mt-8 text-sm">
+            <p className="mt-6 text-sm text-[var(--muted)]">
               Everything we sell today comes to{" "}
-              <strong className="text-white">{formatPrice(calculateMonthlyPrice(SELLABLE_PACK_IDS))}/mo</strong>{" "}
-              for your whole shop
+              <strong className="text-[var(--ink)]">{formatPrice(calculateMonthlyPrice(SELLABLE_PACK_IDS))}/mo</strong> for your whole shop
               {BILLING_ANNUAL_CONFIGURED ? (
                 <>
-                  {" "}— or <strong className="text-white">{formatPrice(calculateAnnualPrice(SELLABLE_PACK_IDS))}/yr</strong>{" "}
-                  (two months free).
+                  , or <strong className="text-[var(--ink)]">{formatPrice(calculateAnnualPrice(SELLABLE_PACK_IDS))}/yr</strong> (two months free).
                 </>
               ) : (
                 "."
               )}
             </p>
           ) : (
-            <div className="mt-8 flex flex-col items-center gap-2 text-sm">
-              <p className="text-stone-500">
-                Every paid module starts with your {TRIAL_DAYS}-day trial. <strong className="text-white">No card required.</strong>
-              </p>
-              <a
-                href="mailto:hello@bridalstack.com?subject=BridalStack%20paid%20plans"
-                className="font-semibold text-rose-300 underline underline-offset-4 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-300 focus-visible:ring-offset-4 focus-visible:ring-offset-stone-900 rounded"
-              >
+            <p className="mt-6 text-sm text-[var(--muted)]">
+              No card required.{" "}
+              <a href="mailto:hello@bridalstack.com?subject=BridalStack%20paid%20plans" className="font-medium text-[var(--ink)] underline underline-offset-4 hover:text-gold">
                 Talk to us about paid plans
               </a>
-            </div>
+            </p>
           )}
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
           {ALL_PACK_IDS.map((packId) => {
             const pack = PACKS[packId];
             const sellable = pack.monthlyPrice === 0 || isPackSellable(packId);
             const trialOnly = pack.monthlyPrice > 0 && !(BILLING_CONFIGURED || BILLING_ANNUAL_CONFIGURED);
+            const featured = packId === "sales";
             return (
-              <div key={packId} className={`bg-stone-800/50 backdrop-blur-xl rounded-[2.5rem] p-10 transition-all duration-500 hover:-translate-y-2 ${packId === "sales" ? "border border-rose-500/50 shadow-[0_0_50px_-12px_rgba(225,29,72,0.3)] relative" : "border border-stone-700/50"}`}>
-                {packId === "sales" && (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-rose-400 to-amber-500 text-white px-5 py-1.5 rounded-full text-[11px] font-black tracking-widest uppercase shadow-lg">
-                    Most Popular
-                  </div>
+              <div key={packId} className={`relative flex flex-col rounded-2xl border bg-white p-7 ${featured ? "border-gold shadow-[0_8px_30px_-12px_rgba(168,135,90,0.35)]" : "border-[var(--line)]"}`}>
+                {featured && (
+                  <span className="absolute -top-3 left-7 rounded-full bg-gold px-3 py-1 text-xs font-medium text-white">Recommended</span>
                 )}
                 {!sellable && (
-                  <div className="inline-block mb-4 text-[11px] font-black tracking-widest uppercase text-amber-300 bg-amber-500/10 border border-amber-500/30 px-3 py-1 rounded-full">
-                    In development
-                  </div>
+                  <span className="mb-3 inline-block self-start rounded-full bg-amber-soft px-2.5 py-1 text-xs font-medium text-amber">In development</span>
                 )}
-                <h3 className="text-2xl font-extrabold">{pack.name}</h3>
-                <p className="text-[15px] text-stone-400 mt-3 mb-8 h-10 leading-relaxed">{pack.description}</p>
-                <div className="mb-10 flex items-baseline gap-1">
-                  <span className="text-6xl font-extrabold tracking-tighter">{formatPrice(pack.monthlyPrice)}</span>
-                  <span className="text-stone-400 font-medium">/mo</span>
+                <h3 className="font-serif text-2xl text-[var(--ink)]">{pack.name}</h3>
+                <p className="mt-1.5 min-h-10 text-sm text-[var(--muted)]">{pack.description}</p>
+                <div className="mt-5 flex items-baseline gap-1">
+                  <span className="font-serif text-5xl tabular-nums text-[var(--ink)]">{formatPrice(pack.monthlyPrice)}</span>
+                  <span className="text-[var(--muted)]">/mo</span>
                 </div>
-                {trialOnly && <p className="-mt-8 mb-8 text-xs font-medium text-amber-300">{TRIAL_DAYS}-day trial included · no card required</p>}
+                {trialOnly && <p className="mt-1 text-xs text-[var(--muted)]">{TRIAL_DAYS}-day trial included · no card</p>}
                 {!trialOnly && BILLING_ANNUAL_CONFIGURED && pack.monthlyPrice > 0 && (
-                  <p className="-mt-8 mb-8 text-xs font-medium text-stone-400">or {formatPrice(annualPrice(pack.monthlyPrice))}/yr · two months free</p>
+                  <p className="mt-1 text-xs text-[var(--muted)]">or {formatPrice(annualPrice(pack.monthlyPrice))}/yr · two months free</p>
                 )}
-                <ul className="space-y-5 mb-12">
+                <ul className="mb-7 mt-6 flex-1 space-y-2.5">
                   {pack.modules.map((moduleId) => {
                     const live = isModuleLive(moduleId);
                     return (
-                      <li key={moduleId} className={`flex items-start gap-4 text-[15px] font-medium ${live ? "text-stone-300" : "text-stone-500"}`}>
-                        <span className="flex-shrink-0 w-6 h-6 rounded-full bg-stone-700 flex items-center justify-center mt-0.5 border border-stone-600">
-                          <span className={`text-xs font-bold ${live ? "text-rose-400" : "text-stone-500"}`}>{live ? "✓" : "•"}</span>
-                        </span>
+                      <li key={moduleId} className={`flex items-start gap-2 text-sm ${live ? "text-[var(--ink)]" : "text-[var(--muted)]"}`}>
+                        <span aria-hidden="true" className={`material-symbols-outlined mt-px text-[18px] ${live ? "text-gold" : "text-stone-300"}`}>{live ? "check" : "schedule"}</span>
                         <span>
                           {MODULES[moduleId]?.name}
-                          {!live && <span className="ml-2 text-[11px] uppercase tracking-wider text-amber-400/80">soon</span>}
+                          {!live && <span className="ml-1.5 text-xs text-[var(--muted)]">soon</span>}
                         </span>
                       </li>
                     );
@@ -108,18 +88,14 @@ export default function PricingSection({ headingLevel = "h2" }: { headingLevel?:
                 {sellable ? (
                   <Link
                     href="/signup"
-                    className={`block text-center py-4 rounded-full text-[15px] font-bold transition-all duration-300 ${
-                      packId === "sales"
-                        ? "bg-white text-stone-900 hover:bg-stone-200 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 focus-visible:ring-offset-4 focus-visible:ring-offset-stone-900"
-                        : "bg-stone-700/50 text-white hover:bg-stone-700 border border-stone-600/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 focus-visible:ring-offset-4 focus-visible:ring-offset-stone-900"
+                    className={`block rounded-xl py-3 text-center text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40 focus-visible:ring-offset-2 ${
+                      featured ? "bg-[var(--ink)] text-white hover:bg-stone-800" : "border border-[var(--line)] text-[var(--ink)] hover:border-stone-300"
                     }`}
                   >
-                    {pack.monthlyPrice === 0 ? "Start For Free" : trialOnly ? "Start Free Trial" : "Choose Plan"}
+                    {pack.monthlyPrice === 0 ? "Start for free" : trialOnly ? "Start free trial" : "Choose plan"}
                   </Link>
                 ) : (
-                  <div className="block text-center py-4 rounded-full text-[15px] font-bold bg-stone-800/60 text-stone-500 border border-stone-700/50 cursor-not-allowed">
-                    Not available yet
-                  </div>
+                  <div className="block cursor-not-allowed rounded-xl border border-[var(--line)] py-3 text-center text-sm font-medium text-[var(--muted)]">Not available yet</div>
                 )}
               </div>
             );

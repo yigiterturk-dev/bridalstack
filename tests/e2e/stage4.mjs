@@ -119,7 +119,7 @@ await fetch(`${BASE}/api/auth/register`, { method: "POST", headers: { "content-t
 
   const landing = strip(await (await fetch(`${BASE}/landing`)).text());
   check("Tanıtım sayfası canlı paketleri ve trial bilgisini gösteriyor",
-    landing.includes("Finance") && (landing.includes("Start Free Trial") || landing.includes("Choose Plan")));
+    landing.includes("Finance") && (landing.includes("Start free trial") || landing.includes("Choose plan")));
 }
 
 // ── Menüde ölü bağlantı kalmadı ──
