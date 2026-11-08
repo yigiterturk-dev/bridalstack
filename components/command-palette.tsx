@@ -103,7 +103,7 @@ export default function CommandPalette({ groups }: { groups: NavGroup[] }) {
 
   let lastGroup = "";
   return (
-    <div className="fixed inset-0 z-[60] flex items-start justify-center px-4 pt-[12vh]">
+    <div className="fixed inset-0 z-[200] flex items-start justify-center px-4 pt-[12vh]">
       <button aria-label="Close search" className="absolute inset-0 bg-[var(--ink)]/20 cursor-default" onClick={() => setOpen(false)} />
       <div role="dialog" aria-modal="true" aria-label="Search" className="relative w-full max-w-xl overflow-hidden rounded-2xl border border-[var(--line)] bg-white shadow-[0_24px_60px_-20px_rgba(28,26,35,0.35)]">
         <div className="flex items-center gap-3 border-b border-[var(--line)] px-4">
