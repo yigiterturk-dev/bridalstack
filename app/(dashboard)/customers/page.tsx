@@ -5,6 +5,7 @@ import { getCurrentTenant } from "@/lib/tenant";
 import ModuleGuard from "@/components/module-guard";
 import SearchBar from "@/components/search-bar";
 import BrideRow from "@/components/bride-row";
+import PageHead, { BTN_PRIMARY, BTN_SECONDARY } from "@/components/page-head";
 import { buildJourney } from "@/lib/journey";
 import { dateInTimeZone, normalizeTimeZone } from "@/lib/timezone";
 
@@ -73,29 +74,19 @@ async function CustomersContent({ tenantId, query, tz }: { tenantId: string; que
 
   return (
     <div className="animate-fade-in-up">
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-10">
-        <div>
-          <h1 className="text-3xl lg:text-4xl font-serif font-normal text-[var(--ink)] flex items-center gap-3">
-            Brides
-          </h1>
-          <p className="text-[var(--muted)] mt-2 font-medium">
-            {count === 0 ? "No brides yet" : `${count} ${count === 1 ? "bride" : "brides"}, closest wedding first`}
-          </p>
-        </div>
-        <div className="flex gap-3">
-          <Link href="/customers/import" className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white text-stone-700 font-medium text-sm border border-stone-200 hover:border-gold/30 hover:shadow-sm hover:text-gold transition-all duration-300">
-            <span className="material-symbols-outlined text-[20px]">upload_file</span>
-            Import
-          </Link>
-          <Link href="/customers/new" className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-stone-900 text-white font-medium text-sm hover:bg-gold transition-all duration-300">
-            <span className="material-symbols-outlined text-[20px]">add</span>
-            New Bride
-          </Link>
-        </div>
-      </div>
+      <PageHead title="Brides" sub={count === 0 ? "No brides yet" : `${count} ${count === 1 ? "bride" : "brides"}, closest wedding first`}>
+        <Link href="/customers/import" className={BTN_SECONDARY}>
+          <span aria-hidden="true" className="material-symbols-outlined text-[20px]">upload_file</span>
+          Import
+        </Link>
+        <Link href="/customers/new" className={BTN_PRIMARY}>
+          <span aria-hidden="true" className="material-symbols-outlined text-[20px]">add</span>
+          New bride
+        </Link>
+      </PageHead>
 
-      <div className="mb-8 max-w-md">
-        <SearchBar placeholder="Search by name, phone or email..." basePath="/customers" />
+      <div className="mb-6 max-w-md">
+        <SearchBar placeholder="Search by name, phone or email" basePath="/customers" />
       </div>
 
       {list.length > 0 ? (
