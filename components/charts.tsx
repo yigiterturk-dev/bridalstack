@@ -7,8 +7,8 @@ type RevenueData = { month: string; revenue: number }[];
 type AppointmentData = { day: string; count: number }[];
 type StatusData = { name: string; value: number }[];
 
-const ACCENT = "#b4496a";
-const COLORS = [ACCENT, "#1c1a23", "#6366f1", "#f59e0b", "#10b981", "#8b5cf6"];
+const ACCENT = "#a8875a";
+const COLORS = [ACCENT, "#1c1a23", "#cdb995", "#6b6770", "#e6dccb", "#3a3640", "#b9a27c", "#d8d2c9"];
 const axisTick = { fontSize: 12, fill: "#9ca3af" };
 const tooltipStyle = { borderRadius: 12, border: "1px solid #ececef", boxShadow: "0 4px 16px rgba(28,26,35,0.08)", fontSize: 13 };
 

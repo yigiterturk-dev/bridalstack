@@ -69,7 +69,7 @@ export default function LoginPage() {
       <div className="w-full max-w-md relative z-10">
         <div className="text-center mb-10">
           <h1 className="text-4xl font-extrabold text-stone-900 tracking-tight flex items-center justify-center gap-2">
-            Bridal<span className="text-rose-500 font-normal">Stack</span> <span className="text-rose-300">✧</span>
+            Bridal<span className="text-gold font-normal">Stack</span>
           </h1>
           <p className="text-stone-500 mt-3 font-medium tracking-wide uppercase text-xs">The Luxury Standard for Bridal Boutiques</p>
         </div>

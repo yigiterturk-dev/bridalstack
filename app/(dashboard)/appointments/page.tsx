@@ -61,7 +61,7 @@ async function AppointmentsContent({ tenantId, timeZone, customer }: { tenantId:
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-10">
         <div>
           <h1 className="text-3xl lg:text-4xl font-serif font-normal text-[var(--ink)] flex items-center gap-3">
-            Appointments <span className="text-gold font-normal">✧</span>
+            Appointments
           </h1>
           <p className="text-[var(--muted)] mt-2 font-medium">
             {list.length === 0

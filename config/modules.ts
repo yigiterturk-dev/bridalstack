@@ -266,33 +266,51 @@ export function calculateAnnualPrice(packIds: PackId[]): number {
   return packIds.reduce((sum, id) => sum + annualPrice(PACKS[id]?.monthlyPrice ?? 0), 0);
 }
 
+/**
+ * Menü: üstte bir butiğin her gün açtığı 6 ekran, gerisi kapalı gruplarda.
+ * Aynı işi yapan sayfalar (Calendar/Schedule/Bookings) ana listeye girmez.
+ */
+const PRIMARY: { href: string; label: string }[] = [
+  { href: "/customers", label: "Brides" },
+  { href: "/appointments", label: "Appointments" },
+  { href: "/orders", label: "Orders" },
+  { href: "/products", label: "Stock" },
+  { href: "/invoices", label: "Balances due" },
+];
+
 export function getNavForModules(enabledModules: ModuleId[]) {
-  const groups: { section?: string; items: NavItem[] }[] = [
-    { items: [
-      { href: "/dashboard", label: "Today", icon: "today" },
-      { href: "/analytics", label: "Analytics", icon: "insights" },
-    ] },
+  const available: NavItem[] = [];
+  for (const id of enabledModules) {
+    available.push(...(MODULES[id]?.navItems ?? []).filter((n) => !n.soon));
+  }
+
+  const primary: NavItem[] = [{ href: "/dashboard", label: "Today", icon: "today" }];
+  for (const p of PRIMARY) {
+    const item = available.find((n) => n.href === p.href);
+    if (item) primary.push({ ...item, label: p.label });
+  }
+  const taken = new Set(primary.map((n) => n.href));
+
+  const groups: { section?: string; items: NavItem[] }[] = [{ items: primary }];
+
+  const sectionMap: { section: string; moduleIds: ModuleId[]; extra?: NavItem[] }[] = [
+    { section: "Numbers", moduleIds: ["reports"], extra: [{ href: "/analytics", label: "Analytics", icon: "insights" }] },
+    { section: "Clients & calendar", moduleIds: ["crm", "appointments"] },
+    { section: "Sales", moduleIds: ["sales", "invoices"] },
+    { section: "Styling", moduleIds: ["booking", "services"] },
+    { section: "Money", moduleIds: ["finance"] },
+    { section: "Stock", moduleIds: ["inventory"] },
+    { section: "Team", moduleIds: ["commissions"] },
   ];
 
-  const sectionMap: Record<string, { section: string; moduleIds: ModuleId[] }> = {
-    salon: { section: "Booking", moduleIds: ["booking", "services"] },
-    base: { section: "Clients", moduleIds: ["crm", "appointments"] },
-    sales: { section: "Sales", moduleIds: ["sales", "invoices", "reports"] },
-    finance: { section: "Finance", moduleIds: ["finance"] },
-    inventory: { section: "Inventory", moduleIds: ["inventory"] },
-    pro: { section: "Management", moduleIds: ["commissions"] },
-  };
-
-  for (const group of Object.values(sectionMap)) {
-    const items: NavItem[] = [];
+  for (const group of sectionMap) {
+    const items: NavItem[] = [...(group.extra ?? [])];
     for (const moduleId of group.moduleIds) {
       if (!enabledModules.includes(moduleId)) continue;
       // Sayfası olmayan girdiler menüye girmez; 404'e götüren bağlantı olmasın.
-      items.push(...MODULES[moduleId].navItems.filter((n) => !n.soon));
+      items.push(...MODULES[moduleId].navItems.filter((n) => !n.soon && !taken.has(n.href)));
     }
-    if (items.length > 0) {
-      groups.push({ section: group.section, items });
-    }
+    if (items.length > 0) groups.push({ section: group.section, items });
   }
 
   return groups;

@@ -32,7 +32,7 @@ export default function Sidebar({
 }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const [collapsedGroups, setCollapsedGroups] = useState<Record<number, boolean>>({});
+  const [expandedGroups, setExpandedGroups] = useState<Record<number, boolean>>({});
 
   useEffect(() => {
     if (!open) return;
@@ -95,22 +95,23 @@ export default function Sidebar({
       <nav className="flex-1 overflow-y-auto py-6 px-4">
         {groups.map((group, gi) => {
           const groupHasActive = group.items.some((item) => pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href)));
-          const groupCollapsed = Boolean(group.section && collapsedGroups[gi] && !groupHasActive);
+          // Ana liste her zaman açık; diğer gruplar kapalı başlar, içindeki sayfadaysan açılır.
+          const groupCollapsed = Boolean(group.section && !expandedGroups[gi] && !groupHasActive);
           return (
-          <div key={gi} className={gi > 0 ? "mt-8" : ""}>
+          <div key={gi} className={gi === 1 ? "mt-6 pt-5 border-t border-stone-100" : gi > 1 ? "mt-1" : ""}>
             {group.section && (
               <button
                 type="button"
-                onClick={() => setCollapsedGroups((current) => ({ ...current, [gi]: !current[gi] }))}
+                onClick={() => setExpandedGroups((current) => ({ ...current, [gi]: groupCollapsed }))}
                 aria-expanded={!groupCollapsed}
                 aria-controls={`nav-group-${gi}`}
-                className="w-full flex items-center justify-between px-4 mb-3 text-[11px] font-bold uppercase tracking-[0.15em] text-stone-400 hover:text-stone-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40 focus-visible:ring-offset-2 rounded"
+                className="w-full flex items-center justify-between px-3.5 py-2 text-[13px] font-medium text-stone-400 hover:text-stone-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40 focus-visible:ring-offset-2 rounded"
               >
                 {group.section}
                 <span aria-hidden="true" className="material-symbols-outlined text-[16px]">{groupCollapsed ? "chevron_right" : "expand_more"}</span>
               </button>
             )}
-            <div id={`nav-group-${gi}`} className={`flex flex-col gap-1 ${groupCollapsed ? "hidden" : ""}`}>
+            <div id={`nav-group-${gi}`} className={`flex flex-col gap-0.5 ${group.section ? "mb-2" : ""} ${groupCollapsed ? "hidden" : ""}`}>
               {group.items.map((item) => {
                 const active = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
                 return (
@@ -126,7 +127,7 @@ export default function Sidebar({
                     }`}
                   >
                     {active && <span aria-hidden="true" className="absolute left-0 top-2 bottom-2 w-1 rounded-full bg-gold" />}
-                    <span aria-hidden="true" className={`material-symbols-outlined text-[20px] transition-transform duration-300 ${active ? "text-gold" : "text-stone-400 group-hover:text-stone-600 group-hover:scale-110"}`}>
+                    <span aria-hidden="true" className={`material-symbols-outlined w-5 shrink-0 text-center text-[20px] leading-none ${active ? "text-gold" : "text-stone-400 group-hover:text-stone-600"}`}>
                       {item.icon}
                     </span>
                     {item.label}
@@ -139,13 +140,13 @@ export default function Sidebar({
         })}
       </nav>
 
-      <div className="px-4 py-4 border-t border-stone-100 bg-stone-50/50">
+      <div className="px-4 py-3 border-t border-stone-100">
         <Link
           href="/settings"
           onClick={() => setOpen(false)}
-          className="flex items-center gap-3.5 px-4 py-3 rounded-2xl text-[14px] font-medium text-[var(--muted)] hover:text-[var(--ink)] hover:bg-white hover:shadow-sm border border-transparent hover:border-stone-200 transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40 focus-visible:ring-offset-2"
+          className="flex items-center gap-3 px-3.5 py-2 rounded-xl text-[13.5px] font-medium text-[var(--muted)] hover:text-[var(--ink)] hover:bg-stone-50 border border-transparent transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40 focus-visible:ring-offset-2"
         >
-          <span aria-hidden="true" className="material-symbols-outlined text-[20px] text-stone-400">settings</span>
+          <span aria-hidden="true" className="material-symbols-outlined w-5 shrink-0 text-center text-[20px] leading-none text-stone-400">settings</span>
           Settings
         </Link>
       </div>

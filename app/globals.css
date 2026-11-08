@@ -13,11 +13,11 @@
   --muted: #6b6770;
   --line: #ececef;
 
-  /* Accent — a muted, sophisticated rose/mauve (not candy pink) */
-  --accent: #b4496a;
-  --accent-hover: #9c3a59;
-  --accent-soft: #fbf1f4;
-  --accent-ring: #f0c9d5;
+  /* Accent = altın; ürünün tek vurgu rengi (pembe kaldırıldı) */
+  --accent: #8a6a3f;
+  --accent-hover: #735630;
+  --accent-soft: #f6f0e7;
+  --accent-ring: #e6d6bd;
 
   --radius: 0.875rem;
 

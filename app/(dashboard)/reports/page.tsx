@@ -40,7 +40,7 @@ async function ReportsContent({ tenantId, rangeParam }: { tenantId: string; rang
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
         <div>
           <h1 className="text-3xl lg:text-4xl font-serif font-normal text-[var(--ink)] flex items-center gap-3">
-            Reports <span className="text-gold font-normal">✧</span>
+            Reports
           </h1>
           <p className="text-[var(--muted)] mt-2 font-medium">
             Line-by-line detail for the last {range.days} days, ready to export.

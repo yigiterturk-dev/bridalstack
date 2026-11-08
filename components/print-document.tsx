@@ -26,7 +26,7 @@ export default function PrintDocument({
   children: ReactNode;
   footer?: ReactNode;
 }) {
-  const accent = accentColor ?? "#b4496a";
+  const accent = accentColor ?? "#8a6a3f";
 
   return (
     <div className="print-sheet bg-white text-stone-900 mx-auto w-full max-w-[820px] p-10 sm:p-14 rounded-2xl border border-stone-200 shadow-sm">

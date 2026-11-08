@@ -246,7 +246,7 @@ function Header({ count, value }: { count: number; value: number }) {
   return (
     <div className="mb-10">
       <h1 className="text-3xl lg:text-4xl font-serif font-normal text-[var(--ink)] flex items-center gap-3">
-        Follow-ups <span className="text-gold font-normal">✧</span>
+        Follow-ups
       </h1>
       <p className="text-[var(--muted)] mt-2 font-medium">
         {count === 0
