@@ -117,6 +117,10 @@ network. BridalStack jobs (all UTC):
 | 15:00 | `/api/cron/installments` |
 | 16:00 | `/api/cron/trials` |
 
+The canonical schedule lives in `ops/cron-schedule.json`; `tests/e2e/stage10`
+fails if a cron route is missing from it, so a new cron cannot be added without
+being scheduled.
+
 The bearer secret is stored in `/opt/cron-tetik/secrets.env` as
 `BRIDALSTACK_CRON_SECRET`. Run one job by hand:
 

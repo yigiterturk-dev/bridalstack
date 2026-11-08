@@ -96,5 +96,6 @@ for (const p of ["/api/cron/installments", "/api/cron/reminders"]) {
 console.log(out.join("\n"));
 console.log(`\nGeçen: ${pass}  Kalan: ${fail}`);
 await prisma.$disconnect();
+process.exit(fail ? 1 : 0);
 };
 run().catch(async e => { console.error("BETİK HATASI:", e); await prisma.$disconnect(); process.exit(2); });

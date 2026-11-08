@@ -50,7 +50,7 @@ function run(name) {
   const summary =
     output.match(/(Geçen:\s*\d+\s+Kalan:\s*\d+|\d+ geçti,\s*\d+ kaldı)/g)?.pop() ?? "";
   const failed = result.status !== 0;
-  return { name, failed, summary: summary || (failed ? "ÇALIŞTIRILAMADI" : "tamam") };
+  return { name, failed, output, summary: summary || (failed ? "ÇALIŞTIRILAMADI" : "tamam") };
 }
 
 const stages = [...HTTP_STAGES, ...DB_STAGES].filter((s) => !only || only.has(s));
@@ -59,6 +59,7 @@ for (const stage of stages) {
   process.stdout.write(`▶ ${stage} ... `);
   const outcome = run(stage);
   console.log(outcome.failed ? `KIRMIZI (${outcome.summary})` : `yeşil (${outcome.summary})`);
+  if (outcome.failed) process.stdout.write(outcome.output);
   results.push(outcome);
 }
 
