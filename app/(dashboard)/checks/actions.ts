@@ -1,5 +1,7 @@
 "use server";
 
+import { assertModule } from "@/lib/module-access";
+
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
@@ -21,6 +23,7 @@ async function requireFinanceManager() {
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
 export async function createCheck(formData: FormData) {
+  await assertModule("finance");
   const member = await requireFinanceManager();
 
   const counterparty = String(formData.get("counterparty") || "").trim();
@@ -68,6 +71,7 @@ export async function createCheck(formData: FormData) {
  * o giriş geri alınır, böylece defterde olmayan para durmaz.
  */
 export async function moveCheck(formData: FormData) {
+  await assertModule("finance");
   const member = await requireFinanceManager();
 
   const id = String(formData.get("id") || "").trim();
@@ -118,6 +122,7 @@ export async function moveCheck(formData: FormData) {
 }
 
 export async function deleteCheck(formData: FormData) {
+  await assertModule("finance");
   const member = await requireFinanceManager();
   const id = String(formData.get("id") || "").trim();
   if (!id) return;

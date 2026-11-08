@@ -1,5 +1,7 @@
 "use server";
 
+import { assertModule } from "@/lib/module-access";
+
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
@@ -29,6 +31,7 @@ async function requireOpenCount(tenantId: string, countId: string) {
 }
 
 export async function startCount(formData: FormData) {
+  await assertModule("inventory");
   const member = await requireInventoryManager();
 
   const reference =
@@ -77,6 +80,7 @@ export async function startCount(formData: FormData) {
 }
 
 export async function saveCounts(formData: FormData) {
+  await assertModule("inventory");
   const member = await requireInventoryManager();
   const countId = String(formData.get("count_id") || "").trim();
   await requireOpenCount(member.tenantId, countId);
@@ -112,6 +116,7 @@ export async function saveCounts(formData: FormData) {
 
 /** Sayımı kapatır ve sayılan kalemlerin stoğunu gerçek adede çeker. */
 export async function closeCount(formData: FormData) {
+  await assertModule("inventory");
   const member = await requireInventoryManager();
   const countId = String(formData.get("count_id") || "").trim();
   await requireOpenCount(member.tenantId, countId);
@@ -144,6 +149,7 @@ export async function closeCount(formData: FormData) {
 }
 
 export async function cancelCount(formData: FormData) {
+  await assertModule("inventory");
   const member = await requireInventoryManager();
   const countId = String(formData.get("count_id") || "").trim();
   await requireOpenCount(member.tenantId, countId);

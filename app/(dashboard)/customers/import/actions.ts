@@ -1,5 +1,7 @@
 "use server";
 
+import { assertModule } from "@/lib/module-access";
+
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { getCurrentTenant, getCurrentMember } from "@/lib/tenant";
@@ -68,6 +70,7 @@ export async function parseCustomerCsv(text: string): Promise<{
   validCount: number;
   errorCount: number;
 }> {
+  await assertModule("crm");
   const normalized = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
   const lines = normalized.split("\n").filter((l) => l.trim().length > 0);
   if (lines.length === 0) return { rows: [], validCount: 0, errorCount: 0 };
@@ -120,6 +123,7 @@ export async function parseCustomerCsv(text: string): Promise<{
 
 // Doğrulanmış satırları ekler. Yalnızca customers.manage izniyle (fail-closed).
 export async function importCustomers(csvText: string): Promise<ImportResult> {
+  await assertModule("crm");
   const member = await getCurrentMember();
   if (!member) return { ok: false, error: "Not signed in" };
   if (!hasPermission(member.role, "import.run") || !hasPermission(member.role, "customers.manage")) {

@@ -1,5 +1,7 @@
 "use server";
 
+import { assertModule } from "@/lib/module-access";
+
 import { prisma } from "@/lib/prisma";
 import { getCurrentMember } from "@/lib/tenant";
 import { hasPermission } from "@/lib/rbac";
@@ -7,6 +9,7 @@ import { hasPermission } from "@/lib/rbac";
 const STATUSES = ["pending", "confirmed", "completed", "cancelled", "no_show"] as const;
 
 export async function listBookings() {
+  await assertModule("booking");
   const member = await getCurrentMember();
   if (!member) return [];
   const rows = await prisma.booking.findMany({
@@ -24,6 +27,7 @@ export async function listBookings() {
 }
 
 export async function updateBookingStatus(id: string, status: string): Promise<{ ok: boolean; error?: string }> {
+  await assertModule("booking");
   const member = await getCurrentMember();
   if (!member) return { ok: false, error: "Unauthorized" };
   if (!hasPermission(member.role, "appointments.manage")) return { ok: false, error: "Forbidden" };

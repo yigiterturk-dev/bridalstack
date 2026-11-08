@@ -1,5 +1,7 @@
 "use server";
 
+import { assertModule } from "@/lib/module-access";
+
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
@@ -30,6 +32,7 @@ const METHOD_IDS = CASH_METHODS.map((m) => m.id) as string[];
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
 export async function createMovement(formData: FormData) {
+  await assertModule("finance");
   const back = String(formData.get("back") || "/cash");
   const member = await requireFinanceManager(back);
 
@@ -78,6 +81,7 @@ export async function createMovement(formData: FormData) {
 }
 
 export async function deleteMovement(formData: FormData) {
+  await assertModule("finance");
   const back = String(formData.get("back") || "/cash");
   const member = await requireFinanceManager(back);
 
@@ -117,6 +121,7 @@ async function drawerMovementsFor(tenantId: string, businessDate: string) {
  * Aynı gün için ikinci oturum açılamaz — `@@unique([tenant_id, business_date])`.
  */
 export async function openCashSession(formData: FormData) {
+  await assertModule("finance");
   const member = await requireFinanceManager("/cash");
 
   const typed = String(formData.get("business_date") || "").trim();
@@ -167,6 +172,7 @@ export async function openCashSession(formData: FormData) {
  * engeller. Tutar formdan gelmez, o anki veriden yeniden hesaplanır.
  */
 export async function closeCashSession(formData: FormData) {
+  await assertModule("finance");
   const member = await requireFinanceManager("/cash");
 
   const id = String(formData.get("id") || "").trim();

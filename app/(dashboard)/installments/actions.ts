@@ -1,5 +1,7 @@
 "use server";
 
+import { assertModule } from "@/lib/module-access";
+
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
@@ -25,6 +27,7 @@ async function requireFinanceManager() {
  * saymaz, tahsilat geri alınırsa kayıt da silinir.
  */
 export async function payInstallment(formData: FormData) {
+  await assertModule("finance");
   const member = await requireFinanceManager();
   const id = String(formData.get("id") || "").trim();
   if (!id) return;
@@ -70,6 +73,7 @@ export async function payInstallment(formData: FormData) {
 }
 
 export async function unpayInstallment(formData: FormData) {
+  await assertModule("finance");
   const member = await requireFinanceManager();
   const id = String(formData.get("id") || "").trim();
   if (!id) return;

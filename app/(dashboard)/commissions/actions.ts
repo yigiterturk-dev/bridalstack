@@ -1,5 +1,7 @@
 "use server";
 
+import { assertModule } from "@/lib/module-access";
+
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
@@ -35,6 +37,7 @@ async function loadLinesByOrder(tenantId: string, orderIds: string[]) {
 }
 
 export async function createRule(formData: FormData) {
+  await assertModule("commissions");
   const member = await requireCommissionManager("/commissions/rules");
 
   const name = String(formData.get("name") || "").trim();
@@ -81,6 +84,7 @@ export async function createRule(formData: FormData) {
 }
 
 export async function toggleRule(formData: FormData) {
+  await assertModule("commissions");
   const member = await requireCommissionManager("/commissions/rules");
   const id = String(formData.get("id") || "").trim();
   if (!id) return;
@@ -95,6 +99,7 @@ export async function toggleRule(formData: FormData) {
 }
 
 export async function deleteRule(formData: FormData) {
+  await assertModule("commissions");
   const member = await requireCommissionManager("/commissions/rules");
   const id = String(formData.get("id") || "").trim();
   if (!id) return;
@@ -111,6 +116,7 @@ export async function deleteRule(formData: FormData) {
  * gelen rakama güvenmek primi şişirmenin en kolay yolu olurdu.
  */
 export async function markPaid(formData: FormData) {
+  await assertModule("commissions");
   const member = await requireCommissionManager("/commissions");
 
   const staff = String(formData.get("staff") || "").trim();
@@ -154,6 +160,7 @@ export async function markPaid(formData: FormData) {
 }
 
 export async function unmarkPaid(formData: FormData) {
+  await assertModule("commissions");
   const member = await requireCommissionManager("/commissions");
 
   const staff = String(formData.get("staff") || "").trim() || UNASSIGNED;

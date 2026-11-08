@@ -1,5 +1,7 @@
 "use server";
 
+import { assertModule } from "@/lib/module-access";
+
 import { prisma } from "@/lib/prisma";
 import { getCurrentMember } from "@/lib/tenant";
 import { hasPermission } from "@/lib/rbac";
@@ -17,6 +19,7 @@ export type ScheduleRow = {
 const TIME_RE = /^([01]\d|2[0-3]):[0-5]\d$/;
 
 export async function getBookableStaff() {
+  await assertModule("booking");
   const member = await getCurrentMember();
   if (!member) return [];
   return prisma.tenantMember.findMany({
@@ -27,6 +30,7 @@ export async function getBookableStaff() {
 }
 
 export async function getSchedules(memberId: string): Promise<ScheduleRow[]> {
+  await assertModule("booking");
   const member = await getCurrentMember();
   if (!member) return [];
   // Sadece kendi kiracısındaki üyenin takvimi
@@ -40,6 +44,7 @@ export async function saveSchedules(
   memberId: string,
   schedules: ScheduleRow[]
 ): Promise<{ ok: boolean; error?: string }> {
+  await assertModule("booking");
   const member = await getCurrentMember();
   if (!member) return { ok: false, error: "Unauthorized" };
   if (!hasPermission(member.role, "staff.manage") && member.memberId !== memberId) {

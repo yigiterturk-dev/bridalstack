@@ -1,5 +1,7 @@
 "use server";
 
+import { assertModule } from "@/lib/module-access";
+
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
@@ -50,6 +52,7 @@ function refNo(timeZone: string): string {
 }
 
 export async function createPurchaseOrder(formData: FormData) {
+  await assertModule("inventory");
   const member = await requirePurchasingManager();
 
   const supplier_id = String(formData.get("supplier_id") || "").trim();
@@ -88,6 +91,7 @@ export async function createPurchaseOrder(formData: FormData) {
 
 /** Taslağa kalem ekler. Aynı ürün ikinci kez eklenmez, adedi artar. */
 export async function addLine(formData: FormData) {
+  await assertModule("inventory");
   const member = await requirePurchasingManager();
   const po_id = String(formData.get("po_id") || "").trim();
   const po = await loadPo(member.tenantId, po_id);
@@ -117,6 +121,7 @@ export async function addLine(formData: FormData) {
 }
 
 export async function removeLine(formData: FormData) {
+  await assertModule("inventory");
   const member = await requirePurchasingManager();
   const po_id = String(formData.get("po_id") || "").trim();
   const po = await loadPo(member.tenantId, po_id);
@@ -132,6 +137,7 @@ export async function removeLine(formData: FormData) {
 
 /** Taslağı tedarikçiye gönderir. Bu andan sonra kalemler dondurulur. */
 export async function placeOrder(formData: FormData) {
+  await assertModule("inventory");
   const member = await requirePurchasingManager();
   const po_id = String(formData.get("po_id") || "").trim();
   const po = await loadPo(member.tenantId, po_id);
@@ -157,6 +163,7 @@ export async function placeOrder(formData: FormData) {
  * teslim alınanın bedeli bir kez kasaya yazılır (`purchase_order_id` tekil).
  */
 export async function receiveLines(formData: FormData) {
+  await assertModule("inventory");
   const member = await requirePurchasingManager();
   const po_id = String(formData.get("po_id") || "").trim();
   const po = await loadPo(member.tenantId, po_id);
@@ -247,6 +254,7 @@ export async function receiveLines(formData: FormData) {
 
 /** Eksik gelen siparişi kapatır. Bedel yalnız fiilen gelen mal için yazılır. */
 export async function closeShort(formData: FormData) {
+  await assertModule("inventory");
   const member = await requirePurchasingManager();
   const po_id = String(formData.get("po_id") || "").trim();
   const po = await loadPo(member.tenantId, po_id);
@@ -285,6 +293,7 @@ export async function closeShort(formData: FormData) {
 }
 
 export async function cancelPurchaseOrder(formData: FormData) {
+  await assertModule("inventory");
   const member = await requirePurchasingManager();
   const po_id = String(formData.get("po_id") || "").trim();
   const po = await loadPo(member.tenantId, po_id);

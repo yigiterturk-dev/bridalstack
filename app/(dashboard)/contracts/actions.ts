@@ -1,5 +1,7 @@
 "use server";
 
+import { assertModule } from "@/lib/module-access";
+
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
@@ -9,6 +11,7 @@ import { createPublicToken } from "@/lib/tokens";
 import { nonNegativeFloat } from "@/lib/numbers";
 
 export async function createContract(formData: FormData) {
+  await assertModule("sales");
   const userId = await getCurrentUserId();
   if (!userId) redirect("/login");
   const tenant = await getCurrentTenant();

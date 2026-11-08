@@ -1,5 +1,7 @@
 "use server";
 
+import { assertModule } from "@/lib/module-access";
+
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
@@ -28,6 +30,7 @@ function optionalDate(value: FormDataEntryValue | null): string | null {
 }
 
 export async function createAlteration(formData: FormData) {
+  await assertModule("inventory");
   const member = await requireAlterationsManager();
 
   const customer_id = String(formData.get("customer_id") || "").trim();
@@ -79,6 +82,7 @@ export async function createAlteration(formData: FormData) {
  * kasada para görünmesin.
  */
 export async function updateAlterationStatus(formData: FormData) {
+  await assertModule("inventory");
   const member = await requireAlterationsManager();
 
   const id = String(formData.get("id") || "").trim();

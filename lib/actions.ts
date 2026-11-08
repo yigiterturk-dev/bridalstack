@@ -1,5 +1,7 @@
 "use server";
 
+import { assertModule } from "@/lib/module-access";
+
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
@@ -26,6 +28,7 @@ async function requireAuth(permission?: Permission, denyRedirect = "/dashboard?e
 // ─── Customers ───
 
 export async function createCustomer(formData: FormData) {
+  await assertModule("crm");
   const { userId, tenant } = await requireAuth("customers.manage", "/customers?error=forbidden");
 
   const name = String(formData.get("name") || "").trim();
@@ -51,6 +54,7 @@ export async function createCustomer(formData: FormData) {
 // ─── Appointments ───
 
 export async function createAppointment(formData: FormData) {
+  await assertModule("appointments");
   const { userId, tenant } = await requireAuth("appointments.manage", "/appointments?error=forbidden");
 
   const customer_id = String(formData.get("customer_id") || "").trim();
@@ -81,6 +85,7 @@ export async function createAppointment(formData: FormData) {
 }
 
 export async function updateAppointmentStatus(formData: FormData) {
+  await assertModule("appointments");
   const { tenant } = await requireAuth("appointments.manage", "/appointments?error=forbidden");
 
   const id = String(formData.get("id") || "").trim();
@@ -119,6 +124,7 @@ async function readProductForm(formData: FormData, tenantId: string) {
 }
 
 export async function updateProduct(formData: FormData) {
+  await assertModule("inventory");
   const { tenant } = await requireAuth("products.manage", "/products?error=forbidden");
   const id = String(formData.get("id") || "");
   const existing = await prisma.product.findFirst({ where: { id, tenant_id: tenant.id }, select: { id: true, barcode: true } });
@@ -142,6 +148,7 @@ export async function updateProduct(formData: FormData) {
 
 /** Tek dokunuşla stok ±1 (satıldı / geldi). Sıfırın altına inmez. */
 export async function adjustStock(formData: FormData) {
+  await assertModule("inventory");
   const { tenant } = await requireAuth("products.manage", "/products?error=forbidden");
   const id = String(formData.get("id") || "");
   const delta = Number(formData.get("delta")) === -1 ? -1 : 1;
@@ -156,6 +163,7 @@ export async function adjustStock(formData: FormData) {
 }
 
 export async function createProduct(formData: FormData) {
+  await assertModule("inventory");
   const { userId, tenant } = await requireAuth("products.manage", "/products?error=forbidden");
 
   const name = String(formData.get("name") || "").trim();
@@ -210,6 +218,7 @@ export async function createProduct(formData: FormData) {
 // ─── Orders ───
 
 export async function createOrder(formData: FormData) {
+  await assertModule("sales");
   const { userId, tenant } = await requireAuth("orders.manage", "/orders?error=forbidden");
 
   const customer_id = String(formData.get("customer_id") || "").trim();

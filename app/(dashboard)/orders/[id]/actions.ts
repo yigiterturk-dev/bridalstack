@@ -1,5 +1,7 @@
 "use server";
 
+import { assertModule } from "@/lib/module-access";
+
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
@@ -11,6 +13,7 @@ import { LINE_KINDS } from "@/lib/order-lines";
 import { nonNegativeFloat } from "@/lib/numbers";
 
 export async function updateOrderStatus(formData: FormData) {
+  await assertModule("sales");
   const tenant = await getCurrentTenant();
   if (!tenant) redirect("/onboarding");
   const member = await getCurrentMember();
@@ -41,6 +44,7 @@ async function requireOrderManager(orderId: string) {
 }
 
 export async function createInstallmentPlan(formData: FormData) {
+  await assertModule("sales");
   const orderId = String(formData.get("order_id") || "").trim();
   if (!orderId) redirect("/orders");
   const tenant = await requireOrderManager(orderId);
@@ -91,6 +95,7 @@ export async function createInstallmentPlan(formData: FormData) {
 }
 
 export async function markInstallmentPaid(formData: FormData) {
+  await assertModule("sales");
   const orderId = String(formData.get("order_id") || "").trim();
   const id = String(formData.get("id") || "").trim();
   if (!orderId || !id) redirect("/orders");
@@ -109,6 +114,7 @@ export async function markInstallmentPaid(formData: FormData) {
 }
 
 export async function markInstallmentUnpaid(formData: FormData) {
+  await assertModule("sales");
   const orderId = String(formData.get("order_id") || "").trim();
   const id = String(formData.get("id") || "").trim();
   if (!orderId || !id) redirect("/orders");
@@ -131,6 +137,7 @@ export async function markInstallmentUnpaid(formData: FormData) {
 }
 
 export async function cancelInstallmentPlan(formData: FormData) {
+  await assertModule("sales");
   const orderId = String(formData.get("order_id") || "").trim();
   if (!orderId) redirect("/orders");
   const tenant = await requireOrderManager(orderId);
@@ -163,6 +170,7 @@ function money(value: FormDataEntryValue | null): number {
 }
 
 export async function addOrderLine(formData: FormData) {
+  await assertModule("sales");
   const orderId = String(formData.get("order_id") || "").trim();
   if (!orderId) redirect("/orders");
   const tenant = await requireOrderManager(orderId);
@@ -224,6 +232,7 @@ export async function addOrderLine(formData: FormData) {
 }
 
 export async function removeOrderLine(formData: FormData) {
+  await assertModule("sales");
   const orderId = String(formData.get("order_id") || "").trim();
   const lineId = String(formData.get("line_id") || "").trim();
   if (!orderId || !lineId) redirect("/orders");

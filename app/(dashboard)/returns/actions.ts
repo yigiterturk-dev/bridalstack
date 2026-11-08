@@ -1,5 +1,7 @@
 "use server";
 
+import { assertModule } from "@/lib/module-access";
+
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
@@ -25,6 +27,7 @@ const REASON_IDS = RETURN_REASONS.map((r) => r.id) as string[];
 const CONDITION_IDS = RETURN_CONDITIONS.map((c) => c.id) as string[];
 
 export async function createReturn(formData: FormData) {
+  await assertModule("inventory");
   const member = await requireReturnsManager();
 
   const customer_id = String(formData.get("customer_id") || "").trim() || null;
@@ -84,6 +87,7 @@ export async function createReturn(formData: FormData) {
  * böylece onaylanmış ama gelin getirmemiş iade stoğu şişirmez.
  */
 export async function updateReturnStatus(formData: FormData) {
+  await assertModule("inventory");
   const member = await requireReturnsManager();
 
   const id = String(formData.get("id") || "").trim();

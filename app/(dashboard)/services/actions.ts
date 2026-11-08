@@ -1,5 +1,7 @@
 "use server";
 
+import { assertModule } from "@/lib/module-access";
+
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
@@ -17,6 +19,7 @@ async function requireServiceManager() {
 }
 
 export async function createService(formData: FormData) {
+  await assertModule("services");
   const { tenant } = await requireServiceManager();
 
   const name = String(formData.get("name") || "").trim();
@@ -37,6 +40,7 @@ export async function createService(formData: FormData) {
 }
 
 export async function deleteService(formData: FormData) {
+  await assertModule("services");
   const { tenant } = await requireServiceManager();
   const id = String(formData.get("id") || "").trim();
   if (!id) return;
@@ -46,6 +50,7 @@ export async function deleteService(formData: FormData) {
 }
 
 export async function toggleService(formData: FormData) {
+  await assertModule("services");
   const { tenant } = await requireServiceManager();
   const id = String(formData.get("id") || "").trim();
   const is_active = String(formData.get("is_active")) === "true";

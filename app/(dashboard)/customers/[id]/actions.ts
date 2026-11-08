@@ -1,5 +1,7 @@
 "use server";
 
+import { assertModule } from "@/lib/module-access";
+
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
@@ -8,6 +10,7 @@ import { hasPermission } from "@/lib/rbac";
 import { normalizeEventDate } from "@/lib/journey";
 
 export async function updateCustomer(formData: FormData) {
+  await assertModule("crm");
   const userId = await getCurrentUserId();
   if (!userId) redirect("/login");
   const tenant = await getCurrentTenant();
@@ -38,6 +41,7 @@ export async function updateCustomer(formData: FormData) {
 
 /** Gelin sayfasındaki tek alanlık form: yalnız düğün tarihini değiştirir. */
 export async function updateEventDate(formData: FormData) {
+  await assertModule("crm");
   const userId = await getCurrentUserId();
   if (!userId) redirect("/login");
   const tenant = await getCurrentTenant();

@@ -1,5 +1,7 @@
 "use server";
 
+import { assertModule } from "@/lib/module-access";
+
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
@@ -32,6 +34,7 @@ function money(value: FormDataEntryValue | null): number {
 }
 
 export async function createRental(formData: FormData) {
+  await assertModule("inventory");
   const member = await requireRentalsManager();
 
   const customer_id = String(formData.get("customer_id") || "").trim();
@@ -100,6 +103,7 @@ export async function createRental(formData: FormData) {
  * Gecikme bedeli otomatik yazılmaz; ekranda tahsil edilmek üzere gösterilir.
  */
 export async function updateRentalStatus(formData: FormData) {
+  await assertModule("inventory");
   const member = await requireRentalsManager();
 
   const id = String(formData.get("id") || "").trim();
@@ -189,6 +193,7 @@ export async function updateRentalStatus(formData: FormData) {
 
 /** Gecikme bedelini kasaya elle yazar — ekrandaki tutar değil, yeniden hesaplanan. */
 export async function collectLateFee(formData: FormData) {
+  await assertModule("inventory");
   const member = await requireRentalsManager();
   const id = String(formData.get("id") || "").trim();
   if (!id) return;

@@ -1,5 +1,7 @@
 "use server";
 
+import { assertModule } from "@/lib/module-access";
+
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
@@ -20,6 +22,7 @@ function text(fd: FormData, key: string): string | null {
 }
 
 export async function createSupplier(formData: FormData) {
+  await assertModule("inventory");
   const member = await requireInventoryManager();
 
   const name = String(formData.get("name") || "").trim();
@@ -48,6 +51,7 @@ export async function createSupplier(formData: FormData) {
 }
 
 export async function toggleSupplier(formData: FormData) {
+  await assertModule("inventory");
   const member = await requireInventoryManager();
   const id = String(formData.get("id") || "").trim();
   if (!id) return;
@@ -61,6 +65,7 @@ export async function toggleSupplier(formData: FormData) {
 }
 
 export async function deleteSupplier(formData: FormData) {
+  await assertModule("inventory");
   const member = await requireInventoryManager();
   const id = String(formData.get("id") || "").trim();
   if (!id) return;

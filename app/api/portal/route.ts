@@ -9,6 +9,7 @@ export async function POST(req: NextRequest) {
 
   const tenant = await getCurrentTenant();
   if (!tenant) return NextResponse.json({ error: "No tenant" }, { status: 400 });
+  if (!tenant.enabled_modules.includes("crm")) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   let body: unknown;
   try {

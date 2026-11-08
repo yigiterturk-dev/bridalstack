@@ -1,3 +1,4 @@
+import { getCurrentTenant } from "@/lib/tenant";
 import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
 import { NextResponse } from "next/server";
 import { getCurrentMember } from "@/lib/tenant";
@@ -55,6 +56,8 @@ export async function POST(request: Request) {
 
         const permission = scope === "product" ? "products.manage" : "customers.manage";
         if (!hasPermission(member.role, permission)) throw new Error("Forbidden");
+        const shop = await getCurrentTenant();
+        if (!shop?.enabled_modules.includes(scope === "product" ? "inventory" : "crm")) throw new Error("Forbidden");
 
         return {
           allowedContentTypes: [...ALLOWED_IMAGE_TYPES],

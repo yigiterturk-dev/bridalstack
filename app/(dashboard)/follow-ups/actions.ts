@@ -1,5 +1,7 @@
 "use server";
 
+import { assertModule } from "@/lib/module-access";
+
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { getCurrentMember } from "@/lib/tenant";
@@ -22,6 +24,7 @@ export async function sendFollowUpEmail(
   customerId: string,
   productId?: string | null
 ): Promise<SendFollowUpResult> {
+  await assertModule("crm");
   const member = await getCurrentMember();
   if (!member) return { ok: false, error: "Please sign in again." };
   if (!hasPermission(member.role, "customers.manage")) {

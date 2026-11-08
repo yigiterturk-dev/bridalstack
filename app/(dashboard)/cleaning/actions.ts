@@ -1,5 +1,7 @@
 "use server";
 
+import { assertModule } from "@/lib/module-access";
+
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
@@ -30,6 +32,7 @@ async function requireCleaningManager() {
  * zaten raftan çıkmıştır. İkinci kez düşersek stok eksiye kayar.
  */
 export async function createCleaningJob(formData: FormData) {
+  await assertModule("inventory");
   const member = await requireCleaningManager();
 
   const product_id = String(formData.get("product_id") || "").trim();
@@ -88,6 +91,7 @@ export async function createCleaningJob(formData: FormData) {
  * Temizleme gideri kasaya yalnız iş kapanınca yazılır (`cleaning_job_id` tekil).
  */
 export async function updateCleaningStatus(formData: FormData) {
+  await assertModule("inventory");
   const member = await requireCleaningManager();
 
   const id = String(formData.get("id") || "").trim();

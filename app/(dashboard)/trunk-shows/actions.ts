@@ -1,5 +1,7 @@
 "use server";
 
+import { assertModule } from "@/lib/module-access";
+
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
@@ -7,6 +9,7 @@ import { getCurrentTenant, getCurrentUserId, getCurrentMember } from "@/lib/tena
 import { hasPermission } from "@/lib/rbac";
 
 export async function createTrunkShow(formData: FormData) {
+  await assertModule("inventory");
   const userId = await getCurrentUserId();
   if (!userId) redirect("/login");
   const tenant = await getCurrentTenant();
