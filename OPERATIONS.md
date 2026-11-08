@@ -90,9 +90,11 @@ Optional, each feature stays disabled until its values are present:
   limiting. Without them the limiter is process-local; acceptable on the single
   container, not a global abuse-control boundary.
 - `DODO_PAYMENTS_ENVIRONMENT=live`, `DODO_PAYMENTS_API_KEY`,
-  `DODO_PAYMENTS_WEBHOOK_KEY`, `DODO_PRODUCT_SALES`, `DODO_PRODUCT_INVENTORY`,
-  `DODO_PRODUCT_PRO`, `DODO_PRODUCT_FINANCE` — paid plans. All seven must be set
-  or checkout stays closed ("Paid plans coming soon").
+  `DODO_PAYMENTS_WEBHOOK_KEY`, the four monthly `DODO_PRODUCT_*` IDs and the
+  four `DODO_PRODUCT_*_ANNUAL` IDs — paid plans. Monthly and annual are gated
+  independently: an interval stays closed until all four of its IDs plus the
+  key and webhook secret are set. Annual prices are monthly × 10 (two months
+  free). Without any set, checkout shows "Paid plans coming soon".
 - `RESEND_API_KEY`, `EMAIL_FROM` — transactional email (password reset, staff
   invitations, reminders, trial notices). Without the key, sending is skipped
   and logged; nothing is delivered.
@@ -199,6 +201,9 @@ issues or chat.
 
 - Dodo and Resend credentials must be supplied by the owner before paid checkout
   and email delivery are live (see `scripts/OWNER-SETUP.md`).
+- Multi-location pricing is not implemented: one tenant is one shop. Chains need
+  a locations model (and per-location billing) before an extra-location add-on
+  can be sold.
 - Rate limiting is process-local unless Upstash is configured.
 - DNSSEC is not enabled.
 - There is no separate staging environment; verify locally against a scratch

@@ -252,6 +252,20 @@ export function calculateMonthlyPrice(packIds: PackId[]): number {
   return packIds.reduce((sum, id) => sum + (PACKS[id]?.monthlyPrice ?? 0), 0);
 }
 
+/**
+ * Yıllık plan: 12 ayın bedeli 10 ay. İki ay bedava (%17 indirim) — rakiplerin
+ * yıllık indirim bandına denk gelir ve nakit akışını öne çeker.
+ */
+export const ANNUAL_BILLING_MONTHS = 10;
+
+export function annualPrice(monthlyPrice: number): number {
+  return monthlyPrice * ANNUAL_BILLING_MONTHS;
+}
+
+export function calculateAnnualPrice(packIds: PackId[]): number {
+  return packIds.reduce((sum, id) => sum + annualPrice(PACKS[id]?.monthlyPrice ?? 0), 0);
+}
+
 export function getNavForModules(enabledModules: ModuleId[]) {
   const groups: { section?: string; items: NavItem[] }[] = [
     { items: [

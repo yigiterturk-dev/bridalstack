@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { PACKS, SELLABLE_PACK_IDS, calculateMonthlyPrice, isPackSellable, formatPrice } from "../config/modules.ts";
+import { PACKS, SELLABLE_PACK_IDS, ANNUAL_BILLING_MONTHS, annualPrice, calculateAnnualPrice, calculateMonthlyPrice, isPackSellable, formatPrice } from "../config/modules.ts";
 
 /**
  * ABD gelinlik yazılımı pazarı (Eylül 2026 araştırması):
@@ -58,4 +58,11 @@ test("negatif tutarda eksi işareti para biriminin önünde", () => {
   assert.equal(formatPrice(-250), "−$250");
   assert.equal(formatPrice(250), "$250");
   assert.equal(formatPrice(0), "$0");
+});
+
+test("yıllık plan 12 ayın bedeli 10 aydır (2 ay bedava)", () => {
+  for (const id of SELLABLE_PACK_IDS) {
+    assert.equal(annualPrice(PACKS[id].monthlyPrice), PACKS[id].monthlyPrice * ANNUAL_BILLING_MONTHS, id);
+  }
+  assert.equal(calculateAnnualPrice(SELLABLE_PACK_IDS), calculateMonthlyPrice(SELLABLE_PACK_IDS) * ANNUAL_BILLING_MONTHS);
 });

@@ -8,29 +8,38 @@ on the server).
 
 ## 1. Dodo Payments (paid plans)
 
-The billing code is complete and fail-closed: checkout stays closed until the
-API key, webhook secret and **four** product IDs are all present.
+The billing code is complete and fail-closed. Monthly and annual billing are
+configured independently: a set is live only when the API key, webhook secret
+and **all four product IDs of that interval** are present.
 
 ```
 DODO_PAYMENTS_ENVIRONMENT=live
 DODO_PAYMENTS_API_KEY=          # Dodo → Developer → API Keys
 DODO_PAYMENTS_WEBHOOK_KEY=      # Dodo → Developer → Webhooks → signing secret
-DODO_PRODUCT_SALES=             # Dodo → Products: monthly subscription products
+# Monthly products
+DODO_PRODUCT_SALES=
 DODO_PRODUCT_INVENTORY=
 DODO_PRODUCT_PRO=
 DODO_PRODUCT_FINANCE=
+# Annual products (monthly price × 10 — two months free)
+DODO_PRODUCT_SALES_ANNUAL=
+DODO_PRODUCT_INVENTORY_ANNUAL=
+DODO_PRODUCT_PRO_ANNUAL=
+DODO_PRODUCT_FINANCE_ANNUAL=
 ```
 
 In the Dodo dashboard:
 
-1. **Products** — create one monthly subscription product per paid pack:
-   Sales $39, Inventory $29, Pro $29, Finance $19. Copy each product ID
-   (`pdt_...`) into the matching variable.
+1. **Products** — create eight subscription products, four monthly at
+   Sales $39, Inventory $29, Pro $29, Finance $19, and four annual at
+   $390, $290, $290, $190 (10 × monthly). Copy every product ID (`pdt_...`)
+   into the matching variable.
 2. **Developer → API Keys** — create a live API key.
 3. **Developer → Webhooks** — endpoint `https://bridalstack.com/api/dodo/webhook`,
    events `subscription.*` and `payment.*`; copy the signing secret into
    `DODO_PAYMENTS_WEBHOOK_KEY`.
-4. Add all seven values to `/opt/bridalstack/.env` and redeploy.
+4. Add all values to `/opt/bridalstack/.env` and redeploy. You can start with the
+   monthly set only; the annual toggle stays disabled until its four IDs exist.
 
 Verify: open `/settings` while signed in; the plan selector should offer paid
 packs instead of "Paid plans coming soon". Do one test purchase in Dodo test mode

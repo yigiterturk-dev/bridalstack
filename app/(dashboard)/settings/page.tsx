@@ -2,10 +2,10 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getCurrentTenant, getCurrentMember } from "@/lib/tenant";
-import { PACKS, MODULES, ALL_PACK_IDS, calculateMonthlyPrice, isPackSellable, isModuleLive, formatPrice } from "@/config/modules";
+import { PACKS, MODULES, ALL_PACK_IDS, calculateMonthlyPrice, annualPrice, isPackSellable, isModuleLive, formatPrice } from "@/config/modules";
 import { hasPermission, ROLE_LABELS, normalizeRole } from "@/lib/rbac";
 import { UpgradeButton, ManageBillingButton } from "@/components/billing-buttons";
-import { BILLING_CONFIGURED } from "@/lib/dodo";
+import { BILLING_CONFIGURED, BILLING_ANNUAL_CONFIGURED } from "@/lib/dodo";
 import { readDodoState } from "@/lib/dodo-state";
 import SignOutButton from "@/components/sign-out-button";
 import CopyField from "@/components/copy-field";
@@ -294,7 +294,7 @@ export default async function SettingsPage({ searchParams }: Props) {
             <div className="text-sm font-medium text-gray-500">{formatPrice(currentPrice)}/mo</div>
           </div>
           <div className="flex gap-3">
-            <UpgradeButton currentPacks={tenant.packs} billingConfigured={BILLING_CONFIGURED} />
+            <UpgradeButton currentPacks={tenant.packs} billingConfigured={BILLING_CONFIGURED} billingAnnualConfigured={BILLING_ANNUAL_CONFIGURED} />
             {Boolean(dodoCustomerId) && <ManageBillingButton />}
           </div>
         </div>
@@ -329,7 +329,7 @@ export default async function SettingsPage({ searchParams }: Props) {
                     ) : !sellable ? (
                       <span className="text-xs font-medium text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">In development</span>
                     ) : (
-                      <span className="text-xs font-medium text-gray-400">{pack.monthlyPrice === 0 ? "Included" : `${formatPrice(pack.monthlyPrice)}/mo`}</span>
+                      <span className="text-xs font-medium text-gray-400">{pack.monthlyPrice === 0 ? "Included" : `${formatPrice(pack.monthlyPrice)}/mo${BILLING_ANNUAL_CONFIGURED ? ` · ${formatPrice(annualPrice(pack.monthlyPrice))}/yr` : ""}`}</span>
                     )}
                   </div>
                   <p className="text-xs text-gray-500 mb-3">{pack.description}</p>

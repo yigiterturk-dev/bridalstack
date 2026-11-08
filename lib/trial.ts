@@ -1,6 +1,6 @@
 import { PACKS, isPackSellable, type PackId } from "../config/modules.ts";
 
-export const TRIAL_DAYS = 14;
+export const TRIAL_DAYS = 30;
 
 /** Hatırlatma bu kadar gün kala gönderilir. */
 const ENDING_SOON_DAYS = 3;

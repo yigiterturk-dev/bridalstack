@@ -1,22 +1,42 @@
 "use client";
 
 import { useState } from "react";
-import { PACKS, ALL_PACK_IDS, calculateMonthlyPrice, isPackSellable, formatPrice, type PackId } from "@/config/modules";
+import {
+  PACKS,
+  ALL_PACK_IDS,
+  SELLABLE_PACK_IDS,
+  calculateMonthlyPrice,
+  calculateAnnualPrice,
+  annualPrice,
+  isPackSellable,
+  formatPrice,
+  type PackId,
+} from "@/config/modules";
+
+type Interval = "monthly" | "annual";
 
 export function UpgradeButton({
   currentPacks,
   billingConfigured,
+  billingAnnualConfigured = false,
 }: {
   currentPacks: PackId[];
   billingConfigured: boolean;
+  billingAnnualConfigured?: boolean;
 }) {
   const [selectedPacks, setSelectedPacks] = useState<PackId[]>(currentPacks);
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [billingInterval, setBillingInterval] = useState<Interval>(billingConfigured ? "monthly" : "annual");
 
-  const newPrice = calculateMonthlyPrice(selectedPacks.filter((p) => p !== "base"));
-  const currentPrice = calculateMonthlyPrice(currentPacks.filter((p) => p !== "base"));
+  const paidSelected = selectedPacks.filter((p) => p !== "base");
+  const newMonthly = calculateMonthlyPrice(paidSelected);
+  const newAnnual = calculateAnnualPrice(paidSelected);
+  const currentMonthly = calculateMonthlyPrice(currentPacks.filter((p) => p !== "base"));
+  const allMonthly = calculateMonthlyPrice(SELLABLE_PACK_IDS);
+  const allAnnual = calculateAnnualPrice(SELLABLE_PACK_IDS);
+  const allSelected = SELLABLE_PACK_IDS.every((p) => selectedPacks.includes(p));
   const hasChanges = JSON.stringify([...selectedPacks].sort()) !== JSON.stringify([...currentPacks].sort());
 
   function togglePack(packId: PackId) {
@@ -26,6 +46,14 @@ export function UpgradeButton({
     );
   }
 
+  function selectAllModules() {
+    setSelectedPacks((prev) => Array.from(new Set([...prev, ...SELLABLE_PACK_IDS])));
+  }
+
+  function clearPaidModules() {
+    setSelectedPacks((prev) => prev.filter((p) => !SELLABLE_PACK_IDS.includes(p)));
+  }
+
   async function handleCheckout() {
     setLoading(true);
     setError(null);
@@ -33,7 +61,7 @@ export function UpgradeButton({
       const res = await fetch("/api/billing/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ packs: selectedPacks }),
+        body: JSON.stringify({ packs: selectedPacks, interval: billingInterval }),
       });
       const data = await res.json();
       if (data.url) window.location.href = data.url;
@@ -45,9 +73,9 @@ export function UpgradeButton({
     }
   }
 
-  // Ödeme hattı yapılandırılmamışsa kullanıcıyı ölü bir 503'e göndermek yerine
-  // durumu baştan söylüyoruz: deneme süreci yine çalışır, satın alma sonradan.
-  if (!billingConfigured) {
+  // Ne aylık ne yıllık hat yapılandırılmamışsa kullanıcıyı ölü bir 503'e
+  // göndermek yerine durumu baştan söylüyoruz: deneme süreci yine çalışır.
+  if (!billingConfigured && !billingAnnualConfigured) {
     return (
       <div className="flex flex-col items-start gap-1.5 max-w-xs">
         <button
@@ -87,6 +115,11 @@ export function UpgradeButton({
     );
   }
 
+  const totalLabel =
+    billingInterval === "annual"
+      ? `${formatPrice(newAnnual)}/yr · ${formatPrice(Math.round(newAnnual / 12))}/mo`
+      : `${formatPrice(newMonthly)}/mo`;
+
   return (
     <div id="plan-selector" className="bg-white rounded-2xl border border-gray-200 p-6">
       <div className="flex items-center justify-between mb-4">
@@ -95,12 +128,59 @@ export function UpgradeButton({
           <span aria-hidden="true" className="material-symbols-outlined">close</span>
         </button>
       </div>
+
+      {/* Aylık / yıllık aralık. Yıllıkta 12 ayın bedeli 10 ay. */}
+      <div className="mb-4 inline-flex rounded-xl border border-gray-200 p-1 bg-gray-50" role="group" aria-label="Billing interval">
+        <button
+          type="button"
+          onClick={() => setBillingInterval("monthly")}
+          disabled={!billingConfigured}
+          aria-pressed={billingInterval === "monthly"}
+          className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${billingInterval === "monthly" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500"} disabled:opacity-40`}
+        >
+          Monthly
+        </button>
+        <button
+          type="button"
+          onClick={() => setBillingInterval("annual")}
+          disabled={!billingAnnualConfigured}
+          aria-pressed={billingInterval === "annual"}
+          title={!billingAnnualConfigured ? "Annual billing is not configured yet" : undefined}
+          className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${billingInterval === "annual" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500"} disabled:opacity-40`}
+        >
+          Annual · 2 months free
+        </button>
+      </div>
+
+      {/* Hepsi dahil: tek tıkla tüm satılabilir modüller. */}
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-rose-100 bg-rose-50 px-4 py-3">
+        <div className="text-xs text-rose-900">
+          <strong className="font-semibold">All modules</strong> — {formatPrice(allMonthly)}/mo ·{" "}
+          {formatPrice(allAnnual)}/yr (save {formatPrice(allMonthly * 12 - allAnnual)})
+        </div>
+        <button
+          type="button"
+          onClick={allSelected ? clearPaidModules : selectAllModules}
+          className="rounded-lg bg-rose-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-rose-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2"
+        >
+          {allSelected ? "Clear paid modules" : "Select all modules"}
+        </button>
+      </div>
+
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 mb-6">
         {ALL_PACK_IDS.map((packId) => {
           const pack = PACKS[packId];
           const active = selectedPacks.includes(packId);
           const sellable = isPackSellable(packId);
           const locked = packId === "base" || pack.monthlyPrice === 0 || !sellable;
+          const priceLabel =
+            pack.monthlyPrice === 0
+              ? "Included"
+              : !sellable
+              ? "Coming soon"
+              : billingInterval === "annual"
+              ? `${formatPrice(annualPrice(pack.monthlyPrice))}/yr`
+              : `${formatPrice(pack.monthlyPrice)}/mo`;
           return (
             <button
               key={packId}
@@ -116,13 +196,7 @@ export function UpgradeButton({
                 <span className="font-medium text-sm text-gray-900">{pack.name}</span>
                 {active && packId !== "base" && <span className="text-green-500 text-xs">✓</span>}
               </div>
-              <div className="text-xs text-gray-500">
-                {pack.monthlyPrice === 0
-                  ? "Included"
-                  : !sellable
-                  ? "Coming soon"
-                  : `${formatPrice(pack.monthlyPrice)}/mo`}
-              </div>
+              <div className="text-xs text-gray-500">{priceLabel}</div>
             </button>
           );
         })}
@@ -130,9 +204,12 @@ export function UpgradeButton({
       <div className="flex items-center justify-between pt-4 border-t border-gray-100">
         <div>
           <span className="text-sm text-gray-500">New total: </span>
-          <span className="text-lg font-bold text-gray-900">{formatPrice(newPrice)}/mo</span>
-          {currentPrice !== newPrice && (
-            <span className="text-sm text-gray-400 ml-2 line-through">{formatPrice(currentPrice)}/mo</span>
+          <span className="text-lg font-bold text-gray-900">{totalLabel}</span>
+          {billingInterval === "monthly" && currentMonthly !== newMonthly && (
+            <span className="text-sm text-gray-400 ml-2 line-through">{formatPrice(currentMonthly)}/mo</span>
+          )}
+          {billingInterval === "annual" && newMonthly > 0 && (
+            <span className="ml-2 text-xs text-green-700">save {formatPrice(newMonthly * 12 - newAnnual)}/yr</span>
           )}
         </div>
         <button

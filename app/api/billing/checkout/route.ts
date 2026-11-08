@@ -6,7 +6,8 @@ import { getCurrentTenant } from "@/lib/tenant";
 import { FREE_PACK_IDS, PackId, PACKS, isPackSellable } from "@/config/modules";
 import { resolveCheckoutPlan } from "@/lib/billing";
 import {
-  BILLING_CONFIGURED,
+  billingConfiguredFor,
+  DODO_ANNUAL_PRODUCT_IDS,
   DODO_PRODUCT_IDS,
   cancelDodoSubscription,
   createDodoCheckout,
@@ -56,11 +57,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const packs = body && typeof body === "object" && "packs" in body
-    ? (body as { packs?: unknown }).packs
-    : undefined;
+  const parsed = body && typeof body === "object" ? body as { packs?: unknown; interval?: unknown } : {};
+  const packs = parsed.packs;
   if (!packs || !Array.isArray(packs)) return NextResponse.json({ error: "Invalid packs" }, { status: 400 });
   const requestedPacks = packs as PackId[];
+  // Yıllık plan ayrı Dodo ürünleriyle satılır; kimlikler ve yapılandırma
+  // kontrolü seçilen aralığa göre yapılır.
+  const interval = parsed.interval === "annual" ? "annual" : "monthly";
 
   const unknown = packs.filter((p) => typeof p !== "string" || !(p in PACKS));
   if (unknown.length > 0) {
@@ -122,14 +125,15 @@ export async function POST(req: NextRequest) {
   // 3) Yalnız SATIN ALINACAK paketler için sağlayıcı yapılandırması gerekir.
   //    Kaldırma işlemi ürün kimliklerine ihtiyaç duymaz; bu yüzden yukarıda
   //    iptaller yapılandırma kapısından ÖNCE çalıştı.
-  if (!BILLING_CONFIGURED) {
+  if (!billingConfiguredFor(interval)) {
     return NextResponse.json(
       { error: "Billing is not configured yet. Please contact support." },
       { status: 503 },
     );
   }
 
-  const plan = resolveCheckoutPlan([...FREE_PACK_IDS, ...toBuy], DODO_PRODUCT_IDS);
+  const configuredIds = interval === "annual" ? DODO_ANNUAL_PRODUCT_IDS : DODO_PRODUCT_IDS;
+  const plan = resolveCheckoutPlan([...FREE_PACK_IDS, ...toBuy], configuredIds);
   if (plan.kind !== "checkout") {
     return NextResponse.json(
       { error: "Billing is not configured for this plan yet. Please contact support." },

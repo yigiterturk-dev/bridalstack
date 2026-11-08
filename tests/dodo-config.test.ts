@@ -1,6 +1,13 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { billingConfiguredFrom, packForProductIdFrom, productIdsFrom } from "../lib/dodo-config.ts";
+import {
+  annualProductIdsFrom,
+  billingConfiguredFrom,
+  billingConfiguredForInterval,
+  packForProductIdFrom,
+  productIdsForInterval,
+  productIdsFrom,
+} from "../lib/dodo-config.ts";
 
 /**
  * Ödeme hattı yapılandırması.
@@ -46,4 +53,31 @@ test("bilinmeyen veya boş ürün kimliği pakete eşlenmez", () => {
   assert.equal(packForProductIdFrom("pdt_unknown", FULL), null);
   assert.equal(packForProductIdFrom("", FULL), null);
   assert.equal(packForProductIdFrom("pdt_sales", { ...FULL, DODO_PRODUCT_SALES: "" }), null);
+});
+
+const FULL_ANNUAL = {
+  ...FULL,
+  DODO_PRODUCT_SALES_ANNUAL: "pdt_sales_y",
+  DODO_PRODUCT_FINANCE_ANNUAL: "pdt_finance_y",
+  DODO_PRODUCT_INVENTORY_ANNUAL: "pdt_inventory_y",
+  DODO_PRODUCT_PRO_ANNUAL: "pdt_pro_y",
+} as const;
+
+test("yıllık hat ayrı yapılandırılır ve dört yıllık kimlik ister", () => {
+  assert.equal(billingConfiguredForInterval("annual", FULL), false, "aylık kimlikler yıllık hattı açmamalı");
+  assert.equal(billingConfiguredForInterval("annual", FULL_ANNUAL), true);
+  assert.equal(billingConfiguredForInterval("annual", { ...FULL_ANNUAL, DODO_PRODUCT_PRO_ANNUAL: "" }), false);
+});
+
+test("aralığa göre doğru ürün kimlikleri seçilir", () => {
+  assert.equal(productIdsForInterval("monthly", FULL_ANNUAL).sales, "pdt_sales");
+  assert.equal(productIdsForInterval("annual", FULL_ANNUAL).sales, "pdt_sales_y");
+  assert.equal(annualProductIdsFrom(FULL).sales, "");
+});
+
+test("yıllık ürün kimliği de aynı pakete çözülür", () => {
+  assert.equal(packForProductIdFrom("pdt_sales_y", FULL_ANNUAL), "sales");
+  assert.equal(packForProductIdFrom("pdt_finance_y", FULL_ANNUAL), "finance");
+  assert.equal(packForProductIdFrom("pdt_inventory_y", FULL_ANNUAL), "inventory");
+  assert.equal(packForProductIdFrom("pdt_pro_y", FULL_ANNUAL), "pro");
 });

@@ -2,7 +2,14 @@ import "server-only";
 
 import type { PackId } from "@/config/modules";
 import type { PaidPackId } from "./dodo-state";
-import { billingConfiguredFrom, packForProductIdFrom, productIdsFrom } from "./dodo-config";
+import {
+  annualProductIdsFrom,
+  billingConfiguredForInterval,
+  billingConfiguredFrom,
+  packForProductIdFrom,
+  productIdsFrom,
+  type BillingInterval,
+} from "./dodo-config";
 
 /**
  * Dodo Payments istemcisi.
@@ -31,10 +38,19 @@ export function dodoOrigin(env: NodeJS.ProcessEnv = process.env): string {
 }
 
 export const DODO_PRODUCT_IDS: Record<PaidPackId, string> = productIdsFrom();
+export const DODO_ANNUAL_PRODUCT_IDS: Record<PaidPackId, string> = annualProductIdsFrom();
+
+export type { BillingInterval };
 
 export { billingConfiguredFrom };
 
 export const BILLING_CONFIGURED = billingConfiguredFrom();
+export const BILLING_ANNUAL_CONFIGURED = billingConfiguredForInterval("annual");
+
+/** Seçilen aralık için ödeme hattı açık mı (aylık/yıllık ayrı ürün kimlikleri). */
+export function billingConfiguredFor(interval: BillingInterval): boolean {
+  return billingConfiguredForInterval(interval, process.env);
+}
 
 export class DodoError extends Error {
   readonly code: string | null;
