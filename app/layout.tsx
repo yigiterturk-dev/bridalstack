@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { Fraunces, Inter } from "next/font/google";
 import "./globals.css";
 import { siteBase, SITE_NAME } from "@/lib/seo";
 
@@ -15,19 +16,22 @@ export const metadata: Metadata = {
   appleWebApp: { capable: true, title: "Bridal Stack", statusBarStyle: "default" },
 };
 
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
+const fraunces = Fraunces({ subsets: ["latin"], variable: "--font-fraunces", display: "swap" });
+
 export const viewport: Viewport = {
   themeColor: "#7f1d1d",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="h-full">
+    <html lang="en" className={`h-full ${inter.variable} ${fraunces.variable}`}>
       <head>
         {/* Material Symbols is an icon stylesheet; next/font does not support it. */}
         {/* eslint-disable-next-line @next/next/no-page-custom-font */}
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL@20..48,100..700,0..1&display=swap" />
       </head>
-      <body className="min-h-full bg-[#fafafa] font-sans antialiased text-[var(--ink)]">{children}</body>
+      <body className="min-h-full bg-[var(--bg)] font-sans antialiased text-[var(--ink)]">{children}</body>
     </html>
   );
 }

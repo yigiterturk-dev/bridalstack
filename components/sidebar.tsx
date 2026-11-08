@@ -102,14 +102,14 @@ export default function Sidebar({
                     href={item.href}
                     onClick={() => setOpen(false)}
                     aria-current={active ? "page" : undefined}
-                    className={`group relative flex items-center gap-3.5 px-4 py-2.5 rounded-2xl text-[14px] font-medium transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2 ${
+                    className={`group relative flex items-center gap-3 px-3.5 py-2 rounded-xl text-[13.5px] font-medium transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2 ${
                       active
-                        ? "bg-rose-50/80 text-rose-700 shadow-sm border border-rose-100/50"
+                        ? "bg-gold-soft text-[var(--ink)] border border-transparent"
                         : "text-stone-500 hover:text-stone-900 hover:bg-stone-50 border border-transparent"
                     }`}
                   >
-                    {active && <span aria-hidden="true" className="absolute left-0 top-2 bottom-2 w-1 rounded-full bg-rose-400 shadow-[0_0_8px_rgba(251,113,133,0.8)]" />}
-                    <span aria-hidden="true" className={`material-symbols-outlined text-[20px] transition-transform duration-300 ${active ? "text-rose-500 scale-110" : "text-stone-400 group-hover:text-stone-600 group-hover:scale-110"}`}>
+                    {active && <span aria-hidden="true" className="absolute left-0 top-2 bottom-2 w-1 rounded-full bg-gold" />}
+                    <span aria-hidden="true" className={`material-symbols-outlined text-[20px] transition-transform duration-300 ${active ? "text-gold" : "text-stone-400 group-hover:text-stone-600 group-hover:scale-110"}`}>
                       {item.icon}
                     </span>
                     {item.label}

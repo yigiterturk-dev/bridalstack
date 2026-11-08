@@ -42,7 +42,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const demo = isDemoTenant(tenant);
 
   return (
-    <div className="min-h-screen bg-[#FDFCFB] selection:bg-rose-200 selection:text-rose-900 font-sans">
+    <div className="min-h-screen bg-white selection:bg-rose-200 selection:text-rose-900 font-sans">
       <Sidebar groups={navGroups} tenantName={tenant.name} locations={locations} activeTenantId={tenant.id} isDemo={demo} />
       <main className="lg:ml-[280px] min-h-screen pt-16 lg:pt-0 transition-all duration-300">
         <div className="max-w-7xl mx-auto px-5 lg:px-10 py-8 lg:py-10 bs-animate-in">

@@ -269,7 +269,7 @@ export function calculateAnnualPrice(packIds: PackId[]): number {
 export function getNavForModules(enabledModules: ModuleId[]) {
   const groups: { section?: string; items: NavItem[] }[] = [
     { items: [
-      { href: "/dashboard", label: "Dashboard", icon: "dashboard" },
+      { href: "/dashboard", label: "Today", icon: "today" },
       { href: "/analytics", label: "Analytics", icon: "insights" },
     ] },
   ];
