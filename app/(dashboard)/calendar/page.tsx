@@ -113,9 +113,9 @@ export default async function CalendarPage({ searchParams }: PageProps) {
   return (
     <ModuleGuard moduleId="appointments" enabledModules={tenant.enabled_modules}>
       {weekly ? (
-        <CalendarWeekView events={events} rentalDates={rentalDates} start={weekFrom} today={today} />
+        <CalendarWeekView events={events} rentalDates={rentalDates} start={weekFrom} today={today} timeZone={timeZone} />
       ) : (
-        <CalendarView events={events} rentalDays={rentalDays} year={year} month={month} />
+        <CalendarView events={events} rentalDays={rentalDays} year={year} month={month} today={today} timeZone={timeZone} />
       )}
     </ModuleGuard>
   );

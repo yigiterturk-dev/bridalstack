@@ -8,6 +8,7 @@ import {
   weekDates,
   type CalendarEvent,
 } from "@/lib/calendar-events";
+import { todayISO } from "@/lib/finance";
 
 /**
  * Haftalık görünüm.
@@ -26,9 +27,8 @@ const DAY_NAMES = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
 /** Yerel tarihin ISO günü — randevu saatleri yerel okunur, UTC'ye kaydırmayız. */
-function localDate(value: string): string {
-  const d = new Date(value);
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+function localDate(value: string, timeZone: string): string {
+  return todayISO(new Date(value), timeZone);
 }
 
 export default function CalendarWeekView({
@@ -36,18 +36,20 @@ export default function CalendarWeekView({
   rentalDates = {},
   start,
   today,
+  timeZone,
 }: {
   events: CalendarEvent[];
   rentalDates?: Record<string, CalendarEvent[]>;
   start: string;
   today: string;
+  timeZone: string;
 }) {
   const router = useRouter();
   const dates = weekDates(start);
 
   const byDate: Record<string, CalendarEvent[]> = {};
   for (const e of events) {
-    const key = localDate(e.date);
+    const key = localDate(e.date, timeZone);
     (byDate[key] ??= []).push(e);
   }
   for (const [date, rentals] of Object.entries(rentalDates)) {
@@ -128,7 +130,7 @@ export default function CalendarWeekView({
                         </div>
                       );
                     }
-                    const time = new Date(e.date).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
+                    const time = new Date(e.date).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", timeZone });
                     return (
                       <div key={e.id} className="flex items-start gap-1 px-1.5 py-1 rounded-md text-[11px] bg-stone-100/80" title={`${e.customerName} — ${e.title}`}>
                         <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 mt-1.5 ${STATUS_COLOR[e.status] ?? STATUS_COLOR.pending}`} />

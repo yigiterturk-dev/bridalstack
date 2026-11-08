@@ -135,7 +135,7 @@ export default function SchedulePage() {
           <button
             onClick={saveSchedule}
             disabled={saving}
-            className="px-5 py-2.5 bg-gold hover:bg-gold disabled:opacity-50 text-white text-sm font-semibold rounded-xl transition-all shadow-sm flex justify-center items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40 focus-visible:ring-offset-2"
+            className="px-5 py-2.5 bg-[var(--ink)] hover:opacity-90 disabled:opacity-50 text-white text-sm font-semibold rounded-xl transition-all flex justify-center items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40 focus-visible:ring-offset-2"
           >
             {saving ? "Saving..." : "Save Schedule"}
           </button>

@@ -108,7 +108,7 @@ export default async function SettingsPage({ searchParams }: Props) {
         </div>
       )}
 
-      <div className="grid gap-6">
+      <div className="grid gap-6 [&>*]:min-w-0">
         {/* Shop profile */}
         <div className="bg-white rounded-2xl border border-[var(--line)] p-6">
           <h2 className="font-serif text-lg text-[var(--ink)] mb-1">Shop details</h2>

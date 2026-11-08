@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { countOut, sortDayEvents, type CalendarEvent } from "@/lib/calendar-events";
+import { todayISO } from "@/lib/finance";
 
 const STATUS_COLOR: Record<string, string> = {
   pending: "bg-amber-400", confirmed: "bg-blue-400", completed: "bg-emerald-400", cancelled: "bg-red-300",
@@ -18,11 +19,15 @@ export default function CalendarView({
   rentalDays = {},
   year,
   month,
+  today,
+  timeZone,
 }: {
   events: CalendarEvent[];
   rentalDays?: Record<number, CalendarEvent[]>;
   year: number;
   month: number;
+  today: string;
+  timeZone: string;
 }) {
   const router = useRouter();
 
@@ -31,15 +36,17 @@ export default function CalendarView({
   const daysInMonth = lastDay.getDate();
   const startDow = firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1;
 
-  const today = new Date();
-  const isToday = (d: number) => today.getFullYear() === year && today.getMonth() === month - 1 && today.getDate() === d;
+  // Bugün ve randevu günü/saati dükkânın saat diliminde: tarayıcı saatiyle okumak
+  // hem yanlış günü gösterir hem sunucu/istemci çıktısını ayırır (React #418).
+  const [ty, tm, td] = today.split("-").map(Number);
+  const isToday = (d: number) => ty === year && tm === month && td === d;
 
   const prevMonth = month === 1 ? `${year - 1}-12` : `${year}-${month - 1}`;
   const nextMonth = month === 12 ? `${year + 1}-1` : `${year}-${month + 1}`;
 
   const eventsByDay: Record<number, CalendarEvent[]> = {};
   for (const e of events) {
-    const d = new Date(e.date).getDate();
+    const d = Number(todayISO(new Date(e.date), timeZone).slice(8, 10));
     if (!eventsByDay[d]) eventsByDay[d] = [];
     eventsByDay[d].push(e);
   }
@@ -52,7 +59,7 @@ export default function CalendarView({
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <h1 className="font-serif text-3xl font-normal text-[var(--ink)] lg:text-4xl">{MONTHS[month - 1]} {year}</h1>
         <div className="flex gap-2 items-center">
           <div className="flex rounded-xl border border-[var(--line)] overflow-hidden mr-1">
@@ -65,7 +72,7 @@ export default function CalendarView({
             </button>
           </div>
           <button onClick={() => router.push(`/calendar?month=${prevMonth}`)} className="w-9 h-9 inline-flex items-center justify-center rounded-xl border border-[var(--line)] text-[var(--muted)] hover:bg-stone-50 transition-colors" aria-label="Previous month"><span className="material-symbols-outlined text-lg">chevron_left</span></button>
-          <button onClick={() => router.push(`/calendar?month=${today.getFullYear()}-${today.getMonth() + 1}`)} className="px-3.5 h-9 rounded-xl border border-[var(--line)] text-sm font-medium text-[var(--ink)] hover:bg-stone-50 transition-colors">Today</button>
+          <button onClick={() => router.push(`/calendar?month=${ty}-${tm}`)} className="px-3.5 h-9 rounded-xl border border-[var(--line)] text-sm font-medium text-[var(--ink)] hover:bg-stone-50 transition-colors">Today</button>
           <button onClick={() => router.push(`/calendar?month=${nextMonth}`)} className="w-9 h-9 inline-flex items-center justify-center rounded-xl border border-[var(--line)] text-[var(--muted)] hover:bg-stone-50 transition-colors" aria-label="Next month"><span className="material-symbols-outlined text-lg">chevron_right</span></button>
         </div>
       </div>
@@ -125,7 +132,7 @@ export default function CalendarView({
                         </div>
                       );
                     }
-                    const time = new Date(e.date).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
+                    const time = new Date(e.date).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", timeZone });
                     return (
                       <div key={e.id} className="flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] bg-stone-100/80 truncate" title={`${e.customerName} — ${e.title}`}>
                         <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${STATUS_COLOR[e.status] ?? STATUS_COLOR.pending}`} />

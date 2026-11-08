@@ -68,14 +68,14 @@ export default function LoginPage() {
       
       <div className="w-full max-w-md relative z-10">
         <div className="text-center mb-10">
-          <h1 className="text-4xl font-extrabold text-stone-900 tracking-tight flex items-center justify-center gap-2">
-            Bridal<span className="text-gold font-normal">Stack</span>
+          <h1 className="text-3xl font-extrabold text-[var(--ink)] tracking-tight">
+            Bridal<span className="text-gold">Stack</span>
           </h1>
-          <p className="text-stone-500 mt-3 font-medium tracking-wide uppercase text-xs">The Luxury Standard for Bridal Boutiques</p>
+          <p className="text-stone-500 mt-3 font-medium tracking-wide uppercase text-xs">For bridal boutiques</p>
         </div>
 
-        <div className="bg-white/60 backdrop-blur-xl rounded-[2.5rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/80 p-10">
-          <h2 className="text-2xl font-bold text-stone-900 mb-8 text-center">
+        <div className="bg-white rounded-2xl border border-[var(--line)] p-8 sm:p-10">
+          <h2 className="font-serif text-2xl font-normal text-[var(--ink)] mb-8 text-center">
             {isSignUp ? "Create your boutique" : "Welcome back"}
           </h2>
 
