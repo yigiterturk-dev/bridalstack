@@ -6,8 +6,8 @@ const OPTIONS = [
   { value: "7", label: "Last 7 days" },
   { value: "30", label: "Last 30 days" },
   { value: "90", label: "Last 90 days" },
-  { value: "180", label: "Son 6 ay" },
-  { value: "365", label: "Son 12 ay" },
+  { value: "180", label: "Last 6 months" },
+  { value: "365", label: "Last 12 months" },
 ];
 
 export default function RangeFilter({ current }: { current: string }) {

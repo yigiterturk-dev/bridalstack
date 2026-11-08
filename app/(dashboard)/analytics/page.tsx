@@ -84,12 +84,12 @@ export default async function AnalyticsPage({ searchParams }: Props) {
       : null,
     hasAppointments
       ? prisma.appointment.count({
-          where: { tenant_id: tenant.id, appointment_date: { gte: rangeStart }, status: { not: "cancelled" } },
+          where: { tenant_id: tenant.id, appointment_date: { gte: rangeStart, lte: now }, status: { not: "cancelled" } },
         })
       : 0,
     hasAppointments
       ? prisma.appointment.count({
-          where: { tenant_id: tenant.id, appointment_date: { gte: rangeStart }, status: "completed" },
+          where: { tenant_id: tenant.id, appointment_date: { gte: rangeStart, lte: now }, status: "completed" },
         })
       : 0,
     hasAppointments
@@ -185,11 +185,13 @@ export default async function AnalyticsPage({ searchParams }: Props) {
     .filter((c) => c.value > 0)
     .sort((a, b) => b.value - a.value);
 
+  // Her kart tek bir soruya cevap verir; alt satır cevabın neyi saydığını söyler.
   const kpis = [
-    hasSales && { label: "Total Revenue", value: formatPrice(totalRevenue), sub: `from orders · last ${rangeDays} days` },
-    hasBooking && { label: "Styling Fees", value: formatPrice(bookingRevenue), sub: "completed bookings" },
-    hasAppointments && { label: "Completion Rate", value: `${fillRate}%`, sub: `${apptDone}/${apptTotal} appointments` },
-    hasInventory && { label: "Inventory Value", value: formatPrice(stockValue), sub: `${lowStock} low stock items` },
+    hasSales && { label: "How much did I sell?", value: formatPrice(totalRevenue), sub: `Orders in the last ${rangeDays} days, cancelled left out` },
+    hasBooking && { label: "What did styling bring in?", value: formatPrice(bookingRevenue), sub: `Completed bookings with tips, last ${rangeDays} days` },
+    hasAppointments && { label: "How many appointments went ahead?", value: `${fillRate}%`, sub: `${apptDone} of ${apptTotal} booked, last ${rangeDays} days` },
+    hasInventory && { label: "What is my stock worth?", value: formatPrice(stockValue), sub: "Everything on the racks, at selling price" },
+    hasInventory && { label: "How many pieces are running low?", value: String(lowStock), sub: `${LOW_STOCK_THRESHOLD} or fewer left in stock` },
   ].filter(Boolean) as { label: string; value: string; sub: string }[];
 
   const hasRevenueData = revenueSeries.some((r) => r.value > 0);
@@ -210,7 +212,7 @@ export default async function AnalyticsPage({ searchParams }: Props) {
       </div>
 
       {kpis.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 lg:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-[repeat(auto-fit,minmax(13rem,1fr))] gap-5 lg:gap-6">
           {kpis.map((k, i) => (
             <div key={k.label} className="bg-white rounded-2xl p-6 border border-[var(--line)] shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] hover:border-late/30 transition-all duration-300 group" style={{ animationDelay: `${i * 100}ms` }}>
               <div className="text-xs font-bold text-[var(--muted)] uppercase tracking-wider mb-2">{k.label}</div>
@@ -225,28 +227,32 @@ export default async function AnalyticsPage({ searchParams }: Props) {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {hasSales && hasRevenueData && (
             <div className="bg-white rounded-2xl p-8 border border-[var(--line)] shadow-sm hover:shadow-md transition-shadow">
-              <h3 className="text-lg font-bold text-[var(--ink)] mb-6 flex items-center gap-2"><span className="material-symbols-outlined text-gold">trending_up</span> Revenue Growth</h3>
+              <h3 className="text-lg font-bold text-[var(--ink)] mb-6 flex items-center gap-2"><span className="material-symbols-outlined text-gold">trending_up</span> How much did I sell each month?</h3>
+              <p className="text-sm text-[var(--muted)] -mt-4 mb-6">Last 6 months, cancelled orders left out</p>
               <RevenueBars data={revenueSeries} />
             </div>
           )}
 
           {hasAppointments && hasFillData && (
             <div className="bg-white rounded-2xl p-8 border border-[var(--line)] shadow-sm hover:shadow-md transition-shadow">
-              <h3 className="text-lg font-bold text-[var(--ink)] mb-6 flex items-center gap-2"><span className="material-symbols-outlined text-gold">calendar_month</span> Appointment Fill Rate (Weekly)</h3>
+              <h3 className="text-lg font-bold text-[var(--ink)] mb-6 flex items-center gap-2"><span className="material-symbols-outlined text-gold">calendar_month</span> How full is this week?</h3>
+              <p className="text-sm text-[var(--muted)] -mt-4 mb-6">Appointments booked against staff hours, Mon–Sun</p>
               <FillLine data={fillSeries} />
             </div>
           )}
 
           {staffSeries.length > 0 && (
             <div className="bg-white rounded-2xl p-8 border border-[var(--line)] shadow-sm hover:shadow-md transition-shadow">
-              <h3 className="text-lg font-bold text-[var(--ink)] mb-6 flex items-center gap-2"><span className="material-symbols-outlined text-gold">award_star</span> Stylist Performance</h3>
+              <h3 className="text-lg font-bold text-[var(--ink)] mb-6 flex items-center gap-2"><span className="material-symbols-outlined text-gold">award_star</span> Which stylist brought in the most this week?</h3>
+              <p className="text-sm text-[var(--muted)] -mt-4 mb-6">Completed bookings, Mon–Sun</p>
               <StaffBars data={staffSeries} valueLabel="Revenue" />
             </div>
           )}
 
           {inventorySeries.length > 0 && (
             <div className="bg-white rounded-2xl p-8 border border-[var(--line)] shadow-sm hover:shadow-md transition-shadow">
-              <h3 className="text-lg font-bold text-[var(--ink)] mb-6 flex items-center gap-2"><span className="material-symbols-outlined text-gold">pie_chart</span> Inventory Distribution</h3>
+              <h3 className="text-lg font-bold text-[var(--ink)] mb-6 flex items-center gap-2"><span className="material-symbols-outlined text-gold">pie_chart</span> What is on my racks?</h3>
+              <p className="text-sm text-[var(--muted)] -mt-4 mb-6">Pieces in stock, by category</p>
               <DistributionPie data={inventorySeries} />
             </div>
           )}

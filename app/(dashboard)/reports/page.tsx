@@ -63,12 +63,13 @@ async function ReportsContent({ tenantId, rangeParam }: { tenantId: string; rang
         </div>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-[repeat(auto-fit,minmax(11rem,1fr))] gap-4">
         {[
-          { label: "Orders", value: String(data.totals.orders), sub: data.totals.cancelled ? `${data.totals.cancelled} cancelled` : "none cancelled" },
-          { label: "Revenue booked", value: money(data.totals.revenue), sub: "excluding cancelled" },
-          { label: "Collected", value: money(data.totals.collected), sub: "deposits and installments" },
-          { label: "Average order", value: money(data.totals.averageOrder), sub: `${money(data.totals.outstanding)} still owed` },
+          { label: "How many orders did I write?", value: String(data.totals.orders), sub: data.totals.cancelled ? `${data.totals.cancelled} of them cancelled` : "None cancelled" },
+          { label: "How much did I sell?", value: money(data.totals.revenue), sub: "Order totals, cancelled left out" },
+          { label: "How much came in?", value: money(data.totals.collected), sub: "Deposits and installments paid" },
+          { label: "How much is still owed?", value: money(data.totals.outstanding), sub: "On orders from this range" },
+          { label: "What is a typical order?", value: money(data.totals.averageOrder), sub: "Average, cancelled left out" },
         ].map((k) => (
           <div key={k.label} className="bg-white rounded-2xl p-5 border border-[var(--line)]">
             <div className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-2">{k.label}</div>
@@ -79,8 +80,8 @@ async function ReportsContent({ tenantId, rangeParam }: { tenantId: string; rang
       </div>
 
       <Section
-        title="Orders"
-        subtitle={`${data.orderRows.length} in this range`}
+        title="Which orders did I write?"
+        subtitle={`${data.orderRows.length} in this range, newest first`}
         exportHref={`/reports/export?report=orders&${q}`}
         empty={data.orderRows.length === 0}
         emptyText="No orders were created in this range."
@@ -103,8 +104,8 @@ async function ReportsContent({ tenantId, rangeParam }: { tenantId: string; rang
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <Section
-          title="By stylist"
-          subtitle="Orders written in this range"
+          title="Who sold the most?"
+          subtitle="Orders written in this range, by stylist"
           exportHref={`/reports/export?report=staff&${q}`}
           empty={data.staff.length === 0}
           emptyText="No orders to attribute yet."
@@ -117,8 +118,8 @@ async function ReportsContent({ tenantId, rangeParam }: { tenantId: string; rang
         </Section>
 
         <Section
-          title="By category"
-          subtitle="Stock and interest"
+          title="Which categories get tried on?"
+          subtitle="Try-ons in this range, with what is in stock today"
           exportHref={`/reports/export?report=categories&${q}`}
           empty={data.categories.length === 0}
           emptyText="Add products to see category breakdowns."
@@ -132,7 +133,7 @@ async function ReportsContent({ tenantId, rangeParam }: { tenantId: string; rang
       </div>
 
       {data.statuses.length > 0 && (
-        <Section title="By status" subtitle="Where orders stand" empty={false} emptyText="">
+        <Section title="Where do my orders stand?" subtitle="Orders from this range, by status" empty={false} emptyText="">
           <Table
             head={["Status", "Orders", "Value"]}
             align={["left", "right", "right"]}
