@@ -60,10 +60,12 @@ await prisma.order.create({data:{tenant_id:tenant.id,ref_no:`F${stamp}`.slice(0,
   check("Dönüşüm oranı hesaplanıyor", html.includes("50%"));
 }
 
-// Panel kartı
+// Panel kartı → Today ekranı takip uyarısı kartını artık göstermiyor;
+// takip listesi kendi sayfasında ve ana menüden erişiliyor.
 {
+  const fu=strip(await(await fetch(`${BASE}/follow-ups`,{headers:H})).text());
+  check("Takip listesi 'have not ordered' bağlamını taşıyor", fu.includes("have not ordered"));
   const dash=strip(await(await fetch(`${BASE}/dashboard`,{headers:H})).text());
-  check("Panelde takip uyarısı çıkıyor", dash.includes("have not ordered"));
   check("Panel uyarısı takip sayfasına bağlanıyor", dash.includes('href="/follow-ups"'));
 }
 

@@ -38,7 +38,7 @@ await prisma.tenant.update({
 const customer = await prisma.customer.create({
   data: { tenant_id: tenant.id, name: "Zeynep Kaya", phone: "+90 555 111 2233", email: "zeynep@example.com", status: "hot_lead" },
 });
-await prisma.product.create({
+const product = await prisma.product.create({
   data: { tenant_id: tenant.id, name: "Ivory Silk Gown", barcode: `BC${stamp}`, sku: "SKU-IVY-1", category: "Gowns", price: 4200, cost: 1500, stock_quantity: 3 },
 });
 await prisma.order.create({
@@ -67,15 +67,15 @@ await req("/api/auth/callback/credentials", { method: "POST",
 // Sayfalar gerçek veriyi gösteriyor mu?
 const cases = [
   ["/customers", "Zeynep Kaya", "Müşteriler listede gerçek müşteriyi gösteriyor"],
-  ["/customers", "Hot Lead", "Müşteri durum rozeti doğru"],
+  [`/customers/${customer.id}`, 'value="hot_lead"', "Müşteri durum alanı doğru"],
   ["/products", "Ivory Silk Gown", "Ürünler listede gerçek ürünü gösteriyor"],
-  ["/products", "64%", "Ürün kâr marjı hesaplanıyor"],
+  [`/products/${product.id}`, "you keep 64%", "Ürün kâr marjı hesaplanıyor"],
   ["/orders", "Zeynep Kaya", "Siparişler müşteri adını gösteriyor"],
   ["/orders", "3,200", "Sipariş kalan bakiyesi doğru"],
   ["/appointments", "First Fitting", "Randevular gerçek randevuyu gösteriyor"],
   ["/appointments", "Zeynep Kaya", "Randevu formu müşteri listesini dolduruyor"],
   ["/dashboard", SHOP, "Ana panel işletme adını gösteriyor"],
-  ["/analytics", "Inventory Value", "Analitik stok değeri göstergesini gösteriyor"],
+  ["/analytics", "What is my stock worth?", "Analitik stok değeri göstergesini gösteriyor"],
 ];
 const strip = (h) => h.replace(/<!--[\s\S]*?-->/g, "");
 for (const [path, needle, label] of cases) {

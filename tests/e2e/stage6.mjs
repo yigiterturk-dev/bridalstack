@@ -39,10 +39,10 @@ if (!BLOB_OK) {
 // ── Arayüz yükleme yapılandırılmamışken bozulmuyor ──
 {
   const html=strip(await(await fetch(`${BASE}/products/new`,{headers:H})).text());
-  check("Ürün formu açılıyor", html.includes("New Product"));
+  check("Ürün formu açılıyor", html.includes("Add a piece"));
   check("Fotoğraf alanı formda yer alıyor", html.includes("Product photo"));
   if (!BLOB_OK) check("Yapılandırma yokken alan devre dışı ve sebebi yazıyor",
-    html.includes("BLOB_READ_WRITE_TOKEN"));
+    html.includes("Photo uploads are not switched on yet."));
 }
 
 // ── Sahte adres kaydedilmiyor (doğrulama sunucuda) ──

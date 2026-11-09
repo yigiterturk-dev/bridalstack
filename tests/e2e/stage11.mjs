@@ -46,15 +46,18 @@ await prisma.order.create({data:{tenant_id:tenant.id,ref_no:`C${stamp}`.slice(0,
   check("Borçlu sipariş listede", html.includes(late.ref_no));
   check("Tamamı ödenen sipariş listede DEĞİL", !html.includes(`F${stamp}`.slice(0,14)));
   check("İptal edilen sipariş borç sayılmıyor", !html.includes("9,999"));
-  check("Yaşlandırma kovaları var", html.includes("60+ days") && html.includes("Not yet due"));
-  check("Gecikme gün sayısı gösteriliyor", html.includes("days overdue"));
-  check("Fatura yazdırma bağlantısı var", html.includes(`/print/order/${late.id}`));
+  check("Gecikme özeti (late banner) var", html.includes("is late") && html.includes("bride"));
+  check("Gecikme gün sayısı gösteriliyor", /\d+ days? late/.test(html));
+  {
+    const detail=strip(await(await fetch(`${BASE}/orders/${late.id}`,{headers:H})).text());
+    check("Fatura yazdırma bağlantısı sipariş detayında var", detail.includes(`/print/order/${late.id}`));
+  }
 }
 {
   const html=strip(await(await fetch(`${BASE}/invoices?bucket=d61_plus`,{headers:H})).text());
   check("Kova filtresi çalışıyor", html.includes(late.ref_no));
   const bos=strip(await(await fetch(`${BASE}/invoices?bucket=current`,{headers:H})).text());
-  check("Boş kovada uygun mesaj çıkıyor", bos.includes("Nothing in this range"));
+  check("Boş kovada uygun mesaj çıkıyor", bos.includes("No bride is behind on a payment."));
 }
 
 // ── Raporlar ──
@@ -63,12 +66,12 @@ await prisma.order.create({data:{tenant_id:tenant.id,ref_no:`C${stamp}`.slice(0,
   check("Raporlar sayfası açılıyor", html.includes("Reports"));
   check("Sipariş tablosu var", html.includes(late.ref_no));
   check("Stilist kırılımı var", html.includes("Isabella") && html.includes("Emma"));
-  check("Durum kırılımı var", html.includes("By status"));
+  check("Durum kırılımı var", html.includes("Where do my orders stand?"));
   // İptal edilen sipariş listede ve durum kırılımında GÖRÜNMELİ, sadece
   // ciro toplamına girmemeli. Ciro = 8000 + 3000 = 11.000.
   check("İptal edilen sipariş listede görünüyor", html.includes(`C${stamp}`.slice(0,14)));
   check("Ciro toplamı iptal edileni saymıyor", html.includes("11,000") && !html.includes("20,999"));
-  check("İptal sayısı ayrıca belirtiliyor", html.includes("1 cancelled"));
+  check("İptal sayısı ayrıca belirtiliyor", html.includes("1 of them cancelled"));
   check("CSV indirme bağlantıları var", html.includes("report=orders") && html.includes("report=staff"));
 }
 
