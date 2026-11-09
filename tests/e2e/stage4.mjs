@@ -110,7 +110,7 @@ await fetch(`${BASE}/api/auth/register`, { method: "POST", headers: { "content-t
     check(`'${pack}' paketi için checkout durumu açıkça dönüyor`,
       (res.status === 400 && /unknown plan|not available/i.test(err)) ||
       (res.status === 503 && /not configured/i.test(err)) ||
-      (res.status < 300 && typeof body.url === "string"),
+      (res.status < 300 && /^https:\/\/(test\.)?checkout\.dodopayments\.com\//.test(String(body.url))),
       `status ${res.status} ${JSON.stringify(body).slice(0,90)}`);
   }
   const html = strip(await (await fetch(`${BASE}/settings`, { headers: { cookie: j.hdr() } })).text());
