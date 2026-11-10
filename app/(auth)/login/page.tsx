@@ -119,7 +119,7 @@ export default function LoginPage() {
               <div className="flex items-baseline justify-between mb-2">
                 <label htmlFor="password" className="block text-xs font-bold text-stone-500 uppercase tracking-wider">Password</label>
                 {!isSignUp && (
-                  <Link href="/forgot-password" className="text-xs font-semibold text-stone-400 hover:text-rose-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 focus-visible:ring-offset-2 rounded">
+                  <Link href="/forgot-password" className="text-xs font-semibold text-stone-600 hover:text-rose-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 focus-visible:ring-offset-2 rounded">
                     Forgot password?
                   </Link>
                 )}
@@ -141,12 +141,12 @@ export default function LoginPage() {
                   type="button"
                   onClick={() => setShowPassword((visible) => !visible)}
                   aria-label={showPassword ? "Hide password" : "Show password"}
-                  className="absolute inset-y-0 right-3 px-2 text-stone-400 hover:text-stone-700 transition-colors rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
+                  className="absolute inset-y-0 right-3 px-2 text-stone-600 hover:text-stone-700 transition-colors rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
                 >
                   <span className="material-symbols-outlined text-[20px]" aria-hidden="true">{showPassword ? "visibility_off" : "visibility"}</span>
                 </button>
               </div>
-              {isSignUp && <p id="password-hint" className="mt-1.5 text-xs text-stone-400">At least 8 characters.</p>}
+              {isSignUp && <p id="password-hint" className="mt-1.5 text-xs text-stone-600">At least 8 characters.</p>}
             </div>
             <button
               type="submit"
