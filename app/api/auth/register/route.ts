@@ -5,6 +5,9 @@ import { startTrial } from "@/lib/trial";
 import { validateRegistration, slugBase, pickUniqueSlug } from "@/lib/register";
 import { clientIp, rateLimit } from "@/lib/ratelimit";
 import { isValidTimeZone } from "@/lib/timezone";
+import { after } from "next/server";
+import { sendEmail } from "@/lib/email";
+import { signupNoticeEmail, signupNotifyAddress } from "@/lib/platform-admin";
 
 export async function POST(req: Request) {
   try {
@@ -92,6 +95,13 @@ export async function POST(req: Request) {
           display_name: shopName,
         }
       });
+    });
+
+    // Yeni kayıt bildirimi: yanıtı bekletmez, gönderilemezse kaydı bozmaz.
+    after(async () => {
+      const notice = signupNoticeEmail({ email: email.toLowerCase(), shopName, slug, timeZone: time_zone, at: new Date() });
+      const r = await sendEmail({ to: signupNotifyAddress(), ...notice });
+      if (!r.sent) console.warn(`[signup-notice] gönderilemedi: ${r.reason}`);
     });
 
     return new Response(JSON.stringify({ success: true }), { status: 201 });
