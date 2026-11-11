@@ -32,6 +32,11 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Invalid password");
         }
 
+        // /ops'ta "son giriş" için. Yazılamazsa girişi engellemez.
+        await prisma.user
+          .update({ where: { id: user.id }, data: { last_login_at: new Date() } })
+          .catch(() => undefined);
+
         return {
           id: user.id,
           email: user.email,

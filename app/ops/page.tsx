@@ -34,7 +34,7 @@ export default async function OpsPage() {
       packs: true,
       plan: true,
       trial_ends_at: true,
-      owner: { select: { email: true } },
+      owner: { select: { email: true, last_login_at: true } },
       _count: { select: { members: true, customers: true, orders: true, appointments: true } },
     },
   });
@@ -47,11 +47,13 @@ export default async function OpsPage() {
   });
   const last7 = rows.filter((r) => now.getTime() - r.created_at.getTime() < 7 * DAY).length;
   const paying = rows.filter((r) => r.paidPacks.length > 0).length;
+  const loggedIn24h = rows.filter((r) => r.owner.last_login_at && now.getTime() - r.owner.last_login_at.getTime() < DAY).length;
   const active = rows.filter((r) => r._count.customers > 0 || r._count.orders > 0 || r._count.appointments > 0).length;
 
   const stats = [
     { label: "Shops", value: rows.length },
     { label: "New in last 7 days", value: last7 },
+    { label: "Logged in last 24h", value: loggedIn24h },
     { label: "Paying", value: paying },
     { label: "Using it (has data)", value: active },
   ];
@@ -62,7 +64,7 @@ export default async function OpsPage() {
         <h1 className="font-serif text-3xl">Ops</h1>
         <p className="mt-1 text-sm text-gray-500">Every shop except the demo. Newest first.</p>
 
-        <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-5">
           {stats.map((s) => (
             <div key={s.label} className="rounded-lg border border-gray-200 p-4">
               <div className="text-2xl font-semibold">{s.value}</div>
@@ -78,6 +80,7 @@ export default async function OpsPage() {
                 <th className="px-3 py-2">Shop</th>
                 <th className="px-3 py-2">Owner</th>
                 <th className="px-3 py-2">Signed up</th>
+                <th className="px-3 py-2">Last login</th>
                 <th className="px-3 py-2">Billing</th>
                 <th className="px-3 py-2 text-right">Team</th>
                 <th className="px-3 py-2 text-right">Brides</th>
@@ -88,7 +91,7 @@ export default async function OpsPage() {
             <tbody className="divide-y divide-gray-100">
               {rows.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="px-3 py-6 text-center text-gray-500">No shops yet.</td>
+                  <td colSpan={9} className="px-3 py-6 text-center text-gray-500">No shops yet.</td>
                 </tr>
               )}
               {rows.map((r) => (
@@ -99,6 +102,7 @@ export default async function OpsPage() {
                   </td>
                   <td className="px-3 py-2">{r.owner.email}</td>
                   <td className="px-3 py-2 whitespace-nowrap">{fmtDate(r.created_at)}</td>
+                  <td className="px-3 py-2 whitespace-nowrap">{r.owner.last_login_at ? r.owner.last_login_at.toISOString().slice(0, 16).replace("T", " ") + " UTC" : <span className="text-gray-500">never</span>}</td>
                   <td className="px-3 py-2">
                     {r.paidPacks.length > 0
                       ? <span className="text-[#8a6a3f]">Paid: {r.paidPacks.join(", ")}</span>
