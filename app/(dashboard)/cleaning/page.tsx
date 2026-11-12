@@ -18,6 +18,7 @@ import {
 import { createCleaningJob, updateCleaningStatus } from "./actions";
 import EmptyState from "@/components/empty-state";
 import AddPanel from "@/components/add-panel";
+import { usDay } from "@/lib/us-date";
 
 export const dynamic = "force-dynamic";
 
@@ -196,9 +197,9 @@ async function CleaningContent({ tenantId, timeZone, error }: { tenantId: string
                         </p>
 
                         <div className="flex items-center gap-3 mt-1.5 text-xs text-stone-400 flex-wrap">
-                          {j.sent_on && <span>Sent {j.sent_on}</span>}
-                          {j.expected_on && <span>Expected {j.expected_on}</span>}
-                          {j.returned_on && <span className="text-emerald-600">Back {j.returned_on}</span>}
+                          {j.sent_on && <span>Sent {usDay(j.sent_on)}</span>}
+                          {j.expected_on && <span>Expected {usDay(j.expected_on)}</span>}
+                          {j.returned_on && <span className="text-emerald-600">Back {usDay(j.returned_on)}</span>}
                           {j.cost > 0 && (
                             <span className="text-stone-600 font-semibold">{formatPrice(Math.round(j.cost))} cost</span>
                           )}

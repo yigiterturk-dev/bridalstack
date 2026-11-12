@@ -10,6 +10,7 @@ import { isLate, summarize } from "@/lib/purchasing";
 import { createSupplier, toggleSupplier, deleteSupplier } from "./actions";
 import EmptyState from "@/components/empty-state";
 import AddPanel from "@/components/add-panel";
+import { usDay } from "@/lib/us-date";
 
 export const dynamic = "force-dynamic";
 
@@ -205,7 +206,7 @@ async function SuppliersContent({ tenantId, timeZone }: { tenantId: string; time
                                           ? "border-gold/30 bg-gold-soft text-gold hover:bg-gold-soft"
                                           : "border-stone-200 bg-white text-stone-600 hover:bg-stone-50"
                                       }`}
-                                      title={o.expected_on ? `Expected ${o.expected_on}` : "No expected date"}
+                                      title={o.expected_on ? `Expected ${usDay(o.expected_on)}` : "No expected date"}
                                     >
                                       {o.ref_no} · {t.receivedUnits}/{t.orderedUnits}
                                     </Link>

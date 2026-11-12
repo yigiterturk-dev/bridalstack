@@ -25,6 +25,7 @@ import {
   receiveLines,
   removeLine,
 } from "../actions";
+import { usDay } from "@/lib/us-date";
 
 export const dynamic = "force-dynamic";
 
@@ -123,7 +124,7 @@ async function PurchaseOrderDetail({
           </div>
           <p className="text-[var(--muted)] mt-2 font-medium">
             {po.ref_no}
-            {po.expected_on && <span className="text-stone-400"> · expected {po.expected_on}</span>}
+            {po.expected_on && <span className="text-stone-400"> · expected {usDay(po.expected_on)}</span>}
             {po.supplier?.payment_terms && <span className="text-stone-400"> · {po.supplier.payment_terms}</span>}
           </p>
         </div>

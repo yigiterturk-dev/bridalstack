@@ -8,6 +8,7 @@ import ConfirmSubmitButton from "@/components/confirm-submit-button";
 import { deriveStatus, daysUntilDue } from "@/lib/installments";
 import { payInstallment, unpayInstallment } from "./actions";
 import EmptyState from "@/components/empty-state";
+import { usDay } from "@/lib/us-date";
 
 export const dynamic = "force-dynamic";
 
@@ -153,7 +154,7 @@ async function InstallmentsContent({
                     </Link>
                   )}
                   {r.order && " · "}
-                  Payment {r.installment_no}/{r.total_count} · due {r.due_date}
+                  Payment {r.installment_no}/{r.total_count} · due {usDay(r.due_date)}
                   {r.derived === "overdue" && ` · ${Math.abs(r.days)} days late`}
                 </div>
               </div>

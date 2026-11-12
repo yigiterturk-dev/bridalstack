@@ -19,6 +19,7 @@ import {
 import { collectLateFee, createRental, updateRentalStatus } from "./actions";
 import EmptyState from "@/components/empty-state";
 import AddPanel from "@/components/add-panel";
+import { usDay } from "@/lib/us-date";
 
 export const dynamic = "force-dynamic";
 
@@ -235,13 +236,13 @@ async function RentalsContent({ tenantId, timeZone, error }: { tenantId: string;
 
                         <div className="flex items-center gap-3 mt-1.5 text-xs text-stone-400 flex-wrap">
                           <span>
-                            {r.start_date} → {r.due_date}
+                            {usDay(r.start_date)} → {usDay(r.due_date)}
                           </span>
                           {r.rental_fee > 0 && (
                             <span className="text-stone-600 font-semibold">{formatPrice(Math.round(r.rental_fee))} fee</span>
                           )}
                           {r.deposit > 0 && <span>{formatPrice(Math.round(r.deposit))} deposit held</span>}
-                          {r.returned_on && <span className="text-emerald-600">Back {r.returned_on}</span>}
+                          {r.returned_on && <span className="text-emerald-600">Back {usDay(r.returned_on)}</span>}
                         </div>
 
                         {r.notes && <p className="text-xs text-stone-400 mt-1.5">{r.notes}</p>}

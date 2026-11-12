@@ -21,6 +21,7 @@ import {
 import { createAlteration, updateAlterationStatus } from "./actions";
 import EmptyState from "@/components/empty-state";
 import AddPanel from "@/components/add-panel";
+import { usDay } from "@/lib/us-date";
 
 export const dynamic = "force-dynamic";
 
@@ -236,8 +237,8 @@ async function AlterationsContent({ tenantId, timeZone, error, customer }: { ten
                         </p>
 
                         <div className="flex items-center gap-3 mt-1.5 text-xs text-stone-400 flex-wrap">
-                          {j.fitting_date && <span>Fitting {j.fitting_date}</span>}
-                          {j.promised_date && <span>Promised {j.promised_date}</span>}
+                          {j.fitting_date && <span>Fitting {usDay(j.fitting_date)}</span>}
+                          {j.promised_date && <span>Promised {usDay(j.promised_date)}</span>}
                           {j.seamstress && <span>{j.seamstress}</span>}
                           {j.price > 0 && (
                             <span className="text-stone-600 font-semibold">{formatPrice(Math.round(j.price))}</span>

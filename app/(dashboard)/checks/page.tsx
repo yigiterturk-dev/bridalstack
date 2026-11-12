@@ -17,6 +17,7 @@ import ConfirmSubmitButton from "@/components/confirm-submit-button";
 import { normalizeTimeZone } from "@/lib/timezone";
 import EmptyState from "@/components/empty-state";
 import AddPanel from "@/components/add-panel";
+import { usDay } from "@/lib/us-date";
 
 export const dynamic = "force-dynamic";
 
@@ -225,7 +226,7 @@ function Section({
                   )}
                 </div>
                 <div className="text-xs text-stone-400 mt-0.5">
-                  due {c.due_date}
+                  due {usDay(c.due_date)}
                   {c.bank && ` · ${c.bank}`}
                   {c.check_no && ` · #${c.check_no}`}
                   {c.notes && ` · ${c.notes}`}

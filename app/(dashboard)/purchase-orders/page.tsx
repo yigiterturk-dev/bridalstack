@@ -10,6 +10,7 @@ import SelectField from "@/components/select-field";
 import { PO_STATUS_LABELS, isLate, summarize, type PoStatus } from "@/lib/purchasing";
 import { createPurchaseOrder } from "./actions";
 import EmptyState from "@/components/empty-state";
+import { usDay } from "@/lib/us-date";
 
 export const dynamic = "force-dynamic";
 
@@ -175,7 +176,7 @@ async function PurchaseOrdersContent({ tenantId, timeZone, error }: { tenantId: 
 
                           <div className="flex items-center gap-3 mt-1.5 text-xs text-stone-400 flex-wrap">
                             {o.ordered_on && <span>Ordered {o.ordered_on}</span>}
-                            {o.expected_on && <span>Expected {o.expected_on}</span>}
+                            {o.expected_on && <span>Expected {usDay(o.expected_on)}</span>}
                             {o.closed_on && <span className="text-emerald-600">Closed {o.closed_on}</span>}
                             {s.orderedCost > 0 && (
                               <span className="text-stone-600 font-semibold">{formatPrice(Math.round(s.orderedCost))}</span>
