@@ -1,3 +1,4 @@
+import { BrandMark } from "@/components/brand-mark";
 import Link from "next/link";
 import PricingSection from "@/components/pricing-section";
 import { TRIAL_DAYS } from "@/lib/trial";
@@ -58,8 +59,9 @@ export default function LandingPage() {
 
       <nav aria-label="Primary navigation" className="sticky top-0 z-50 border-b border-[var(--line)] bg-white">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5">
-          <Link href="/" aria-label="BridalStack home" className="text-xl font-extrabold tracking-tight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40 rounded">
-            Bridal<span className="text-gold">Stack</span>
+          <Link href="/" aria-label="BridalStack home" className="inline-flex items-center gap-2 text-xl font-extrabold tracking-tight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40 rounded">
+            <BrandMark className="h-8 w-8 shrink-0" />
+            <span>Bridal<span className="text-gold">Stack</span></span>
           </Link>
           <div className="flex items-center gap-5 sm:gap-7">
             <a href="#pricing" className={`${NAV_LINK} hidden sm:inline`}>Pricing</a>

@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useTransition } from "react";
 import Link from "next/link";
+import { BrandMark } from "@/components/brand-mark";
 import { usePathname } from "next/navigation";
 import { switchTenant } from "@/app/(dashboard)/locations/actions";
 import { OPEN_PALETTE_EVENT } from "@/components/command-palette";
@@ -12,8 +13,9 @@ type NavGroup = { section?: string; items: NavItem[] };
 
 function Wordmark({ className = "" }: { className?: string }) {
   return (
-    <span className={`font-extrabold tracking-tight ${className}`}>
-      Bridal<span className="text-transparent bg-clip-text bg-gradient-to-r from-gold to-gold">Stack</span>
+    <span className={`inline-flex items-center gap-2 font-extrabold tracking-tight ${className}`}>
+      <BrandMark className="h-7 w-7 shrink-0" />
+      <span>Bridal<span className="text-transparent bg-clip-text bg-gradient-to-r from-gold to-gold">Stack</span></span>
     </span>
   );
 }
