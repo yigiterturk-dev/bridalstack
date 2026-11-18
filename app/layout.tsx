@@ -23,13 +23,19 @@ export const viewport: Viewport = {
   themeColor: "#7f1d1d",
 };
 
+// Organization + SoftwareApplication yapısal verisi (AI/arama motorları için).
+const SITE_LD = JSON.stringify({"@context": "https://schema.org", "@graph": [{"@type": "Organization", "@id": "https://bridalstack.com/#org", "name": "Bridal Stack", "url": "https://bridalstack.com", "logo": "https://bridalstack.com/icon.svg"}, {"@type": "SoftwareApplication", "name": "Bridal Stack", "url": "https://bridalstack.com", "description": "Manage appointments, sales, inventory & payments — built for bridal boutiques.", "applicationCategory": "BusinessApplication", "operatingSystem": "Web", "publisher": {"@id": "https://bridalstack.com/#org"}}]});
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`h-full ${inter.variable} ${fraunces.variable}`}>
       <head>
         <link rel="preload" href="/fonts/material-symbols-outlined.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
       </head>
-      <body className="min-h-full bg-[var(--bg)] font-sans antialiased text-[var(--ink)]">{children}</body>
+      <body className="min-h-full bg-[var(--bg)] font-sans antialiased text-[var(--ink)]">
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: SITE_LD }} />
+        {children}
+      </body>
     </html>
   );
 }
