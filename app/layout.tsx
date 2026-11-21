@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Fraunces, Inter } from "next/font/google";
 import "./globals.css";
+import { GoogleAnalytics } from "@/components/GoogleAnalytics";
 import { siteBase, SITE_NAME } from "@/lib/seo";
 
 export const metadata: Metadata = {
@@ -35,6 +36,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-full bg-[var(--bg)] font-sans antialiased text-[var(--ink)]">
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: SITE_LD }} />
         {children}
+        <GoogleAnalytics id="G-0F0PWH3J98" />
       </body>
     </html>
   );
